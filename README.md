@@ -1,5 +1,9 @@
-# Advent of Code 2022
+# Advent of Code
 
-[https://adventofcode.com/2022](https://adventofcode.com/2022)
+[https://adventofcode.com](https://adventofcode.com)
 
-Solved using [Elixir](https://elixir-lang.org/) and [Livebook](https://livebook.dev/).
+[2022](/2022/README.md)
+
+## Archive
+
+[2021](/2021/README.md)
