@@ -1,0 +1,373 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 9: Smoke Basin
+
+## Part 1 - intro
+
+These caves seem to be lava tubes. Parts are even still volcanically active; small hydrothermal vents release smoke into the caves that slowly settles like rain.
+
+If you can model how the smoke flows through the caves, you might be able to avoid it and be that much safer. The submarine generates a heightmap of the floor of the nearby caves for you (your puzzle input).
+
+Smoke flows to the lowest point of the area it's in. For example, consider the following heightmap:
+
+```
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+```
+
+Each number corresponds to the height of a particular location, where 9 is the highest and 0 is the lowest a location can be.
+
+Your first goal is to find the low points - the locations that are lower than any of its adjacent locations. Most locations have four adjacent locations (up, down, left, and right); locations on the edge or corner of the map have three or two adjacent locations, respectively. (Diagonal locations do not count as adjacent.)
+
+In the above example, there are four low points, all highlighted: two are in the first row (a 1 and a 0), one is in the third row (a 5), and one is in the bottom row (also a 5). All other locations on the heightmap have some lower adjacent location, and so are not low points.
+
+The risk level of a low point is 1 plus its height. In the above example, the risk levels of the low points are 2, 1, 6, and 6. The sum of the risk levels of all low points in the heightmap is therefore 15.
+
+Find all of the low points on your heightmap. What is the sum of the risk levels of all low points on your heightmap?
+
+## Input
+
+```elixir
+input_test =
+  """
+  2199943210
+  3987894921
+  9856789892
+  8767896789
+  9899965678
+  """
+  |> String.split(["\n"], trim: true)
+  |> Enum.map(fn x -> String.graphemes(x) |> Enum.map(fn y -> String.to_integer(y) end) end)
+```
+
+```output
+[
+  [2, 1, 9, 9, 9, 4, 3, 2, 1, 0],
+  [3, 9, 8, 7, 8, 9, 4, 9, 2, 1],
+  [9, 8, 5, 6, 7, 8, 9, 8, 9, 2],
+  [8, 7, 6, 7, 8, 9, 6, 7, 8, 9],
+  [9, 8, 9, 9, 9, 6, 5, 6, 7, 8]
+]
+```
+
+```elixir
+input =
+  File.read!("input09.txt")
+  |> String.split(["\n"], trim: true)
+  |> Enum.map(fn x -> String.graphemes(x) |> Enum.map(fn y -> String.to_integer(y) end) end)
+```
+
+```output
+[
+  [7, 6, 5, 4, 5, 9, 8, 9, 5, 4, 3, 2, 1, 0, 9, 5, 4, 1, 0, 1, 2, 5, 7, 9, 8, 7, 5, 4, 5, 7, 8, 9,
+   9, 9, 8, 9, 4, 3, 2, 3, 4, 5, 6, 7, 8, 9, 3, 4, 9, ...],
+  [6, 5, 4, 3, 4, 8, 7, 8, 9, 5, 9, 9, 2, 9, 8, 7, 3, 2, 4, 2, 3, 4, 5, 9, 9, 5, 4, 3, 4, 6, 7, 9,
+   9, 8, 7, 8, 9, 9, 3, 4, 5, 6, 7, 8, 9, 3, 2, 9, ...],
+  [7, 6, 3, 2, 3, 5, 6, 7, 8, 9, 8, 8, 9, 8, 7, 6, 5, 3, 5, 3, 4, 5, 9, 8, 7, 6, 5, 4, 7, 8, 8, 9,
+   8, 7, 6, 7, 8, 8, 9, 7, 6, 7, 8, 9, 5, 4, 9, ...],
+  [7, 5, 4, 3, 4, 8, 7, 8, 9, 6, 6, 7, 3, 9, 8, 7, 6, 7, 6, 7, 6, 7, 8, 9, 8, 9, 9, 5, 6, 8, 9, 8,
+   7, 6, 5, 5, 6, 7, 8, 9, 7, 8, 9, 7, 6, 9, ...],
+  [9, 8, 5, 4, 5, 6, 7, 9, 6, 5, 4, 3, 2, 3, 9, 8, 9, 8, 9, 8, 9, 8, 9, 5, 9, 9, 8, 7, 7, 8, 9, 9,
+   8, 7, 3, 4, 7, 8, 9, 9, 8, 9, 9, 8, 7, ...],
+  [8, 7, 6, 7, 7, 7, 8, 9, 5, 4, 3, 2, 1, 2, 3, 9, 7, 9, 9, 9, 7, 9, 5, 4, 5, 2, 9, 9, 8, 9, 7, 8,
+   9, 8, 2, 5, 8, 9, 7, 6, 9, 8, 9, 9, ...],
+  [9, 8, 7, 8, 9, 8, 9, 7, 6, 5, 9, 3, 2, 3, 4, 5, 6, 8, 9, 9, 6, 5, 4, 3, 2, 1, 3, 4, 9, 5, 6, 7,
+   8, 9, 3, 4, 9, 9, 6, 5, 6, 7, 8, ...],
+  [9, 9, 8, 9, 9, 9, 9, 9, 7, 9, 8, 9, 6, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 1, 0, 1, 2, 3, 4, 7, 8,
+   9, 8, 7, 6, 7, 8, 9, 4, 5, 6, ...],
+  [9, 9, 9, 9, 9, 8, 7, 8, 9, 8, 7, 8, 9, 7, 6, 7, 8, 9, 9, 9, 8, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7,
+   8, 9, 8, 9, 8, 9, 9, 3, 6, ...],
+  [8, 9, 9, 9, 8, 7, 6, 7, 6, 5, 6, 7, 8, 9, 9, 8, 9, 8, 9, 9, 9, 6, 5, 4, 3, 2, 3, 4, 5, 6, 7, 8,
+   9, 9, 9, 6, 9, 7, 8, 9, ...],
+  [7, 8, 9, 8, 7, 6, 5, 4, 5, 4, 5, 7, 8, 9, 4, 9, 6, 7, 8, 9, 8, 7, 8, 5, 4, 3, 4, 5, 6, 8, 8, 9,
+   8, 9, 9, 5, 4, 6, 5, ...],
+  [6, 9, 8, 7, 6, 5, 4, 3, 2, 3, 4, 6, 9, 4, 3, 4, 5, 8, 9, 7, 9, 8, 9, 7, 5, 4, 5, 8, 7, 9, 9, 5,
+   6, 9, 8, 9, 3, 2, ...],
+  [5, 6, 9, 8, 7, 6, 5, 5, 4, 5, 6, 7, 8, 9, 9, 5, 6, 9, 5, 6, 9, 9, 8, 7, 6, 5, 6, 9, 8, 9, 3, 4,
+   5, 6, 7, 8, 9, ...],
+  [4, 5, 6, 9, 8, 7, 7, 6, 5, 8, 7, 9, 9, 9, 8, 9, 9, 5, 4, 9, 8, 7, 9, 8, 7, 6, 7, 8, 9, 7, 4, 5,
+   6, 7, 8, 9, ...],
+  [3, 5, 6, 7, 9, 9, 8, 9, 6, 9, 9, 8, 9, 8, 7, 7, 8, 9, 6, 9, 9, 6, 5, 9, 8, 7, 8, 9, 7, 6, 5, 6,
+   7, 8, 9, ...],
+  [2, 3, 5, 7, 6, 7, 9, 8, 7, 9, 8, 7, 8, 7, 6, 6, 7, 8, 9, 8, 9, 5, 4, 5, 9, 8, 9, 9, 8, 9, 9, 8,
+   8, 9, ...],
+  [1, 2, 3, 4, 5, 8, 9, 9, 9, 8, 7, 6, 9, 6, 5, 5, 4, 5, 6, 7, 9, 9, 3, 4, 9, 9, 7, 8, 9, 1, 2, 9,
+   9, ...],
+  [0, 3, 9, 5, 6, 7, 9, 3, 1, 9, 9, 4, 3, 2, 4, 2, 3, 4, 5, 6, 7, 8, 9, 9, 8, 7, 6, 7, 8, 9, 9, 8,
+   ...],
+  [1, 9, 8, 9, 9, 8, 9, 4, 2, 9, 8, 3, 2, 1, 0, 1, 2, 3, 6, 7, 8, 9, 9, 8, 7, 6, 5, 6, 9, 9, 8, ...],
+  [9, 8, 7, 8, 9, 9, 8, 9, 9, 8, 7, 6, 3, 2, 1, 2, 3, 6, 7, 8, 9, 5, 4, 9, 8, 5, 4, 7, 8, 9, ...],
+  [8, 8, 6, 7, 8, 9, 7, 9, 8, 7, 6, 5, 4, 7, 2, 3, 4, 5, 6, 7, 8, 9, 5, 9, 7, 6, 3, 4, 9, ...],
+  [7, 6, 5, 8, 9, 5, 6, 7, 9, 8, 7, 6, 5, 6, 7, 4, 5, 6, 7, 9, 9, 9, 9, 9, 9, 7, 4, 5, ...],
+  [6, 5, 4, 5, 6, 9, 7, 8, 9, 9, 9, 8, 6, 8, 9, 7, 6, 7, 8, 9, 8, 9, 8, 9, 9, 8, 6, ...],
+  [7, 6, 5, 6, 7, 8, 9, 9, 9, 8, 9, 9, 7, 9, 9, 8, 9, 8, 9, 9, 7, 6, 7, 8, 9, 8, ...],
+  [8, 7, 8, 9, 8, 9, 1, 2, 9, 7, 6, 9, 8, 9, 7, 9, 3, 9, 8, 7, 6, 5, 3, 9, 8, ...],
+  [9, 8, 9, 8, 9, 8, 9, 9, 7, 5, 4, 5, 9, 7, 6, 3, 2, 0, 9, 8, 7, 9, 9, 8, ...],
+  [4, 9, 8, 7, 6, 7, 8, 9, 8, 4, 3, 4, 8, 9, 5, 4, 3, 4, 5, 9, 9, 8, 9, ...],
+  [3, 9, 8, 6, 5, 6, 7, 8, 9, 5, 4, 6, 7, 8, 9, 5, 9, 5, 6, 9, 8, 7, ...],
+  [9, 8, 9, 5, 4, 5, 6, 7, 8, 9, 5, 7, 8, 9, 9, 9, 8, 9, 9, 8, 7, ...],
+  [6, 7, 5, 4, 3, 4, 5, 6, 7, 8, 9, 8, 9, 9, 9, 8, 7, 9, 8, 7, ...],
+  [5, 4, 2, 1, 2, 3, 4, 7, 8, 9, 9, 9, 9, 9, 8, 7, 6, 7, 9, ...],
+  [4, 3, 1, 0, 1, 2, 3, 6, 7, 8, 9, 9, 9, 9, 7, 6, 5, 9, ...],
+  [5, 5, 2, 3, 2, 3, 4, 5, 9, 9, 9, 9, 8, 7, 6, 5, 4, ...],
+  [7, 6, 5, 4, 3, 4, 5, 6, 7, 8, 9, 8, 9, 8, 7, 6, ...],
+  [8, 7, 9, 5, 9, 5, 9, 7, 8, 9, 8, 7, 8, 9, 8, ...],
+  [9, 9, 8, 9, 8, 9, 8, 9, 9, 9, 7, 6, 9, 8, ...],
+  [9, 8, 7, 6, 7, 8, 7, 8, 9, 8, 9, 5, 4, ...],
+  [9, 9, 8, 5, 6, 7, 6, 5, 6, 7, 9, 6, ...],
+  [9, 6, 5, 4, 3, 2, 4, 4, 5, 6, 9, ...],
+  [8, 7, 4, 3, 2, 1, 2, 3, 4, 5, ...],
+  [9, 8, 5, 4, 5, 9, 9, 4, 5, ...],
+  [7, 9, 6, 5, 6, 7, 8, 5, ...],
+  [6, 7, 9, 8, 7, 8, 9, ...],
+  [5, 6, 7, 9, 8, 9, ...],
+  [4, 2, 9, 8, 9, ...],
+  [5, 9, 8, 7, ...],
+  [6, 7, 9, ...],
+  [7, 9, ...],
+  [9, ...],
+  [...],
+  ...
+]
+```
+
+## Part 1
+
+```elixir
+defmodule Floor do
+  def at(m, {x, y}) do
+    row = Enum.at(m, y)
+    Enum.at(row, x)
+  end
+
+  def get_adjacent(floor, {x, y}) do
+    x_max = length(hd(floor)) - 1
+    y_max = length(floor) - 1
+
+    [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]
+    |> Enum.filter(fn {x, y} -> x >= 0 and x <= x_max and y >= 0 and y <= y_max end)
+  end
+end
+```
+
+```output
+{:module, Floor, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:get_adjacent, 2}}
+```
+
+```elixir
+i = input_test
+x_max = length(hd(i)) - 1
+y_max = length(i) - 1
+
+adj =
+  for y <- 0..y_max do
+    for x <- 0..x_max do
+      {{x, y}, [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]}
+    end
+  end
+  |> List.flatten()
+  |> Enum.map(fn {loc, a} ->
+    {loc, Enum.filter(a, fn {x, y} -> x >= 0 and x <= x_max and y >= 0 and y <= y_max end)}
+  end)
+  |> Enum.map(fn {loc, a} ->
+    {Floor.at(i, loc), Enum.map(a, fn loc2 -> Floor.at(i, loc2) end) |> Enum.min()}
+  end)
+  |> Enum.filter(fn {loc, m} -> loc < m end)
+  |> Enum.map(fn {loc, _m} -> loc + 1 end)
+  |> Enum.sum()
+```
+
+```output
+15
+```
+
+```elixir
+i = input
+x_max = length(hd(i)) - 1
+y_max = length(i) - 1
+
+for y <- 0..y_max do
+  for x <- 0..x_max do
+    {{x, y}, [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]}
+  end
+end
+|> List.flatten()
+|> Enum.map(fn {loc, a} ->
+  {loc, Enum.filter(a, fn {x, y} -> x >= 0 and x <= x_max and y >= 0 and y <= y_max end)}
+end)
+|> Enum.map(fn {loc, a} ->
+  {Floor.at(i, loc), Enum.map(a, fn loc2 -> Floor.at(i, loc2) end) |> Enum.min()}
+end)
+|> Enum.filter(fn {loc, m} -> loc < m end)
+|> Enum.map(fn {loc, _m} -> loc + 1 end)
+|> Enum.sum()
+```
+
+```output
+512
+```
+
+Correct: 512
+
+## Part 2 - intro
+
+Next, you need to find the largest basins so you know what areas are most important to avoid.
+
+A basin is all locations that eventually flow downward to a single low point. Therefore, every low point has a basin, although some basins are very small. Locations of height 9 do not count as being in any basin, and all other locations will always be part of exactly one basin.
+
+The size of a basin is the number of locations within the basin, including the low point. The example above has four basins.
+
+The top-left basin, size 3:
+
+```
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+```
+
+The top-right basin, size 9:
+
+```
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+```
+
+The middle basin, size 14:
+
+```
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+```
+
+The bottom-right basin, size 9:
+
+```
+2199943210
+3987894921
+9856789892
+8767896789
+9899965678
+```
+
+Find the three largest basins and multiply their sizes together. In the above example, this is 9 * 14 * 9 = 1134.
+
+What do you get if you multiply together the sizes of the three largest basins?
+
+## Part 2
+
+```elixir
+i = input_test
+x_max = length(hd(i)) - 1
+y_max = length(i) - 1
+
+low_points =
+  for y <- 0..y_max do
+    for x <- 0..x_max do
+      {{x, y}, [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]}
+    end
+  end
+  |> List.flatten()
+  |> Enum.map(fn {loc, a} ->
+    {loc, Enum.filter(a, fn {x, y} -> x >= 0 and x <= x_max and y >= 0 and y <= y_max end)}
+  end)
+  |> Enum.map(fn {loc, a} ->
+    {loc, Floor.at(i, loc), Enum.map(a, fn loc2 -> Floor.at(i, loc2) end) |> Enum.min()}
+  end)
+  |> Enum.filter(fn {_loc, loc_v, m} -> loc_v < m end)
+  |> Enum.map(fn {loc, _loc_v, _m} -> loc end)
+
+defmodule Basin do
+  def find_basin_size(_floor, [], _opened, basin) do
+    basin
+  end
+
+  def find_basin_size(floor, head, opened, basin) do
+    {c, head} = List.pop_at(head, 0)
+    val_c = Floor.at(floor, c)
+    close = Floor.get_adjacent(floor, c)
+    close_and_not_opened = Enum.filter(close, fn pos -> pos not in opened end)
+    rising = Enum.filter(close_and_not_opened, fn pos -> Floor.at(floor, pos) != 9 end)
+
+    basin = basin ++ [{c, val_c}]
+    opened = opened ++ [c]
+
+    rising_and_not_in_head =
+      Enum.filter(rising, fn pos -> pos not in head and Floor.at(floor, pos) < 9 end)
+
+    head = head ++ rising_and_not_in_head
+
+    find_basin_size(floor, head, opened, basin)
+  end
+
+  def get_max_from_list(_list, 0, so_far) do
+    so_far
+  end
+
+  def get_max_from_list(list, numbers_to_get, so_far) do
+    m = Enum.max(list)
+    new_list = List.delete(list, m)
+    get_max_from_list(new_list, numbers_to_get - 1, so_far ++ [m])
+  end
+end
+
+basin_sizes =
+  low_points
+  |> Enum.map(fn pos -> Basin.find_basin_size(i, [pos], [], []) end)
+  |> Enum.map(fn b -> length(b) end)
+
+Basin.get_max_from_list(basin_sizes, 3, []) |> Enum.reduce(1, fn x, acc -> x * acc end)
+```
+
+```output
+1134
+```
+
+```elixir
+i = input
+x_max = length(hd(i)) - 1
+y_max = length(i) - 1
+
+low_points =
+  for y <- 0..y_max do
+    for x <- 0..x_max do
+      {{x, y}, [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]}
+    end
+  end
+  |> List.flatten()
+  |> Enum.map(fn {loc, a} ->
+    {loc, Enum.filter(a, fn {x, y} -> x >= 0 and x <= x_max and y >= 0 and y <= y_max end)}
+  end)
+  |> Enum.map(fn {loc, a} ->
+    {loc, Floor.at(i, loc), Enum.map(a, fn loc2 -> Floor.at(i, loc2) end) |> Enum.min()}
+  end)
+  |> Enum.filter(fn {_loc, loc_v, m} -> loc_v <= m and loc_v < 9 end)
+  |> Enum.map(fn {loc, _loc_v, _m} -> loc end)
+
+low_points
+|> Enum.map(fn pos -> Floor.at(i, pos) end)
+|> Enum.count()
+
+basin_sizes =
+  low_points
+  |> Enum.map(fn pos -> Basin.find_basin_size(i, [pos], [], []) end)
+  |> Enum.map(fn b -> length(b) end)
+
+Basin.get_max_from_list(basin_sizes, 3, []) |> Enum.reduce(1, fn x, acc -> x * acc end)
+```
+
+```output
+1600104
+```
+
+Wrong: 1600104

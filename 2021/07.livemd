@@ -1,0 +1,187 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 7: The Treachery of Whales
+
+## Part 1 - intro
+
+A giant whale has decided your submarine is its next meal, and it's much faster than you are. There's nowhere to run!
+
+Suddenly, a swarm of crabs (each in its own tiny submarine - it's too deep for them otherwise) zooms in to rescue you! They seem to be preparing to blast a hole in the ocean floor; sensors indicate a massive underground cave system just beyond where they're aiming!
+
+The crab submarines all need to be aligned before they'll have enough power to blast a large enough hole for your submarine to get through. However, it doesn't look like they'll be aligned before the whale catches you! Maybe you can help?
+
+There's one major catch - crab submarines can only move horizontally.
+
+You quickly make a list of the horizontal position of each crab (your puzzle input). Crab submarines have limited fuel, so you need to find a way to make all of their horizontal positions match while requiring them to spend as little fuel as possible.
+
+For example, consider the following horizontal positions:
+
+16,1,2,0,4,2,7,1,2,14
+
+This means there's a crab with horizontal position 16, a crab with horizontal position 1, and so on.
+
+Each change of 1 step in horizontal position of a single crab costs 1 fuel. You could choose any horizontal position to align them all on, but the one that costs the least fuel is horizontal position 2:
+
+```
+Move from 16 to 2: 14 fuel
+Move from 1 to 2: 1 fuel
+Move from 2 to 2: 0 fuel
+Move from 0 to 2: 2 fuel
+Move from 4 to 2: 2 fuel
+Move from 2 to 2: 0 fuel
+Move from 7 to 2: 5 fuel
+Move from 1 to 2: 1 fuel
+Move from 2 to 2: 0 fuel
+Move from 14 to 2: 12 fuel
+```
+
+This costs a total of 37 fuel. This is the cheapest possible outcome; more expensive outcomes include aligning at position 1 (41 fuel), position 3 (39 fuel), or position 10 (71 fuel).
+
+Determine the horizontal position that the crabs can align to using the least fuel possible. How much fuel must they spend to align to that position?
+
+## Input
+
+```elixir
+input_test =
+  """
+  16,1,2,0,4,2,7,1,2,14
+  """
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[16, 1, 2, 0, 4, 2, 7, 1, 2, 14]
+```
+
+```elixir
+input =
+  File.read!("input07.txt")
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[1101, 1, 29, 67, 1102, 0, 1, 65, 1008, 65, 35, 66, 1005, 66, 28, 1, 67, 65, 20, 4, 0, 1001, 65, 1,
+ 65, 1106, 0, 8, 99, 35, 67, 101, 99, 105, 32, 110, 39, 101, 115, 116, 32, 112, 97, 115, 32, 117,
+ 110, 101, 32, 105, ...]
+```
+
+## Part 1
+
+```elixir
+mmin = Enum.min(input_test)
+mmax = Enum.max(input_test)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input_test, 0, fn i, acc -> abs(i - p) + acc end) end)
+|> Enum.min()
+```
+
+```output
+37
+```
+
+```elixir
+mmin = Enum.min(input)
+mmax = Enum.max(input)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input, 0, fn i, acc -> abs(i - p) + acc end) end)
+|> Enum.min()
+```
+
+```output
+343468
+```
+
+Correct: 343468
+
+## Part 2 - intro
+
+he crabs don't seem interested in your proposed solution. Perhaps you misunderstand crab engineering?
+
+As it turns out, crab submarine engines don't burn fuel at a constant rate. Instead, each change of 1 step in horizontal position costs 1 more unit of fuel than the last: the first step costs 1, the second step costs 2, the third step costs 3, and so on.
+
+As each crab moves, moving further becomes more expensive. This changes the best horizontal position to align them all on; in the example above, this becomes 5:
+
+```
+Move from 16 to 5: 66 fuel
+Move from 1 to 5: 10 fuel
+Move from 2 to 5: 6 fuel
+Move from 0 to 5: 15 fuel
+Move from 4 to 5: 1 fuel
+Move from 2 to 5: 6 fuel
+Move from 7 to 5: 3 fuel
+Move from 1 to 5: 10 fuel
+Move from 2 to 5: 6 fuel
+Move from 14 to 5: 45 fuel
+```
+
+This costs a total of 168 fuel. This is the new cheapest possible outcome; the old alignment position (2) now costs 206 fuel instead.
+
+Determine the horizontal position that the crabs can align to using the least fuel possible so they can make you an escape route! How much fuel must they spend to align to that position?
+
+## Part 2
+
+```elixir
+defmodule Sum do
+  def f(steps), do: f(steps, 1, 0)
+
+  defp f(0, _price, sum) do
+    sum
+  end
+
+  defp f(steps_left, price, sum) do
+    f(steps_left - 1, price + 1, sum + price)
+  end
+end
+```
+
+```output
+{:module, Sum, <<70, 79, 82, 49, 0, 0, 5, ...>>, {:f, 3}}
+```
+
+```elixir
+Sum.f(11)
+```
+
+```output
+66
+```
+
+```elixir
+mmin = Enum.min(input_test)
+mmax = Enum.max(input_test)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input_test, 0, fn i, acc -> Sum.f(abs(i - p)) + acc end) end)
+|> Enum.min()
+```
+
+```output
+168
+```
+
+```elixir
+mmin = Enum.min(input)
+mmax = Enum.max(input)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input, 0, fn i, acc -> Sum.f(abs(i - p)) + acc end) end)
+|> Enum.min()
+```
+
+```output
+96086265
+```
+
+Correct: 96086265
