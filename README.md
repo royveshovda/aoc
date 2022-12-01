@@ -1,6 +1,6 @@
 # Advent of Code
 
-[Current](/2022)
+[Current (2022)](/2022)
 
 ## Archive
 
