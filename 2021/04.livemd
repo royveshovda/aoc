@@ -1,0 +1,660 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 4: Giant Squid
+
+## Intro
+
+You're already almost 1.5km (almost a mile) below the surface of the ocean, already so deep that you can't see any sunlight. What you can see, however, is a giant squid that has attached itself to the outside of your submarine.
+
+Maybe it wants to play bingo?
+
+Bingo is played on a set of boards each consisting of a 5x5 grid of numbers. Numbers are chosen at random, and the chosen number is marked on all boards on which it appears. (Numbers may not appear on all boards.) If all numbers in any row or any column of a board are marked, that board wins. (Diagonals don't count.)
+
+The submarine has a bingo subsystem to help passengers (currently, you and the giant squid) pass the time. It automatically generates a random order in which to draw numbers and a random set of boards (your puzzle input). For example:
+
+```
+7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+
+22 13 17 11  0
+ 8  2 23  4 24
+21  9 14 16  7
+ 6 10  3 18  5
+ 1 12 20 15 19
+
+ 3 15  0  2 22
+ 9 18 13 17  5
+19  8  7 25 23
+20 11 10 24  4
+14 21 16 12  6
+
+14 21 17 24  4
+10 16 15  9 19
+18  8 23 26 20
+22 11 13  6  5
+ 2  0 12  3  7
+```
+
+After the first five numbers are drawn (7, 4, 9, 5, and 11), there are no winners, but the boards are marked as follows (shown here adjacent to each other to save space):
+
+```
+22 13 17 11  0         3 15  0  2 22        14 21 17 24  4
+ 8  2 23  4 24         9 18 13 17  5        10 16 15  9 19
+21  9 14 16  7        19  8  7 25 23        18  8 23 26 20
+ 6 10  3 18  5        20 11 10 24  4        22 11 13  6  5
+ 1 12 20 15 19        14 21 16 12  6         2  0 12  3  7
+```
+
+After the next six numbers are drawn (17, 23, 2, 0, 14, and 21), there are still no winners:
+
+```
+22 13 17 11  0         3 15  0  2 22        14 21 17 24  4
+ 8  2 23  4 24         9 18 13 17  5        10 16 15  9 19
+21  9 14 16  7        19  8  7 25 23        18  8 23 26 20
+ 6 10  3 18  5        20 11 10 24  4        22 11 13  6  5
+ 1 12 20 15 19        14 21 16 12  6         2  0 12  3  7
+```
+
+Finally, 24 is drawn:
+
+```
+22 13 17 11  0         3 15  0  2 22        14 21 17 24  4
+ 8  2 23  4 24         9 18 13 17  5        10 16 15  9 19
+21  9 14 16  7        19  8  7 25 23        18  8 23 26 20
+ 6 10  3 18  5        20 11 10 24  4        22 11 13  6  5
+ 1 12 20 15 19        14 21 16 12  6         2  0 12  3  7
+```
+
+At this point, the third board wins because it has at least one complete row or column of marked numbers (in this case, the entire top row is marked: 14 21 17 24 4).
+
+The score of the winning board can now be calculated. Start by finding the sum of all unmarked numbers on that board; in this case, the sum is 188. Then, multiply that sum by the number that was just called when the board won, 24, to get the final score, 188 * 24 = 4512.
+
+To guarantee victory against the giant squid, figure out which board will win first. What will your final score be if you choose that board?
+
+## Input
+
+```elixir
+input_test =
+  """
+  7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
+
+  22 13 17 11  0
+   8  2 23  4 24
+  21  9 14 16  7
+   6 10  3 18  5
+   1 12 20 15 19
+
+   3 15  0  2 22
+   9 18 13 17  5
+  19  8  7 25 23
+  20 11 10 24  4
+  14 21 16 12  6
+
+  14 21 17 24  4
+  10 16 15  9 19
+  18  8 23 26 20
+  22 11 13  6  5
+   2  0 12  3  7
+  """
+  |> String.split("\n", trim: true)
+
+[draw_test | boards_test] = input_test
+
+input_draw_test =
+  draw_test
+  |> String.split(",")
+  |> Enum.map(&String.to_integer/1)
+
+input_boards_test =
+  boards_test
+  |> Enum.map(fn x -> x |> String.split(" ", trim: true) |> Enum.map(&String.to_integer/1) end)
+  |> Enum.chunk(5)
+  |> Enum.map(fn board ->
+    board |> Enum.map(fn row -> row |> Enum.map(fn cell -> {cell, false} end) end)
+  end)
+```
+
+```output
+warning: Enum.chunk/2 is deprecated. Use Enum.chunk_every/2 instead
+  04.livemd#cell:35
+
+```
+
+```output
+[
+  [
+    [{22, false}, {13, false}, {17, false}, {11, false}, {0, false}],
+    [{8, false}, {2, false}, {23, false}, {4, false}, {24, false}],
+    [{21, false}, {9, false}, {14, false}, {16, false}, {7, false}],
+    [{6, false}, {10, false}, {3, false}, {18, false}, {5, false}],
+    [{1, false}, {12, false}, {20, false}, {15, false}, {19, false}]
+  ],
+  [
+    [{3, false}, {15, false}, {0, false}, {2, false}, {22, false}],
+    [{9, false}, {18, false}, {13, false}, {17, false}, {5, false}],
+    [{19, false}, {8, false}, {7, false}, {25, false}, {23, false}],
+    [{20, false}, {11, false}, {10, false}, {24, false}, {4, false}],
+    [{14, false}, {21, false}, {16, false}, {12, false}, {6, false}]
+  ],
+  [
+    [{14, false}, {21, false}, {17, false}, {24, false}, {4, false}],
+    [{10, false}, {16, false}, {15, false}, {9, false}, {19, false}],
+    [{18, false}, {8, false}, {23, false}, {26, false}, {20, false}],
+    [{22, false}, {11, false}, {13, false}, {6, false}, {5, false}],
+    [{2, false}, {0, false}, {12, false}, {3, false}, {7, false}]
+  ]
+]
+```
+
+```elixir
+input =
+  File.read!("input04.txt")
+  |> String.split("\n", trim: true)
+
+[draw | boards] = input
+
+input_draw =
+  draw
+  |> String.split(",")
+  |> Enum.map(&String.to_integer/1)
+
+input_boards =
+  boards
+  |> Enum.map(fn x -> x |> String.split(" ", trim: true) |> Enum.map(&String.to_integer/1) end)
+  |> Enum.chunk(5)
+  |> Enum.map(fn board ->
+    board |> Enum.map(fn row -> row |> Enum.map(fn cell -> {cell, false} end) end)
+  end)
+```
+
+```output
+warning: Enum.chunk/2 is deprecated. Use Enum.chunk_every/2 instead
+  04.livemd#cell:15
+
+```
+
+```output
+[
+  [
+    [{45, false}, {57, false}, {55, false}, {43, false}, {31, false}],
+    [{32, false}, {52, false}, {79, false}, {65, false}, {80, false}],
+    [{21, false}, {98, false}, {16, false}, {64, false}, {6, false}],
+    [{19, false}, {78, false}, {48, false}, {59, false}, {51, false}],
+    [{37, false}, {2, false}, {69, false}, {56, false}, {99, false}]
+  ],
+  [
+    [{87, false}, {20, false}, {29, false}, {96, false}, {75, false}],
+    [{83, false}, {34, false}, {84, false}, {72, false}, {98, false}],
+    [{70, false}, {89, false}, {90, false}, {73, false}, {38, false}],
+    [{86, false}, {2, false}, {47, false}, {62, false}, {11, false}],
+    [{24, false}, {60, false}, {64, false}, {65, false}, {31, false}]
+  ],
+  [
+    [{11, false}, {20, false}, {22, false}, {49, false}, {30, false}],
+    [{59, false}, {87, false}, {10, false}, {31, false}, {68, false}],
+    [{64, false}, {24, false}, {82, false}, {26, false}, {6, false}],
+    [{92, false}, {38, false}, {48, false}, {4, false}, {54, false}],
+    [{93, false}, {81, false}, {28, false}, {80, false}, {99, false}]
+  ],
+  [
+    [{29, false}, {4, false}, {62, false}, {28, false}, {85, false}],
+    [{71, false}, {2, false}, {77, false}, {3, false}, {98, false}],
+    [{74, false}, {57, false}, {25, false}, {33, false}, {92, false}],
+    [{64, false}, {95, false}, {61, false}, {73, false}, {99, false}],
+    [{76, false}, {36, false}, {81, false}, {87, false}, {1, false}]
+  ],
+  [
+    [{79, false}, {59, false}, {96, false}, {61, false}, {95, false}],
+    [{81, false}, {77, false}, {56, false}, {68, false}, {36, false}],
+    [{69, false}, {39, false}, {0, false}, {55, false}, {14, false}],
+    [{16, false}, {3, false}, {4, false}, {34, false}, {63, false}],
+    [{84, false}, {80, false}, {99, false}, {37, false}, {9, false}]
+  ],
+  [
+    [{86, false}, {33, false}, {77, false}, {30, false}, {59, false}],
+    [{19, false}, {54, false}, {48, false}, {28, false}, {89, false}],
+    [{26, false}, {38, false}, {82, false}, {68, false}, {69, false}],
+    [{87, false}, {76, false}, {85, false}, {22, false}, {50, false}],
+    [{74, false}, {72, false}, {58, false}, {81, false}, {49, false}]
+  ],
+  [
+    [{3, false}, {8, false}, {39, false}, {15, false}, {69, false}],
+    [{14, false}, {72, false}, {90, false}, {81, false}, {58, false}],
+    [{54, false}, {13, false}, {59, false}, {53, false}, {97, false}],
+    [{84, false}, {20, false}, {43, false}, {57, false}, {89, false}],
+    [{22, false}, {92, false}, {28, false}, {51, false}, {45, false}]
+  ],
+  [
+    [{86, false}, {91, false}, {63, false}, {52, false}, {27, false}],
+    [{50, false}, {75, false}, {94, false}, {89, false}, {31, false}],
+    [{79, false}, {44, false}, {92, false}, {29, false}, {97, false}],
+    [{34, false}, {60, false}, {42, false}, {37, false}, {80, false}],
+    [{73, false}, {28, false}, {7, false}, {96, false}, {10, false}]
+  ],
+  [
+    [{85, false}, {60, false}, {89, false}, {34, false}, {6, false}],
+    [{41, false}, {81, false}, {39, false}, {37, false}, {57, false}],
+    [{23, false}, {70, false}, {79, false}, {46, false}, {15, false}],
+    [{74, false}, {54, false}, {59, false}, {88, false}, {9, false}],
+    [{58, false}, {97, false}, {5, false}, {51, false}, {1, false}]
+  ],
+  [
+    [{54, false}, {82, false}, {22, false}, {26, false}, {18, false}],
+    [{46, false}, {12, false}, {21, false}, {36, false}, {79, false}],
+    [{83, false}, {71, false}, {14, false}, {29, false}, {45, false}],
+    [{42, false}, {24, false}, {73, false}, {58, false}, {68, false}],
+    [{63, false}, {32, false}, {9, false}, {86, false}, {98, false}]
+  ],
+  [
+    [{59, false}, {83, false}, {13, false}, {34, false}, {44, false}],
+    [{80, false}, {55, false}, {81, false}, {67, false}, {3, false}],
+    [{74, false}, {58, false}, {32, false}, {43, false}, {6, false}],
+    [{61, false}, {73, false}, {21, false}, {23, false}, {66, false}],
+    [{2, false}, {9, false}, {52, false}, {29, false}, {86, false}]
+  ],
+  [
+    [{29, false}, {24, false}, {37, false}, {21, false}, {2, false}],
+    [{81, false}, {0, false}, {22, false}, {59, false}, {41, false}],
+    [{44, false}, {40, false}, {72, false}, {31, false}, {71, false}],
+    [{9, false}, {99, false}, {50, false}, {65, false}, {97, false}],
+    [{55, false}, {69, false}, {88, false}, {58, false}, {96, false}]
+  ],
+  [
+    [{3, false}, {69, false}, {94, false}, {88, false}, {12, false}],
+    [{40, false}, {81, false}, {77, false}, {38, false}, {6, false}],
+    [{8, false}, {35, false}, {91, false}, {18, false}, {85, false}],
+    [{2, false}, {14, false}, {73, false}, {62, false}, {44, false}],
+    [{46, false}, {9, false}, {37, false}, {1, false}, {20, false}]
+  ],
+  [
+    [{86, false}, {58, false}, {85, false}, {43, false}, {65, false}],
+    [{92, false}, {44, false}, {69, false}, {2, false}, {14, false}],
+    [{83, false}, {3, false}, {93, false}, {16, false}, {49, false}],
+    [{42, false}, {59, false}, {29, false}, {75, false}, {32, false}],
+    [{45, false}, {4, false}, {48, false}, {21, false}, {68, false}]
+  ],
+  [
+    [{87, false}, {65, false}, {80, false}, {18, false}, {46, false}],
+    [{66, false}, {49, false}, {78, false}, {60, false}, {31, false}],
+    [{20, false}, {74, false}, {29, false}, {96, false}, {86, false}],
+    [{12, false}, {35, false}, {47, false}, {93, false}, {16, false}],
+    [{38, false}, {91, false}, {54, false}, {73, false}, {28, false}]
+  ],
+  [
+    [{26, false}, {68, false}, {98, false}, {32, false}, {67, false}],
+    [{46, false}, {61, false}, {64, false}, {35, false}, {38, false}],
+    [{92, false}, {77, false}, {70, false}, {76, false}, {88, false}],
+    [{86, false}, {0, false}, {58, false}, {13, false}, {51, false}],
+    [{96, false}, {1, false}, {62, false}, {53, false}, {8, false}]
+  ],
+  [
+    [{2, false}, {40, false}, {32, false}, {62, false}, {33, false}],
+    [{84, false}, {96, false}, {99, false}, {76, false}, {95, false}],
+    [{9, false}, {1, false}, {12, false}, {7, false}, {90, false}],
+    [{67, false}, {11, false}, {14, false}, {97, false}, {24, false}],
+    [{42, false}, {54, false}, {57, false}, {45, false}, {83, false}]
+  ],
+  [
+    [{39, false}, {99, false}, {37, false}, {0, false}, {95, false}],
+    [{18, false}, {2, false}, {73, false}, {31, false}, {17, false}],
+    [{32, false}, {66, false}, {21, false}, {62, false}, {9, false}],
+    [{4, false}, {78, false}, {22, false}, {53, false}, {45, false}],
+    [{41, false}, {33, false}, {71, false}, {6, false}, {50, false}]
+  ],
+  [
+    [{14, false}, {12, false}, {2, false}, {42, false}, {7, false}],
+    [{52, false}, {71, false}, {90, false}, {28, false}, {75, false}],
+    [{0, false}, {40, false}, {79, false}, {39, false}, {93, false}],
+    [{84, false}, {16, false}, {82, false}, {31, false}, {94, false}],
+    [{74, false}, {36, false}, {59, false}, {72, false}, {15, false}]
+  ],
+  [
+    [{7, false}, {92, false}, {42, false}, {41, false}, {22, false}],
+    [{28, false}, {31, false}, {91, false}, {68, false}, {12, false}],
+    [{45, false}, {84, false}, {83, false}, {34, false}, {56, false}],
+    [{70, false}, {43, false}, {37, false}, {54, false}, {60, false}],
+    [{61, false}, {40, false}, {98, false}, {77, false}, {17, false}]
+  ],
+  [
+    [{12, false}, {81, false}, {17, false}, {27, false}, {66, false}],
+    [{49, false}, {95, false}, {82, false}, {97, false}, {85, false}],
+    [{16, false}, {58, false}, {13, false}, {11, false}, {56, false}],
+    [{88, false}, {31, false}, {36, false}, {96, false}, {23, false}],
+    [{0, false}, {51, false}, {55, false}, {22, false}, {62, false}]
+  ],
+  [
+    [{8, false}, {36, false}, {9, false}, {63, false}, {71, false}],
+    [{79, false}, {97, false}, {60, false}, {16, false}, {91, false}],
+    [{93, false}, {68, false}, {54, false}, {28, false}, {32, false}],
+    [{42, false}, {57, false}, {20, false}, {43, false}, {47, false}],
+    [{99, false}, {26, false}, {67, false}, {76, false}, {33, false}]
+  ],
+  [
+    [{1, false}, {55, false}, {58, false}, {48, false}, {92, false}],
+    [{66, false}, {71, false}, {89, false}, {46, false}, {96, false}],
+    [{15, false}, {37, false}, {94, false}, {14, false}, {47, false}],
+    [{22, false}, {61, false}, {91, false}, {80, false}, {51, false}],
+    [{33, false}, {44, false}, {63, false}, {10, false}, {88, false}]
+  ],
+  [
+    [{5, false}, {63, false}, {34, false}, {56, false}, {0, false}],
+    [{97, false}, {22, false}, {48, false}, {11, false}, {85, false}],
+    [{29, false}, {10, false}, {61, false}, {30, false}, {26, false}],
+    [{55, false}, {1, false}, {32, false}, {27, false}, {77, false}],
+    [{80, false}, {81, false}, {70, false}, {62, false}, {33, false}]
+  ],
+  [
+    [{77, false}, {72, false}, {75, false}, {41, false}, {66, false}],
+    [{7, false}, {54, false}, {58, false}, {21, false}, {70, false}],
+    [{95, false}, {30, false}, {14, false}, {71, false}, {99, false}],
+    [{20, false}, {79, false}, {22, false}, {91, false}, {94, false}],
+    [{45, false}, {10, false}, {86, false}, {18, false}, {63, false}]
+  ],
+  [
+    [{55, false}, {22, false}, {21, false}, {79, false}, {86, false}],
+    [{35, false}, {95, false}, {99, false}, {60, false}, {1, false}],
+    [{25, false}, {68, false}, {82, false}, {93, false}, {14, false}],
+    [{74, false}, {28, false}, {41, false}, {73, false}, {78, false}],
+    [{15, false}, {61, false}, {70, false}, {56, false}, {3, false}]
+  ],
+  [
+    [{80, false}, {35, false}, {25, false}, {22, false}, {12, false}],
+    [{37, false}, {24, false}, {97, false}, {59, false}, {44, false}],
+    [{54, false}, {84, false}, {1, false}, {33, false}, {11, false}],
+    [{9, false}, {28, false}, {74, false}, {30, false}, {95, false}],
+    [{67, false}, {81, false}, {19, false}, {71, false}, {40, false}]
+  ],
+  [
+    [{10, false}, {78, false}, {74, false}, {83, false}, {8, false}],
+    [{90, false}, {86, false}, {41, false}, {82, false}, {31, false}],
+    [{17, false}, {51, false}, {54, false}, {12, false}, {29, false}],
+    [{32, false}, {62, false}, {87, false}, {2, false}, {0, false}],
+    [{98, false}, {33, false}, {27, false}, {22, false}, {64, false}]
+  ],
+  [
+    [{86, false}, {80, false}, {85, false}, {28, false}, {26, false}],
+    [{44, false}, {25, false}, {5, false}, {78, false}, {87, false}],
+    [{50, false}, {70, false}, {57, false}, {75, false}, {32, false}],
+    [{11, false}, {20, false}, {52, false}, {97, false}, {88, false}],
+    [{68, false}, {43, false}, {0, false}, {7, false}, {38, false}]
+  ],
+  [
+    [{88, false}, {16, false}, {10, false}, {34, false}, {75, false}],
+    [{76, false}, {84, false}, {41, false}, {1, false}, {61, false}],
+    [{49, false}, {94, false}, {14, false}, {26, false}, {36, false}],
+    [{85, false}, {77, false}, {22, false}, {98, false}, {70, false}],
+    [{12, false}, {38, false}, {3, false}, {74, false}, {92, false}]
+  ],
+  [
+    [{34, false}, {91, false}, {21, false}, {73, false}, {99, false}],
+    [{28, false}, {82, false}, {69, false}, {18, false}, {85, false}],
+    [{97, false}, {25, false}, {65, false}, {61, false}, {55, false}],
+    [{96, false}, {33, false}, {63, false}, {2, false}, {77, false}],
+    [{12, false}, {41, false}, {72, false}, {39, false}, {23, false}]
+  ],
+  [
+    [{0, false}, {45, false}, {95, false}, {55, false}, {34, false}],
+    [{31, false}, {77, false}, {54, false}, {66, false}, {79, false}],
+    [{90, false}, {11, false}, {49, false}, {68, false}, {93, false}],
+    [{61, false}, {15, false}, {56, false}, {4, false}, {53, false}],
+    [{57, false}, {69, false}, {97, false}, {7, false}, {6, false}]
+  ],
+  [
+    [{94, false}, {11, false}, {44, false}, {83, false}, {87, false}],
+    [{27, false}, {47, false}, {93, false}, {50, false}, {38, false}],
+    [{29, false}, {55, false}, {10, false}, {49, false}, {32, false}],
+    [{76, false}, {73, false}, {91, false}, {37, false}, {34, false}],
+    [{51, false}, {62, false}, {4, false}, {85, false}, {46, false}]
+  ],
+  [
+    [{66, false}, {64, false}, {5, false}, {33, false}, {99, false}],
+    [{95, false}, {34, false}, {65, false}, {69, false}, {27, false}],
+    [{49, false}, {17, false}, {46, false}, {53, false}, {76, false}],
+    [{75, false}, {9, false}, {92, false}, {94, false}, {7, false}],
+    [{59, false}, {60, false}, {2, false}, {40, false}, {70, false}]
+  ],
+  [
+    [{28, false}, {80, false}, {27, false}, {88, false}, {79, false}],
+    [{26, false}, {49, false}, {81, false}, {64, false}, {69, false}],
+    [{90, false}, {51, false}, {42, false}, {83, false}, {70, false}],
+    [{46, false}, {10, false}, {53, false}, {5, false}, {96, false}],
+    [{29, false}, {99, false}, {84, false}, {22, false}, {8, false}]
+  ],
+  [
+    [{86, false}, {49, false}, {31, false}, {53, false}, {28, false}],
+    [{85, false}, {94, false}, {4, false}, {98, false}, {30, false}],
+    [{51, false}, {7, false}, {48, false}, {88, false}, {1, false}],
+    [{76, false}, {92, false}, {64, false}, {29, false}, {73, false}],
+    [{81, false}, {6, false}, {21, false}, {36, false}, {74, false}]
+  ],
+  [
+    [{14, false}, {19, false}, {15, false}, {97, false}, {81, false}],
+    [{92, false}, {37, false}, {98, false}, {77, false}, {33, false}],
+    [{20, false}, {24, false}, {4, false}, {51, false}, {79, false}],
+    [{99, false}, {66, false}, {43, false}, {75, false}, {73, false}],
+    [{46, false}, {87, false}, {58, false}, {93, false}, {5, false}]
+  ],
+  [
+    [{69, false}, {76, false}, {46, false}, {21, false}, {57, false}],
+    [{49, false}, {90, false}, {40, false}, {34, false}, {99, false}],
+    [{70, false}, {89, false}, {4, false}, {0, false}, {23, false}],
+    [{5, false}, {86, false}, {44, false}, {62, false}, {53, false}],
+    [{36, false}, {13, false}, {61, false}, {51, false}, {15, false}]
+  ],
+  [
+    [{88, false}, {37, false}, {14, false}, {50, false}, {26, false}],
+    [{76, false}, {83, false}, {24, false}, {46, false}, {5, false}],
+    [{43, false}, {42, false}, {72, false}, {17, false}, {59, false}],
+    [{6, false}, {11, false}, {36, false}, {25, false}, {19, false}],
+    [{70, false}, {53, false}, {52, false}, {98, false}, {30, ...}]
+  ],
+  [
+    [{87, false}, {93, false}, {25, false}, {46, false}, {74, false}],
+    [{62, false}, {16, false}, {9, false}, {30, false}, {85, false}],
+    [{60, false}, {21, false}, {29, false}, {17, false}, {5, false}],
+    [{35, false}, {49, false}, {84, false}, {53, false}, {42, ...}],
+    [{13, false}, {90, false}, {99, false}, {70, ...}, {...}]
+  ],
+  [
+    [{19, false}, {91, false}, {10, false}, {89, false}, {52, false}],
+    [{71, false}, {1, false}, {42, false}, {75, false}, {83, false}],
+    [{81, false}, {32, false}, {96, false}, {53, false}, {5, ...}],
+    [{26, false}, {60, false}, {3, false}, {95, ...}, {...}],
+    [{44, false}, {12, false}, {33, ...}, {...}, ...]
+  ],
+  [
+    [{77, false}, {17, false}, {29, false}, {55, false}, {43, false}],
+    [{62, false}, {52, false}, {92, false}, {53, false}, {21, ...}],
+    [{74, false}, {71, false}, {46, false}, {38, ...}, {...}],
+    [{23, false}, {79, false}, {65, ...}, {...}, ...],
+    [{50, false}, {90, ...}, {...}, ...]
+  ],
+  [
+    [{58, false}, {85, false}, {18, false}, {17, false}, {29, ...}],
+    [{76, false}, {78, false}, {91, false}, {87, ...}, {...}],
+    [{49, false}, {82, false}, {95, ...}, {...}, ...],
+    [{53, false}, {79, ...}, {...}, ...],
+    [{48, ...}, {...}, ...]
+  ],
+  [
+    [{40, false}, {90, false}, {77, false}, {45, ...}, {...}],
+    [{18, false}, {54, false}, {15, ...}, {...}, ...],
+    [{82, false}, {11, ...}, {...}, ...],
+    [{50, ...}, {...}, ...],
+    [{...}, ...]
+  ],
+  [
+    [{63, false}, {91, false}, {7, ...}, {...}, ...],
+    [{90, false}, {60, ...}, {...}, ...],
+    [{49, ...}, {...}, ...],
+    [{...}, ...],
+    [...]
+  ],
+  [[{38, false}, {26, ...}, {...}, ...], [{42, ...}, {...}, ...], [{...}, ...], [...], ...],
+  [[{15, ...}, {...}, ...], [{...}, ...], [...], ...],
+  [[{...}, ...], [...], ...],
+  [[...], ...],
+  [...],
+  ...
+]
+```
+
+## Part 1
+
+Loop:
+
+* 1: Next number
+* 2: mark in boards
+* 3: Check if any board is done
+* 4: if any: exit loop
+
+Calculate sum for winning board
+
+```elixir
+defmodule Bingo do
+  def mark_table(table, number_to_mark) do
+    table
+    |> Enum.map(fn row ->
+      row
+      |> Enum.map(fn {value, marked} ->
+        if number_to_mark == value, do: {value, true}, else: {value, marked}
+      end)
+    end)
+  end
+
+  def any_rows_done?(table) do
+    table
+    |> Enum.any?(fn row -> row |> Enum.all?(fn {_value, marked} -> marked == true end) end)
+  end
+
+  def any_columns_done?(table) do
+    table
+    |> Enum.reduce(
+      [true, true, true, true, true],
+      fn [{_v1, c1}, {_v2, c2}, {_v3, c3}, {_v4, c4}, {_v5, c5}], [s1, s2, s3, s4, s5] ->
+        [c1 and s1, c2 and s2, c3 and s3, c4 and s4, c5 and s5]
+      end
+    )
+    |> Enum.any?()
+  end
+
+  def bingo?(table) do
+    any_rows_done?(table) or any_columns_done?(table)
+  end
+
+  def sum(table) do
+    table
+    |> Enum.map(fn row ->
+      Enum.reduce(row, 0, fn {value, marked}, sum ->
+        if marked == false, do: sum + value, else: sum
+      end)
+    end)
+    |> Enum.sum()
+  end
+end
+```
+
+```output
+{:module, Bingo, <<70, 79, 82, 49, 0, 0, 16, ...>>, {:sum, 1}}
+```
+
+```elixir
+{[winner_table], value} =
+  input_draw_test
+  |> Enum.reduce_while(input_boards_test, fn value, boards ->
+    new_boards = Enum.map(boards, fn board -> Bingo.mark_table(board, value) end)
+    bingo = Enum.filter(new_boards, fn board -> Bingo.bingo?(board) end)
+    if length(bingo) > 0, do: {:halt, {bingo, value}}, else: {:cont, new_boards}
+  end)
+
+sum_table = Bingo.sum(winner_table)
+
+sum_table * value
+```
+
+```output
+4512
+```
+
+Correct: 4512
+
+```elixir
+{[winner_table], value} =
+  input_draw
+  |> Enum.reduce_while(input_boards, fn value, boards ->
+    new_boards = Enum.map(boards, fn board -> Bingo.mark_table(board, value) end)
+    bingo = Enum.filter(new_boards, fn board -> Bingo.bingo?(board) end)
+    if length(bingo) > 0, do: {:halt, {bingo, value}}, else: {:cont, new_boards}
+  end)
+
+sum_table = Bingo.sum(winner_table)
+
+sum_table * value
+```
+
+```output
+10374
+```
+
+Correct: 10374
+
+## Part 2 - intro
+
+On the other hand, it might be wise to try a different strategy: let the giant squid win.
+
+You aren't sure how many bingo boards a giant squid could play at once, so rather than waste time counting its arms, the safe thing to do is to figure out which board will win last and choose that one. That way, no matter which boards it picks, it will win for sure.
+
+In the above example, the second board is the last to win, which happens after 13 is eventually called and its middle column is completely marked. If you were to keep playing until this point, the second board would have a sum of unmarked numbers equal to 148 for a final score of 148 * 13 = 1924.
+
+Figure out which board will win last. Once it wins, what would its final score be?
+
+## Part 2
+
+```elixir
+{[winner_table], value} =
+  input_draw_test
+  |> Enum.reduce_while(input_boards_test, fn value, boards ->
+    new_boards =
+      boards
+      |> Enum.map(fn board -> Bingo.mark_table(board, value) end)
+
+    done = new_boards |> Enum.all?(fn board -> Bingo.bingo?(board) == true end)
+    next = new_boards |> Enum.filter(fn board -> Bingo.bingo?(board) == false end)
+
+    if done == true, do: {:halt, {new_boards, value}}, else: {:cont, next}
+  end)
+
+sum_table = Bingo.sum(winner_table)
+
+sum_table * value
+```
+
+```output
+1924
+```
+
+Correct: 1924
+
+```elixir
+{[winner_table], value} =
+  input_draw
+  |> Enum.reduce_while(input_boards, fn value, boards ->
+    new_boards =
+      boards
+      |> Enum.map(fn board -> Bingo.mark_table(board, value) end)
+
+    done = new_boards |> Enum.all?(fn board -> Bingo.bingo?(board) == true end)
+    next = new_boards |> Enum.filter(fn board -> Bingo.bingo?(board) == false end)
+
+    if done == true, do: {:halt, {new_boards, value}}, else: {:cont, next}
+  end)
+
+sum_table = Bingo.sum(winner_table)
+
+sum_table * value
+```
+
+```output
+24742
+```
+
+Correct: 24742
