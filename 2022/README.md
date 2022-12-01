@@ -1,4 +1,5 @@
-# aoc
-Advent of Code
+# Advent of Code 2022
 
-[2022](/2022/README.md)
+[https://adventofcode.com/2022](https://adventofcode.com/2022)
+
+Solved using [Elixir](https://elixir-lang.org/) and [Livebook](https://livebook.dev/).
