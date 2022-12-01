@@ -1,9 +1,11 @@
 # Advent of Code
 
-[https://adventofcode.com](https://adventofcode.com)
-
-[2022](/2022/README.md)
+[Current](/2022)
 
 ## Archive
 
-[2021](/2021/README.md)
+[2021](/2021)
+
+## Resources
+
+[https://adventofcode.com](https://adventofcode.com)
