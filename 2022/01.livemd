@@ -1,0 +1,166 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 01
+
+## Intro
+
+The jungle must be too overgrown and difficult to navigate in vehicles or access from the air; the Elves' expedition traditionally goes on foot. As your boats approach land, the Elves begin taking inventory of their supplies. One important consideration is food - in particular, the number of Calories each Elf is carrying (your puzzle input).
+
+The Elves take turns writing down the number of Calories contained by the various meals, snacks, rations, etc. that they've brought with them, one item per line. Each Elf separates their own inventory from the previous Elf's inventory (if any) by a blank line.
+
+For example, suppose the Elves finish writing their items' Calories and end up with the following list:
+
+```
+1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000
+```
+
+This list represents the Calories of the food carried by five Elves:
+
+* The first Elf is carrying food with 1000, 2000, and 3000 Calories, a total of 6000 Calories.
+* The second Elf is carrying one food item with 4000 Calories.
+* The third Elf is carrying food with 5000 and 6000 Calories, a total of 11000 Calories.
+* The fourth Elf is carrying food with 7000, 8000, and 9000 Calories, a total of 24000 Calories.
+* The fifth Elf is carrying one food item with 10000 Calories.
+
+In case the Elves get hungry and need extra snacks, they need to know which Elf to ask: they'd like to know how many Calories are being carried by the Elf carrying the most Calories. In the example above, this is 24000 (carried by the fourth Elf).
+
+Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
+
+## Input
+
+```elixir
+input_test = """
+1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000
+"""
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"1000\n2000\n3000\n\n4000\n\n5000\n6000\n\n7000\n8000\n9000\n\n10000\n"
+```
+
+```elixir
+input = File.read!("input01.txt")
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"7844\n1892\n10928\n4800\n9730\n3485\n7293\n\n11956\n2767\n12893\n2757\n3026\n9979\n\n4507\n4199\n2855\n1792\n2041\n4162\n3855\n2650\n2165\n5464\n2125\n4979\n4878\n6301\n\n2546\n3750\n1192\n4692\n6809\n2808\n6505\n2811\n6448\n4270\n2919\n1297\n1678\n\n2006\n6163\n5949\n2074\n5917\n5796\n3456\n1161\n6843\n3988\n4064\n5591\n\n17062\n14531\n5297\n\n16033\n18054\n25935\n\n3621\n3121\n5884\n5199\n4584\n4796\n1325\n3374\n5789\n2545\n5842\n1760\n5766\n1882\n3084\n\n10364\n1136\n2256\n5654\n7065\n5990\n3621\n8063\n\n4334\n1865\n4485\n4741\n2591\n2594\n2991\n3928\n5849\n6864\n4932\n\n6627\n8318\n11410\n18778\n\n14870\n13264\n8777\n2567\n15388\n\n11837\n11042\n12115\n11169\n8021\n4206\n8637\n\n2955\n2115\n2292\n2759\n6464\n2843\n3817\n1628\n6486\n2499\n3935\n4944\n1427\n4870\n\n14800\n13942\n2563\n18543\n\n8415\n5943\n6117\n3863\n7123\n8666\n9834\n7437\n\n12318\n5577\n8108\n11695\n2720\n3413\n\n4765\n2805\n2850\n5241\n3910\n4837\n5770\n4998\n3358\n5141\n1052\n2281\n4405\n1714\n\n7984\n4685\n12922\n11579\n4278\n\n14877\n4676\n4571\n9279\n11337\n\n1782\n3009\n14712\n\n5936\n5243\n3849\n1001\n10728\n3847\n9986\n\n1531\n3707\n3599\n5533\n4025\n4651\n3934\n4205\n2481\n3462\n1672\n1806\n3833\n4072\n1497\n\n16920\n25420\n17042\n\n43927\n\n8193\n3107\n2831\n4122\n16336\n\n7507\n1665\n8553\n3231\n2528\n1046\n3491\n4631\n3574\n\n35988\n29345\n\n3520\n4006\n6327\n1658\n4714\n1123\n1938\n3667\n3807\n1824\n4808\n4586\n3275\n4548\n\n9989\n32096\n\n52470\n\n1188\n7694\n7875\n6114\n6189\n4343\n6974\n4812\n1776\n4794\n8065\n\n2364\n4111\n3663\n4182\n3667\n5440\n5482\n2657\n3931\n5871\n5403\n5956\n2659\n2320\n\n10249\n13770\n\n6331\n7262\n1498\n1329\n8943\n1563\n8197\n6898\n2300\n\n5116\n5930\n8363\n8908\n6063\n8325\n1070\n\n7829\n8877\n5631\n6100\n1007\n4754\n7353\n8363\n\n13160\n16304\n6155\n15418\n\n18068\n24378\n16529\n\n8216\n1918\n3305\n7698\n5936\n2012\n2053\n3575\n5705\n\n5372\n3627\n2860\n3742\n4117\n5514\n2590\n4503\n2494\n4418\n1908\n4109\n5255\n5749\n5061\n\n14547\n31905\n\n4691\n4268\n3887\n4136\n5724\n4507\n2298\n6660\n5243\n4719\n5145\n2949\n1460\n\n6324\n1211\n2329\n4872\n5530\n1645\n2989\n3687\n3925\n2578\n1153\n4364\n\n1864\n8160\n9219\n6479\n1098\n9364\n7442\n9665\n1522\n\n3185\n3657\n5730\n7979\n8956\n2138\n8288\n3524\n7910\n\n20487\n\n4948\n4419\n3363\n6742\n1536\n3809\n4289\n1861\n2490\n4842\n1005\n2083\n3115\n\n5872\n2895\n2163\n6140\n4962\n1566\n1502\n6407\n6241\n7154\n\n8910\n5483\n10358\n10448\n5912\n9133\n1919\n5768\n\n7887\n1592\n3503\n6182\n10088\n12143\n\n3897\n4813\n2087\n2953\n5308\n1587\n7320\n4947\n1366\n6723\n2720\n\n16484\n15947\n2582\n11421\n\n2457\n1498\n4113\n5639\n3930\n4950\n4130\n5475\n6156\n4966\n1322\n5749\n5892\n2257\n\n24070\n\n2634\n2784\n5289\n1472\n5770\n4442\n1733\n2003\n2281\n4283\n4183\n3183\n5405\n5055\n4089\n\n6167\n5650\n6531\n8255\n11103\n12421\n\n8499\n15327\n4714\n\n52582\n\n8000\n4408\n4744\n7665\n3565\n6676\n4983\n3282\n1095\n8269\n\n6893\n4008\n2512\n5249\n6578\n2231\n7044\n7903\n3901\n2480\n1832\n\n2278\n5805\n7783\n1497\n4503\n5569\n4260\n7618\n3310\n8083\n\n8025\n17429\n14782\n12645\n\n5914\n1865\n9622\n4014\n9577\n1812\n8287\n10720\n\n3848\n12978\n12735\n3860\n\n5562\n11339\n9051\n6703\n13290\n10611\n\n1232\n1116\n2620\n2495\n4198\n4751\n6099\n3727\n3111\n2493\n3780\n2379\n3042\n4395\n6100\n\n62606\n\n13357\n13984\n11428\n18201\n\n33875\n5610\n\n2504\n19711\n17021\n5985\n\n3759\n5522\n8815\n2113\n2333\n9169\n4805\n2870\n6419\n\n6210\n4186\n3763\n5633\n5159\n5116\n4448\n4570\n5894\n4045\n1994\n3044\n\n10366\n6706\n11448\n1927\n10647\n11786\n11927\n\n1350\n10908\n9325\n2455\n\n10527\n8300\n1312\n1403\n8155\n8803\n9663\n7780\n\n2118\n5436\n5909\n4083\n3714\n3001\n2226\n2915\n5627\n6476\n3578\n6112\n\n36649\n6648\n\n17271\n23884\n15032\n\n16967\n17931\n2443\n\n2520\n1468\n2779\n6020\n4477\n4798\n1894\n2429\n4645\n5053\n6478\n5899\n5824\n2554\n\n12614\n11252\n25055\n\n3435\n1317\n5073\n3082\n4576\n5006\n2238\n3055\n4867\n5079\n4385\n5723\n2084\n4307\n\n6609\n1556\n2351\n2301\n4913\n1820\n1122\n5398\n4738\n2377\n2843\n4704\n\n1201\n1092\n1622\n6094\n1793\n6521\n8237\n2848\n5617\n6585\n\n3561\n8072\n3941\n4432\n4740\n9292\n8115\n3586\n5464\n\n2926\n6812\n5551\n3104\n4369\n7421\n3774\n1272\n1492\n1842\n6058\n1815\n\n5555\n2688\n8859\n8517\n3338\n1500\n7276\n8130\n5984\n\n6597\n5544\n4944\n6402\n1336\n4243\n4333\n6374\n6770\n5346\n\n7225\n33323\n\n17863\n9174\n21966\n\n4835\n4359\n6074\n4069\n5984\n11934\n2577\n\n1738\n2317\n6844\n1672\n4213\n3930\n4658\n5785\n8074\n5695\n\n3063\n6287\n7248\n5656\n1571\n5468\n1512\n5555\n3192\n7892\n5664\n\n5819\n28895\n\n4407\n5072\n4733\n2964\n4073\n5739\n2423\n6131\n3999\n1454\n1221\n1243\n\n26391\n\n35896\n26888\n\n1171\n4136\n1050\n5788\n1049\n5686\n5297\n6035\n2968\n2274\n2771\n5596\n4478\n3401\n5860\n\n6699\n15009\n4368\n13135\n13609\n\n6033\n3972\n1214\n1549\n3996\n2251\n3213\n5217\n5525\n3656\n2585\n2710\n6035\n1903\n1586\n\n8651\n\n4494\n7096\n7913\n1024\n1334\n1353\n2705\n5405\n1601\n7386\n\n18756\n19801\n24646\n" <> ...
+```
+
+## Part 1
+
+
+
+```elixir
+res_test1 =
+  input_test
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+  |> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+  |> Enum.map(fn x -> Enum.sum(x) end)
+  |> Enum.sort(:desc)
+  |> List.first()
+
+res_test1 == 24000
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+```elixir
+input
+|> String.split("\n\n", trim: true)
+|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+|> Enum.map(fn x -> Enum.sum(x) end)
+|> Enum.sort(:desc)
+|> List.first()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+67027
+```
+
+Correct: 67027
+
+## Part 2 - Intro
+
+By the time you calculate the answer to the Elves' question, they've already realized that the Elf carrying the most Calories of food might eventually run out of snacks.
+
+To avoid this unacceptable situation, the Elves would instead like to know the total Calories carried by the top three Elves carrying the most Calories. That way, even if one of those Elves runs out of snacks, they still have two backups.
+
+In the example above, the top three Elves are the fourth Elf (with 24000 Calories), then the third Elf (with 11000 Calories), then the fifth Elf (with 10000 Calories). The sum of the Calories carried by these three elves is 45000.
+
+Find the top three Elves carrying the most Calories. How many Calories are those Elves carrying in total?
+
+## Part 2 -Solution
+
+```elixir
+input_test
+|> String.split("\n\n", trim: true)
+|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+|> Enum.map(fn x -> Enum.sum(x) end)
+|> Enum.sort(:desc)
+|> Enum.take(3)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+45000
+```
+
+```elixir
+input
+|> String.split("\n\n", trim: true)
+|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+|> Enum.map(fn x -> Enum.sum(x) end)
+|> Enum.sort(:desc)
+|> Enum.take(3)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+197291
+```
+
+Correct: 197291
