@@ -5,6 +5,7 @@ Solved using [Elixir](https://elixir-lang.org/) and [Livebook](https://livebook.
 Solutions (or at least attempts):
 
 - [Day 1](01.livemd)
+- [Day 2](02.livemd)
 
 ## Resources
 

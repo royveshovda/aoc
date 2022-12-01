@@ -1,8 +1,8 @@
-# Day xx
+# Day 02
 
 ## Intro
 
-** Description of problem **
+** Placeholder for now **
 
 ## Input
 
