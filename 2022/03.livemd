@@ -1,4 +1,4 @@
-# Day xx
+# Day 03
 
 ## Intro
 
@@ -13,7 +13,7 @@ input_test = """
 ```
 
 ```elixir
-input = File.read!("inputxx.txt")
+input = File.read!("input03.txt")
 ```
 
 ## Part 1
