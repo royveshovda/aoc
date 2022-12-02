@@ -78,8 +78,6 @@ input = File.read!("input01.txt")
 
 ## Part 1
 
-
-
 ```elixir
 res_test1 =
   input_test
