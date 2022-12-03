@@ -1,35 +1,258 @@
 <!-- livebook:{"persist_outputs":true} -->
 
-# Day 03
+# Day 03 - Rucksack Reorganization
 
 ## Intro
 
-** Description of problem **
+One Elf has the important job of loading all of the rucksacks with supplies for the jungle journey. Unfortunately, that Elf didn't quite follow the packing instructions, and so a few items now need to be rearranged.
+
+Each rucksack has two large compartments. All items of a given type are meant to go into exactly one of the two **compartments**. The Elf that did the packing failed to follow this rule for exactly one item type per rucksack.
+
+The Elves have made a list of all of the items currently in each rucksack (your puzzle input), but they need your help finding the errors. Every item type is identified by a single lowercase or uppercase letter (that is, a and A refer to different types of items).
+
+The list of items for each rucksack is given as characters all on a single line. A given rucksack always has the same number of items in each of its two compartments, so the first half of the characters represent items in the first compartment, while the second half of the characters represent items in the second compartment.
+
+For example, suppose you have the following list of contents from six rucksacks:
+
+```
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+```
+
+* The first rucksack contains the items vJrwpWtwJgWrhcsFMMfFFhFp, which means its first compartment contains the items vJrwpWtwJgWr, while the second compartment contains the items hcsFMMfFFhFp. The only item type that appears in both compartments is lowercase p.
+* The second rucksack's compartments contain jqHRNqRjqzjGDLGL and rsFMfFZSrLrFZsSL. The only item type that appears in both compartments is uppercase L.
+* The third rucksack's compartments contain PmmdzqPrV and vPwwTWBwg; the only common item type is uppercase P.
+* The fourth rucksack's compartments only share item type v.
+* The fifth rucksack's compartments only share item type t.
+* The sixth rucksack's compartments only share item type s.
+
+To help prioritize item rearrangement, every item type can be converted to a priority:
+
+* Lowercase item types a through z have priorities 1 through 26.
+* Uppercase item types A through Z have priorities 27 through 52.
+
+In the above example, the priority of the item type that appears in both compartments of each rucksack is 16 (p), 38 (L), 42 (P), 22 (v), 20 (t), and 19 (s); the sum of these is **157**.
+
+Find the item type that appears in both compartments of each rucksack. **What is the sum of the priorities of those item types?**
 
 ## Input
 
 ```elixir
 input_test = """
-???
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
 """
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"vJrwpWtwJgWrhcsFMMfFFhFp\njqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL\nPmmdzqPrVvPwwTWBwg\nwMqvLMZHhHMvwLHjbvcjnnSBnvTQFn\nttgJtRGJQctTZtZT\nCrZsJsPPZsGzwwsLwLmpwMDw\n"
 ```
 
 ```elixir
 input = File.read!("input03.txt")
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+"mjpsHcssDzLTzMsz\ntFhbtClRVtbhRCGBFntNTrLhqrwqWMDMTWTqMq\nLltbngLGRSBgSgGRCJdSdQHvdfmQccmjSQ\nlBslsZDDWdGdGpSMts\ngrQhDvqLQHDNGJJtbRMQQJ\nHChCTnnLCgCrTZPPFzzVPcVD\nShrzjhNGrNqrhWnHHfVHbhnHbbhH\nRBsvcBcDCdsRTsvgCgcPFRQpVQGQJPVFbnJfbJ\nDvsTsdlCBsGLrjzmlqqz\nWJJqZTgCnBLGCZBJCJnTLggTDDSDDMNdDSdbdSSsWDFfMsFf\nPVjqpVHmPpvmcjhrRprFmQQffbfNbQMMsSMQNQ\ncwcpRvrVlVgwtBwZqBzZ\nqfJJmpqpmhsggvvpVPZCrhdFLFzZFDdLLh\nCtCTBctGcGLSzZddGZSW\nRlNjBCnjttBHHMMcQHCsRfsbfwgggmmJvmgfpm\nZmcgBBZhZMsnqnCPjpHPjLHp\ndGbNwNtlTMTzGfNvTvdwNGVLPpQHPjLQPCpCjPqjLbpLPR\ndvDTdfvNBhDZMBDZ\ncvvRvbqcllbBVlvVVbVVlbVDjRjDjdMsHPZPGdDPGPHrDP\nFwtpfwJtWwNtTTNnwFCtjDJsQdQPPPPMrjrPJHjH\nCwFpnppgntShgbsscbms\ncWMFMQpFNcvNDdBDgdsT\nMPrrfrCHBBsDZCBJ\nLmLjMLjjLWpVcRVR\nZrRZqlZMqTWrMDqwvnvVtnsvddvVnlVf\npQNhhLNNGmLjhhcfvndDpffdfdVf\nQGjCLCQGmNgPBQDFFgTMJWWwMRTrTZWWBWTr\nWrZWZPHHWZHprZVmVvqddBttBBhGhtvh\ngzDlMTJDMfqhBGllhl\njJLqMMDDbbqjLpPHcsHLWZspPr\nbsSVRVGsrDstrrSjcQjcjlPwzjQl\ngHBggFNTTvTgfqgCFzljWwLWQQQnrwQWnf\nNvJHgpgHvqBhNBJhHTvpBCJCZmtdpDsGsZdZMZRbVbbMdrZs\nMPPtPwPnRnMPPnwrtNSGgLSCGGGNSLtSgD\nhBhWFjfCsTbbbWqFFWBBqBhsWZVGSVglZHLSVDlNWDNHHGgV\nzsCfTsTCMdmRPwzQ\nJVQVvvszzvTsVsVJjctppcCtjtPRcTlP\nMdFgqSddMqMDbtDlNjRDSR\nqFZWZqwHlZfZvzvZfLZn\nvpqwQSsHSHDQzDpgzwZlRLRZRRZTnTrrvGhh\nJBcdmbmFMPgPbgfrZRZnRFFnrnLRln\nJNdBNgbdJmPMWSSDzwVDtwSWWW\nBDMcDDppHCStpWcHBDNtzPJjqGlllPMJzPGjwjlq\nCZdZLmgCdqbPzjblZj\nvndLfnghRQmVrhdvgBHpSCDWHBBCVHNppD\nWrhrJJGSWzpTWwts\nVlLPmqgmRNZRGwsvttjgcwsT\nPDZmlbdVqLmPlddVNRDmmmbbSFHrCFQCnFBFJHSJGrDQCBrr\nhvPdpvhHvHvPrNfVhDfjggFfRV\nzlGwJGslsSDRfjsg\nMJMWjMJzwqWGzJwMqJBTCmHndPPdCBvmdCpmHn\nPVWFpQhJhFJpGbRCvRHGCp\njgslDjftsqhNglTgllgTqMnlHwCcvwZwRccSRCbGSGbCMHRw\nTgjhNNnjlTfjTdDqTfhjnmzmWPzWrLdrQBPJFWJWBB\nqPPRMPlfSzSSSPPnnLnqMlpQQtrrtmWpbFtQrdzrtrWt\nBBvCcwsVThsBgswDBCFQHQpdmQvtrFpWFvWp\ngCghTJgVCgDGVMlRGMqZnSWqlM\nRWbHvrbHBsbWBHJWvJwMtmdZwdtmdvwMZQff\nDRVjcqhRchhGGllhCgdGQQzfttzGQGwQfg\ncDRljchpqTcjDFTFVcPcPCWBHpNnJNNSnbWbHHrSpWHr\ndtHrRrBHrCRhddftjgBrRhgjsbbbMpbSWSTjWcsDTWDbcW\nGQPFVQVQnJlqVMDcMzpDfzpDVD\nqZZJFLlLnvFFGPGLPqnJvwQldfgHrBRBmBhgNBRHghNhhwRg\nrLbrZhPgqZhMdVFSFTSGCqFG\nzsszfRzjtHtzvRTSDdFFCtdDdtND\nfcwllfmwzRHlfmmzFvQQLrgLMLBZhJQZPrZhJLhW\nsllrCfpQQJpMHLgzwDwpNqzzVDpV\nRZPFZPGcSMFtGPRGMwNDVwdRgzvNwgqNvg\nhBmbMcBmcThmcGtSFTZfQCJjrHLJfsjhWJssJl\nDqGCbGfCRhfZCVbbqDJJGJBgRNpNdpBNNgNBBNwHnRgt\nrcWSsSSPSQtwBwHD\nMLscLMzvvTvcTLzvWWFDPTTrGqmFGGqCZJGbblbVbVZZVmFJ\nFprpsLQTrstQHNmVSVml\nJMggWPggWcRbwgJPCGMcGcfmzHlMNSjfzVNhHfVtzSMz\ncwnPnBwgnGRgRCgRbWJLpFsLtFBLFrDLFZZDrL\nlVgjLLLMgFMDCwCFqCRbngsvnGSvnSGndbsfgf\nWZJcTWcNTmJZphmTJJNQHcdvfdbvnRRGbGthdrbttfSv\nZPQTJTpTNPJNQTmJRBZJNBHjwMVwPCMwVlVzjwwzqqjVjL\nhznNhNQNQFDWVFmDQm\nSMqZBMMbBvDbHPzzdVPH\nzzzTBTMLNTgpnTTh\nNLCdmsdCVLGHCHdQzzmznnFwRjFMDMwpTBjDRpnpTBMJ\nPrcfcrglcfWbSqgrlqvShrwpJpDBFJHpBWjTDTRTRTTB\ncrSgSHtPttfdLGmtzzZNNV\nBTlTVqCBqtTcBqVhWlsJjDvsnLsvlvpJPj\ngMgggGZbSMzNRRRLmZZnQZQPPDvnsnDvJwwQ\ndMRRmMgbNfRgmfSdGFgNgTBtrhrhqfWtLCCWLTWWHc\nzcfVrPwnwrPmrvnjdFdBbHFFdd\nCCqpSSQQpQZLDCSHPpBFvFBjTHRvRR\nDMLGthLZMLtQGhGNMPqGSDflzfwcVmzJzsfgNVrswcrr\nhSgvMTQvChSqPvhTrRLlVHJgfgRJlHHHJH\njmzsZzZzwmmLGGtwtVJWNNDRDtVcfVRl\nGnBBLbzzzFszBFpzvSdrQQCTCQbhMvSQ\nVHpTMrZMMbDbbpTZmQmTnmzhTqjqlWWQ\nGGvgNsvNCNvvGvlqqdzWZmlsmZqZ\nwNNNgccNGJSNBSRNBNvNcvJHLDDZMFRMppMLrfHDLbrrHF\nspssbPMLpPllspGNsNWMrnwddnfcqrnwwwwMwM\nVmQBFCjzzjmfnwbrngcVrd\nFQbSFjBvvzsWvWGlvWNl\nJLFSwfwRLLfGhnQJBQshvn\npZgNcpCWpWtcvhjGGjtVvszD\nCccMcPcgTTCWmcZcWMcmTNZPmHdrqSHFRRrqwrSrRqwrHmsH\nBPMhflJRhqnPNGjNRNRjgSRm\nVdVsDswTVZbCwCZBrcDCczTwtjtNNjmjmgpmjpQggpGVSgQm\nsTbWrsTBbrTPPnqlJnPPhW\nnvrgjMWBvQWPvQnsZfGcZcRFdGFtdtZB\nbHVDwmqNNDhHNzqpphLNHVLpSJcdZtfffRZdDgRFGSddcRZt\nHNLNqNqLNbhqVVbClngjnQWPTWgsCgvT\ntfstpcScscBTFTpFnsWSmgdzJlgmgBmPPzJmvdPm\njnrqrLHRwGrwhdPvvPvhjJmP\nqqCLRCGrZZqCHRVtVWQptFWppnbcWb\nwCDJZJgDwHpdqHhdGHBhhH\nWSPmJMlmbSmztQlQsvPhnhGGdBddBqdGddTbVB\nWzWQftWMSWtmvmmSWtMQPgggpZwLwZjggJFgrpFCfj\nMvQBJMBQhjQFNFnjnj\ndtlZmRtLmjSTSLLtTtNVwWzDRzDVwwWFwnNn\ndmmLCqTdcLqtLGqjBhpfHqBGpv\nPBPRhjTPPlLRBvlvfwffqJGfpG\nrHtMtrszFtSgbFrrggrFgMnwWGzmQqWvGWzGQpJGfNqqNz\nFggcbSMntVgMdRCwZcjChLCT\nlCqqBlCwlnDqPZTZZBLNdjJLwttNWjjdzJzc\nfVfMbvbvmbVsmSsmMVWNtzzcjgLWgjztMMtg\nVVmFhFRSfbQsvVQmvSfhSsmzHlCZqrrBrDBrHZPRTZnnzB\nCRrDWmzRRQMmDqrrBgBQmtHljhHwtwlwplcBjHGwwB\nPWfPSWnvsNZS" <> ...
+```
+
 ## Part 1
 
 ```elixir
+defmodule Day03 do
+  def prio("a"), do: 1
+  def prio("b"), do: 2
+  def prio("c"), do: 3
+  def prio("d"), do: 4
+  def prio("e"), do: 5
+  def prio("f"), do: 6
+  def prio("g"), do: 7
+  def prio("h"), do: 8
+  def prio("i"), do: 9
+  def prio("j"), do: 10
+  def prio("k"), do: 11
+  def prio("l"), do: 12
+  def prio("m"), do: 13
+  def prio("n"), do: 14
+  def prio("o"), do: 15
+  def prio("p"), do: 16
+  def prio("q"), do: 17
+  def prio("r"), do: 18
+  def prio("s"), do: 19
+  def prio("t"), do: 20
+  def prio("u"), do: 21
+  def prio("v"), do: 22
+  def prio("w"), do: 23
+  def prio("x"), do: 24
+  def prio("y"), do: 25
+  def prio("z"), do: 26
+
+  def prio("A"), do: 27
+  def prio("B"), do: 28
+  def prio("C"), do: 29
+  def prio("D"), do: 30
+  def prio("E"), do: 31
+  def prio("F"), do: 32
+  def prio("G"), do: 33
+  def prio("H"), do: 34
+  def prio("I"), do: 35
+  def prio("J"), do: 36
+  def prio("K"), do: 37
+  def prio("L"), do: 38
+  def prio("M"), do: 39
+  def prio("N"), do: 40
+  def prio("O"), do: 41
+  def prio("P"), do: 42
+  def prio("Q"), do: 43
+  def prio("R"), do: 44
+  def prio("S"), do: 45
+  def prio("T"), do: 46
+  def prio("U"), do: 47
+  def prio("V"), do: 48
+  def prio("W"), do: 49
+  def prio("X"), do: 50
+  def prio("Y"), do: 51
+  def prio("Z"), do: 52
+end
+```
+
+<!-- livebook:{"output":true} -->
 
 ```
+{:module, Day03, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:prio, 1}}
+```
+
+```elixir
+defmodule P31 do
+  def split_lines(s), do: String.split(s, "\n", trim: true)
+  def split_rucksack(s), do: String.split_at(s, Kernel.trunc(String.length(s) / 2))
+  def find_similar({a, b}), do: Enum.map(a, fn c -> {c, c in b} end)
+end
+
+input_test
+# split lines
+|> String.split("\n", trim: true)
+# split rucksack
+|> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
+# lists of lists
+|> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
+# find similar
+|> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
+# filter away all not similar
+|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+# grab only char
+|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+# convert to int
+|> Enum.map(fn c -> Day03.prio(c) end)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+157
+```
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
+|> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
+|> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
+|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+|> Enum.map(fn c -> Day03.prio(c) end)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+8123
+```
+
+Correct: 8123
 
 ## Intro - Part 2
 
-** Intro part 2 **
+As you finish identifying the misplaced items, the Elves come to you with another issue.
+
+For safety, the Elves are divided into groups of three. Every Elf carries a badge that identifies their group. For efficiency, within each group of three Elves, the badge is the **only item type carried by all three Elves**. That is, if a group's badge is item type B, then all three Elves will have item type B somewhere in their rucksack, and at most two of the Elves will be carrying any other item type.
+
+The problem is that someone forgot to put this year's updated authenticity sticker on the badges. All of the badges need to be pulled out of the rucksacks so the new authenticity stickers can be attached.
+
+Additionally, nobody wrote down which item type corresponds to each group's badges. The only way to tell which item type is the right one is by finding the one item type that is **common between all three Elves** in each group.
+
+Every set of three lines in your list corresponds to a single group, but each group can have a different badge item type. So, in the above example, the first group's rucksacks are the first three lines:
+
+```
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+```
+
+And the second group's rucksacks are the next three lines:
+
+```
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+```
+
+In the first group, the only item type that appears in all three rucksacks is lowercase r; this must be their badges. In the second group, their badge item type must be Z.
+
+Priorities for these items must still be found to organize the sticker attachment efforts: here, they are 18 (r) for the first group and 52 (Z) for the second group. The sum of these is **70**.
+
+Find the item type that corresponds to the badges of each three-Elf group. **What is the sum of the priorities of those item types?**
 
 ## Solution - Part 2
 
 ```elixir
+input_test
+|> String.split("\n", trim: true)
+# group elves
+|> Enum.chunk_every(3)
+|> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
+# similar
+|> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
+|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+|> Enum.map(fn c -> Day03.prio(c) end)
+|> Enum.sum()
+```
 
+<!-- livebook:{"output":true} -->
+
+```
+70
+```
+
+```elixir
+input
+|> String.split("\n", trim: true)
+|> Enum.chunk_every(3)
+|> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
+|> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
+|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+|> Enum.map(fn c -> Day03.prio(c) end)
+|> Enum.sum()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+2620
 ```
