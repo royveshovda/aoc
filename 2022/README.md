@@ -4,10 +4,11 @@ Solved using [Elixir](https://elixir-lang.org/) and [Livebook](https://livebook.
 
 Solutions (or at least attempts):
 
-- [Day 1](01.livemd)
-- [Day 2](02.livemd)
-- [Day 3](03.livemd)
-- [Day 4](04.livemd)
+- [Day 01](01.livemd)
+- [Day 02](02.livemd)
+- [Day 03](03.livemd)
+- [Day 04](04.livemd)
+- [Day 05](05.livemd)
 
 ## Resources
 
