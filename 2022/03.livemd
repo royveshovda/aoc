@@ -72,118 +72,90 @@ input = File.read!("input03.txt")
 
 ```elixir
 defmodule Day03 do
-  def prio("a"), do: 1
-  def prio("b"), do: 2
-  def prio("c"), do: 3
-  def prio("d"), do: 4
-  def prio("e"), do: 5
-  def prio("f"), do: 6
-  def prio("g"), do: 7
-  def prio("h"), do: 8
-  def prio("i"), do: 9
-  def prio("j"), do: 10
-  def prio("k"), do: 11
-  def prio("l"), do: 12
-  def prio("m"), do: 13
-  def prio("n"), do: 14
-  def prio("o"), do: 15
-  def prio("p"), do: 16
-  def prio("q"), do: 17
-  def prio("r"), do: 18
-  def prio("s"), do: 19
-  def prio("t"), do: 20
-  def prio("u"), do: 21
-  def prio("v"), do: 22
-  def prio("w"), do: 23
-  def prio("x"), do: 24
-  def prio("y"), do: 25
-  def prio("z"), do: 26
+  def priority(char) do
+    ascii = String.to_charlist(char) |> List.first()
 
-  def prio("A"), do: 27
-  def prio("B"), do: 28
-  def prio("C"), do: 29
-  def prio("D"), do: 30
-  def prio("E"), do: 31
-  def prio("F"), do: 32
-  def prio("G"), do: 33
-  def prio("H"), do: 34
-  def prio("I"), do: 35
-  def prio("J"), do: 36
-  def prio("K"), do: 37
-  def prio("L"), do: 38
-  def prio("M"), do: 39
-  def prio("N"), do: 40
-  def prio("O"), do: 41
-  def prio("P"), do: 42
-  def prio("Q"), do: 43
-  def prio("R"), do: 44
-  def prio("S"), do: 45
-  def prio("T"), do: 46
-  def prio("U"), do: 47
-  def prio("V"), do: 48
-  def prio("W"), do: 49
-  def prio("X"), do: 50
-  def prio("Y"), do: 51
-  def prio("Z"), do: 52
+    if String.upcase(char) == char do
+      ascii - ?A + 27
+    else
+      ascii - ?a + 1
+    end
+  end
 end
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-{:module, Day03, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:prio, 1}}
+{:module, Day03, <<70, 79, 82, 49, 0, 0, 7, ...>>, {:priority, 1}}
 ```
 
 ```elixir
-defmodule P31 do
-  def split_lines(s), do: String.split(s, "\n", trim: true)
-  def split_rucksack(s), do: String.split_at(s, Kernel.trunc(String.length(s) / 2))
-  def find_similar({a, b}), do: Enum.map(a, fn c -> {c, c in b} end)
-end
+correct = 157
 
-input_test
-# split lines
-|> String.split("\n", trim: true)
-# split rucksack
-|> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
-# lists of lists
-|> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
-# find similar
-|> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
-# filter away all not similar
-|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
-# grab only char
-|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
-# convert to int
-|> Enum.map(fn c -> Day03.prio(c) end)
-|> Enum.sum()
+res =
+  input_test
+  # split lines
+  |> String.split("\n", trim: true)
+  # split rucksack
+  |> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
+  # lists of lists
+  |> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
+  # find similar
+  |> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
+  # filter away all not similar
+  |> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+  # grab only char
+  |> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+  # convert to int
+  |> Enum.map(fn c -> Day03.priority(c) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-157
-```
-
-```elixir
-input
-|> String.split("\n", trim: true)
-|> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
-|> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
-|> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
-|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
-|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
-|> Enum.map(fn c -> Day03.prio(c) end)
-|> Enum.sum()
+Correct: 157
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-8123
+true
 ```
 
+```elixir
+correct = 8123
+
+res =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn s -> String.split_at(s, Kernel.trunc(String.length(s) / 2)) end)
+  |> Enum.map(fn {a, b} -> {String.graphemes(a), String.graphemes(b)} end)
+  |> Enum.map(fn {a, b} -> Enum.map(a, fn c -> {c, c in b} end) end)
+  |> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+  |> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+  |> Enum.map(fn c -> Day03.priority(c) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
+```
+
+<!-- livebook:{"output":true} -->
+
+```
 Correct: 8123
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
 
 ## Intro - Part 2
 
@@ -220,39 +192,63 @@ Find the item type that corresponds to the badges of each three-Elf group. **Wha
 ## Solution - Part 2
 
 ```elixir
-input_test
-|> String.split("\n", trim: true)
-# group elves
-|> Enum.chunk_every(3)
-|> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
-# similar
-|> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
-|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
-|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
-|> Enum.map(fn c -> Day03.prio(c) end)
-|> Enum.sum()
+correct = 70
+
+res =
+  input_test
+  |> String.split("\n", trim: true)
+  # group elves
+  |> Enum.chunk_every(3)
+  |> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
+  # similar
+  |> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
+  |> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+  |> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+  |> Enum.map(fn c -> Day03.priority(c) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-70
+Correct: 70
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
 ```
 
 ```elixir
-input
-|> String.split("\n", trim: true)
-|> Enum.chunk_every(3)
-|> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
-|> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
-|> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
-|> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
-|> Enum.map(fn c -> Day03.prio(c) end)
-|> Enum.sum()
+correct = 2620
+
+res =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.chunk_every(3)
+  |> Enum.map(fn [a, b, c] -> [String.graphemes(a), String.graphemes(b), String.graphemes(c)] end)
+  |> Enum.map(fn [a, b, c] -> Enum.map(a, fn char -> {char, char in b and char in c} end) end)
+  |> Enum.map(fn r -> Enum.filter(r, fn {_, val} -> val end) end)
+  |> Enum.map(fn r -> Enum.map(r, fn {c, _} -> c end) |> List.first() end)
+  |> Enum.map(fn c -> Day03.priority(c) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-2620
+Correct: 2620
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
 ```

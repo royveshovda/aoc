@@ -79,7 +79,9 @@ input = File.read!("input01.txt")
 ## Part 1
 
 ```elixir
-res_test1 =
+correct = 24000
+
+res =
   input_test
   |> String.split("\n\n", trim: true)
   |> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
@@ -88,7 +90,14 @@ res_test1 =
   |> Enum.sort(:desc)
   |> List.first()
 
-res_test1 == 24000
+IO.puts("Correct: #{correct}")
+correct === res
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 24000
 ```
 
 <!-- livebook:{"output":true} -->
@@ -98,22 +107,32 @@ true
 ```
 
 ```elixir
-input
-|> String.split("\n\n", trim: true)
-|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
-|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
-|> Enum.map(fn x -> Enum.sum(x) end)
-|> Enum.sort(:desc)
-|> List.first()
+correct = 67027
+
+res =
+  input
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+  |> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+  |> Enum.map(fn x -> Enum.sum(x) end)
+  |> Enum.sort(:desc)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-67027
+Correct: 67027
 ```
 
-Correct: 67027
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
 
 ## Part 2 - Intro
 
@@ -128,37 +147,59 @@ Find the top three Elves carrying the most Calories. How many Calories are those
 ## Part 2 -Solution
 
 ```elixir
-input_test
-|> String.split("\n\n", trim: true)
-|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
-|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
-|> Enum.map(fn x -> Enum.sum(x) end)
-|> Enum.sort(:desc)
-|> Enum.take(3)
-|> Enum.sum()
+correct = 45000
+
+res =
+  input_test
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+  |> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+  |> Enum.map(fn x -> Enum.sum(x) end)
+  |> Enum.sort(:desc)
+  |> Enum.take(3)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-45000
+Correct: 45000
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
 ```
 
 ```elixir
-input
-|> String.split("\n\n", trim: true)
-|> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
-|> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
-|> Enum.map(fn x -> Enum.sum(x) end)
-|> Enum.sort(:desc)
-|> Enum.take(3)
-|> Enum.sum()
+correct = 197_291
+
+res =
+  input
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, "\n", trim: true) end)
+  |> Enum.map(fn x -> Enum.map(x, fn y -> String.to_integer(y) end) end)
+  |> Enum.map(fn x -> Enum.sum(x) end)
+  |> Enum.sort(:desc)
+  |> Enum.take(3)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-197291
+Correct: 197291
 ```
 
-Correct: 197291
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
