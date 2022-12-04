@@ -108,72 +108,94 @@ end
 ```
 
 ```elixir
-input_test
-|> String.split("\n", trim: true)
-|> Enum.map(fn s -> String.split(s, " ", trim: true) end)
-|> Enum.map(fn [foo, me] ->
-  case foo,
-    do:
-      (
-        "A" -> [:rock, me]
-        "B" -> [:paper, me]
-        "C" -> [:scissors, me]
-      )
-end)
-|> Enum.map(fn [foo, me] ->
-  case me,
-    do:
-      (
-        "X" -> [foo, :rock, 1]
-        "Y" -> [foo, :paper, 2]
-        "Z" -> [foo, :scissors, 3]
-      )
-end)
-|> Enum.map(fn [foo, me, rate] -> [C.compare(foo, me), rate] end)
-|> Enum.map(fn [result, rate] -> C.score(result, rate) end)
-|> Enum.sum()
+correct = 15
+
+res =
+  input_test
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, " ", trim: true) end)
+  |> Enum.map(fn [foo, me] ->
+    case foo,
+      do:
+        (
+          "A" -> [:rock, me]
+          "B" -> [:paper, me]
+          "C" -> [:scissors, me]
+        )
+  end)
+  |> Enum.map(fn [foo, me] ->
+    case me,
+      do:
+        (
+          "X" -> [foo, :rock, 1]
+          "Y" -> [foo, :paper, 2]
+          "Z" -> [foo, :scissors, 3]
+        )
+  end)
+  |> Enum.map(fn [foo, me, rate] -> [C.compare(foo, me), rate] end)
+  |> Enum.map(fn [result, rate] -> C.score(result, rate) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-15
+Correct: 15
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
 ```
 
 ```elixir
-input
-|> String.split("\n", trim: true)
-|> Enum.map(fn s -> String.split(s, " ", trim: true) end)
-|> Enum.map(fn [foo, me] ->
-  case foo,
-    do:
-      (
-        "A" -> [:rock, me]
-        "B" -> [:paper, me]
-        "C" -> [:scissors, me]
-      )
-end)
-|> Enum.map(fn [foo, me] ->
-  case me,
-    do:
-      (
-        "X" -> [foo, :rock, 1]
-        "Y" -> [foo, :paper, 2]
-        "Z" -> [foo, :scissors, 3]
-      )
-end)
-|> Enum.map(fn [foo, me, rate] -> [C.compare(foo, me), rate] end)
-|> Enum.map(fn [result, rate] -> C.score(result, rate) end)
-|> Enum.sum()
+correct = 10718
+
+res =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, " ", trim: true) end)
+  |> Enum.map(fn [foo, me] ->
+    case foo,
+      do:
+        (
+          "A" -> [:rock, me]
+          "B" -> [:paper, me]
+          "C" -> [:scissors, me]
+        )
+  end)
+  |> Enum.map(fn [foo, me] ->
+    case me,
+      do:
+        (
+          "X" -> [foo, :rock, 1]
+          "Y" -> [foo, :paper, 2]
+          "Z" -> [foo, :scissors, 3]
+        )
+  end)
+  |> Enum.map(fn [foo, me, rate] -> [C.compare(foo, me), rate] end)
+  |> Enum.map(fn [result, rate] -> C.score(result, rate) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-10718
+Correct: 10718
 ```
 
-Correct: 10718
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
 
 ## Intro - Part 2
 
@@ -192,67 +214,89 @@ Following the Elf's instructions for the second column, what would your total sc
 ## Solution - Part 2
 
 ```elixir
-input_test
-|> String.split("\n", trim: true)
-|> Enum.map(fn s -> String.split(s, " ", trim: true) end)
-|> Enum.map(fn [foo, me] ->
-  case foo,
-    do:
-      (
-        "A" -> [:rock, me]
-        "B" -> [:paper, me]
-        "C" -> [:scissors, me]
-      )
-end)
-|> Enum.map(fn [foo, me] ->
-  case me,
-    do:
-      (
-        "X" -> [foo, :loose]
-        "Y" -> [foo, :draw]
-        "Z" -> [foo, :win]
-      )
-end)
-|> Enum.map(fn [foo, result] -> C.decide(foo, result) end)
-|> Enum.sum()
+correct = 12
+
+res =
+  input_test
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, " ", trim: true) end)
+  |> Enum.map(fn [foo, me] ->
+    case foo,
+      do:
+        (
+          "A" -> [:rock, me]
+          "B" -> [:paper, me]
+          "C" -> [:scissors, me]
+        )
+  end)
+  |> Enum.map(fn [foo, me] ->
+    case me,
+      do:
+        (
+          "X" -> [foo, :loose]
+          "Y" -> [foo, :draw]
+          "Z" -> [foo, :win]
+        )
+  end)
+  |> Enum.map(fn [foo, result] -> C.decide(foo, result) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-12
+Correct: 12
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
 ```
 
 ```elixir
-input
-|> String.split("\n", trim: true)
-|> Enum.map(fn s -> String.split(s, " ", trim: true) end)
-|> Enum.map(fn [foo, me] ->
-  case foo,
-    do:
-      (
-        "A" -> [:rock, me]
-        "B" -> [:paper, me]
-        "C" -> [:scissors, me]
-      )
-end)
-|> Enum.map(fn [foo, me] ->
-  case me,
-    do:
-      (
-        "X" -> [foo, :loose]
-        "Y" -> [foo, :draw]
-        "Z" -> [foo, :win]
-      )
-end)
-|> Enum.map(fn [foo, result] -> C.decide(foo, result) end)
-|> Enum.sum()
+correct = 14652
+
+res =
+  input
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, " ", trim: true) end)
+  |> Enum.map(fn [foo, me] ->
+    case foo,
+      do:
+        (
+          "A" -> [:rock, me]
+          "B" -> [:paper, me]
+          "C" -> [:scissors, me]
+        )
+  end)
+  |> Enum.map(fn [foo, me] ->
+    case me,
+      do:
+        (
+          "X" -> [foo, :loose]
+          "Y" -> [foo, :draw]
+          "Z" -> [foo, :win]
+        )
+  end)
+  |> Enum.map(fn [foo, result] -> C.decide(foo, result) end)
+  |> Enum.sum()
+
+IO.puts("Correct: #{correct}")
+correct === res
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-14652
+Correct: 14652
 ```
 
-Correct: 14652
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
