@@ -9,6 +9,7 @@ Solutions (or at least attempts):
 - [Day 03](03.livemd)
 - [Day 04](04.livemd)
 - [Day 05](05.livemd)
+- [Day 06](06.livemd)
 
 ## Resources
 
