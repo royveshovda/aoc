@@ -10,19 +10,189 @@
 
 ```elixir
 input_test = """
-???
+    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2
 """
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"    [D]    \n[N] [C]    \n[Z] [M] [P]\n 1   2   3 \n\nmove 1 from 2 to 1\nmove 3 from 1 to 3\nmove 2 from 2 to 1\nmove 1 from 1 to 2\n"
 ```
 
 ```elixir
 input = File.read!("input05.txt")
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+"            [Q]     [G]     [M]    \n            [B] [S] [V]     [P] [R]\n    [T]     [C] [F] [L]     [V] [N]\n[Q] [P]     [H] [N] [S]     [W] [C]\n[F] [G] [B] [J] [B] [N]     [Z] [L]\n[L] [Q] [Q] [Z] [M] [Q] [F] [G] [D]\n[S] [Z] [M] [G] [H] [C] [C] [H] [Z]\n[R] [N] [S] [T] [P] [P] [W] [Q] [G]\n 1   2   3   4   5   6   7   8   9 \n\nmove 1 from 2 to 6\nmove 3 from 7 to 9\nmove 7 from 9 to 4\nmove 2 from 5 to 3\nmove 3 from 2 to 8\nmove 14 from 4 to 5\nmove 1 from 2 to 1\nmove 1 from 2 to 3\nmove 3 from 6 to 8\nmove 3 from 6 to 9\nmove 1 from 4 to 6\nmove 5 from 9 to 8\nmove 9 from 8 to 9\nmove 3 from 3 to 8\nmove 8 from 9 to 4\nmove 2 from 1 to 7\nmove 4 from 1 to 5\nmove 2 from 7 to 1\nmove 1 from 9 to 6\nmove 7 from 4 to 7\nmove 1 from 8 to 4\nmove 1 from 9 to 8\nmove 2 from 6 to 7\nmove 7 from 7 to 3\nmove 10 from 3 to 1\nmove 1 from 3 to 2\nmove 1 from 2 to 9\nmove 1 from 9 to 8\nmove 15 from 5 to 8\nmove 1 from 6 to 9\nmove 2 from 7 to 3\nmove 11 from 1 to 8\nmove 1 from 9 to 8\nmove 1 from 1 to 5\nmove 3 from 5 to 2\nmove 2 from 6 to 9\nmove 1 from 2 to 4\nmove 2 from 4 to 5\nmove 1 from 3 to 6\nmove 5 from 8 to 3\nmove 12 from 8 to 4\nmove 2 from 2 to 5\nmove 12 from 8 to 1\nmove 1 from 6 to 9\nmove 10 from 5 to 7\nmove 3 from 3 to 9\nmove 6 from 8 to 9\nmove 2 from 3 to 5\nmove 8 from 4 to 7\nmove 1 from 3 to 2\nmove 6 from 8 to 6\nmove 8 from 9 to 3\nmove 2 from 5 to 4\nmove 1 from 2 to 3\nmove 2 from 9 to 2\nmove 1 from 9 to 2\nmove 1 from 2 to 1\nmove 2 from 2 to 4\nmove 5 from 4 to 2\nmove 3 from 2 to 3\nmove 2 from 4 to 2\nmove 18 from 7 to 3\nmove 3 from 6 to 9\nmove 1 from 6 to 3\nmove 1 from 4 to 1\nmove 1 from 6 to 3\nmove 6 from 3 to 9\nmove 2 from 2 to 6\nmove 26 from 3 to 7\nmove 2 from 2 to 3\nmove 2 from 6 to 8\nmove 3 from 1 to 5\nmove 8 from 9 to 1\nmove 1 from 8 to 5\nmove 1 from 3 to 1\nmove 2 from 9 to 3\nmove 1 from 1 to 2\nmove 12 from 1 to 7\nmove 1 from 8 to 5\nmove 2 from 3 to 5\nmove 1 from 3 to 6\nmove 2 from 6 to 2\nmove 7 from 5 to 7\nmove 1 from 4 to 2\nmove 15 from 7 to 4\nmove 1 from 4 to 9\nmove 1 from 7 to 6\nmove 14 from 4 to 2\nmove 1 from 1 to 2\nmove 5 from 1 to 5\nmove 4 from 5 to 4\nmove 1 from 6 to 3\nmove 4 from 4 to 7\nmove 1 from 9 to 2\nmove 1 from 3 to 5\nmove 2 from 5 to 1\nmove 1 from 1 to 6\nmove 2 from 1 to 5\nmove 9 from 2 to 9\nmove 1 from 6 to 1\nmove 1 from 1 to 9\nmove 1 from 5 to 4\nmove 1 from 5 to 6\nmove 4 from 7 to 2\nmove 1 from 4 to 1\nmove 18 from 7 to 1\nmove 17 from 1 to 7\nmove 4 from 9 to 5\nmove 1 from 5 to 8\nmove 1 from 1 to 4\nmove 2 from 9 to 6\nmove 3 from 9 to 7\nmove 1 from 1 to 5\nmove 1 from 7 to 5\nmove 16 from 7 to 2\nmove 1 from 4 to 2\nmove 1 from 8 to 7\nmove 1 from 9 to 8\nmove 1 from 8 to 4\nmove 3 from 5 to 3\nmove 15 from 7 to 6\nmove 7 from 6 to 4\nmove 9 from 6 to 2\nmove 2 from 5 to 7\nmove 2 from 6 to 8\nmove 4 from 4 to 7\nmove 2 from 8 to 1\nmove 11 from 2 to 7\nmove 1 from 4 to 2\nmove 2 from 3 to 6\nmove 3 from 4 to 5\nmove 12 from 7 to 1\nmove 1 from 7 to 3\nmove 31 from 2 to 4\nmove 3 from 7 to 2\nmove 1 from 6 to 3\nmove 1 from 5 to 1\nmove 1 from 5 to 2\nmove 2 from 3 to 4\nmove 1 from 6 to 1\nmove 1 from 3 to 6\nmove 1 from 5 to 6\nmove 1 from 2 to 4\nmove 11 from 1 to 4\nmove 5 from 1 to 5\nmove 1 from 7 to 3\nmove 3 from 5 to 8\nmove 1 from 8 to 7\nmove 1 from 5 to 3\nmove 2 from 8 to 5\nmove 2 from 6 to 2\nmove 2 from 5 to 1\nmove 1 from 7 to 9\nmove 1 from 3 to 9\nmove 2 from 9 to 5\nmove 1 from 1 to 6\nmove 1 from 6 to 5\nmove 1 from 3 to 5\nmove 13 from 4 to 8\nmove 5 from 2 to 3\nmove 3 from 3 to 4\nmove 1 from 8 to 6\nmove 4 from 5 to 2\nmove 1 from 1 to 5\nmove 1 from 3 to 7\nmove 2 from 5 to 4\nmove 11 from 4 to 5\nmove 1 from 3 to 7\nmove 15 from 4 to 2\nmove 1 from 6 to 4\nmove 19 from 2 to 8\nmove 8 from 8 to 3\nmove 2 from 3 to 8\nmove 7 from 5 to 4\nmove 6 from 3 to 4\nmove 8 from 4 to 5\nmove 7 from 4 to 6\nmove 2 from 7 to 5\nmove 9 from 5 to 6\nmove 13 from 8 to 3\nmove 3 from 4 to 3\nmove 6 from 3 to 4\nmove 6 from 8 to 2\nmove 4 from 5 to 9\nmove 5 from 8 to 7\nmove 4 from 6 to 2\nmove 5 from 3 to 5\nmove 1 from 6 to 9\nmove 8 from 2 to 6\nmove 1 from 8 to 7\nmove 1 from 2 to 5\nmove 1 from 4 to 1\nmove 3 from 3 to 1\nmove 1 from 7 to 3\nmove 4 from 9 to 8\nmove 6 from 6 to 2\nmove 2 from 8 to 4\nmov" <> ...
+```
+
 ## Part 1
 
 ```elixir
+[stack, instructions] =
+  input_test
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, "\n", trim: true) end)
+
+instructions =
+  instructions
+  |> Enum.map(fn s -> String.split(s, " ") end)
+  |> Enum.map(fn [_, count, _, from, _, to] ->
+    {
+      String.to_integer(count),
+      String.to_integer(from),
+      String.to_integer(to)
+    }
+  end)
+
+rows =
+  stack
+  |> Enum.map(fn s -> Enum.chunk_every(String.graphemes(s), 3, 4) end)
+  |> Enum.map(fn row ->
+    Enum.map(row, fn item ->
+      List.to_string(item)
+      |> String.trim()
+      |> String.trim("[")
+      |> String.trim("]")
+    end)
+  end)
+
+{ids, rows} = List.pop_at(rows, -1)
+
+stacks =
+  ids
+  |> Enum.map(fn i -> String.to_integer(i) end)
+  |> Map.from_keys([])
+
+stacks =
+  Enum.reduce(rows, stacks, fn r, stacks ->
+    r = Enum.with_index(r, 1)
+
+    Enum.reduce(r, stacks, fn {c, i}, stacks ->
+      if c == "" do
+        stacks
+      else
+        %{stacks | i => List.insert_at(stacks[i], -1, c)}
+      end
+    end)
+  end)
+
+new_stacks =
+  instructions
+  |> Enum.reduce(stacks, fn {count, from, to}, stacks ->
+    {stacks, _, _} =
+      Enum.reduce(1..count, {stacks, from, to}, fn _, {stacks, from, to} ->
+        f = stacks[from]
+        t = stacks[to]
+        {item, f} = List.pop_at(f, 0)
+        t = List.insert_at(t, 0, item)
+        s = %{stacks | from => f, to => t}
+        {s, from, to}
+      end)
+
+    stacks
+  end)
+
+Map.keys(new_stacks)
+|> Enum.map(fn k -> List.first(new_stacks[k]) end)
+|> List.to_string()
+```
+
+<!-- livebook:{"output":true} -->
 
 ```
+"CMZ"
+```
+
+```elixir
+[stack, instructions] =
+  input
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, "\n", trim: true) end)
+
+instructions =
+  instructions
+  |> Enum.map(fn s -> String.split(s, " ") end)
+  |> Enum.map(fn [_, count, _, from, _, to] ->
+    {
+      String.to_integer(count),
+      String.to_integer(from),
+      String.to_integer(to)
+    }
+  end)
+
+rows =
+  stack
+  |> Enum.map(fn s -> Enum.chunk_every(String.graphemes(s), 3, 4) end)
+  |> Enum.map(fn row ->
+    Enum.map(row, fn item ->
+      List.to_string(item)
+      |> String.trim()
+      |> String.trim("[")
+      |> String.trim("]")
+    end)
+  end)
+
+{ids, rows} = List.pop_at(rows, -1)
+
+stacks =
+  ids
+  |> Enum.map(fn i -> String.to_integer(i) end)
+  |> Map.from_keys([])
+
+stacks =
+  Enum.reduce(rows, stacks, fn r, stacks ->
+    r = Enum.with_index(r, 1)
+
+    Enum.reduce(r, stacks, fn {c, i}, stacks ->
+      if c == "" do
+        stacks
+      else
+        %{stacks | i => List.insert_at(stacks[i], -1, c)}
+      end
+    end)
+  end)
+
+new_stacks =
+  instructions
+  |> Enum.reduce(stacks, fn {count, from, to}, stacks ->
+    {stacks, _, _} =
+      Enum.reduce(1..count, {stacks, from, to}, fn _, {stacks, from, to} ->
+        f = stacks[from]
+        t = stacks[to]
+        {item, f} = List.pop_at(f, 0)
+        t = List.insert_at(t, 0, item)
+        s = %{stacks | from => f, to => t}
+        {s, from, to}
+      end)
+
+    stacks
+  end)
+
+Map.keys(new_stacks)
+|> Enum.map(fn k -> List.first(new_stacks[k]) end)
+|> List.to_string()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"FZCMJCRHZ"
+```
+
+Correct: FZCMJCRHZ
 
 ## Intro - Part 2
 
@@ -31,5 +201,72 @@ input = File.read!("input05.txt")
 ## Solution - Part 2
 
 ```elixir
+[stack, instructions] =
+  input_test
+  |> String.split("\n\n", trim: true)
+  |> Enum.map(fn s -> String.split(s, "\n", trim: true) end)
 
+instructions =
+  instructions
+  |> Enum.map(fn s -> String.split(s, " ") end)
+  |> Enum.map(fn [_, count, _, from, _, to] ->
+    {
+      String.to_integer(count),
+      String.to_integer(from),
+      String.to_integer(to)
+    }
+  end)
+
+rows =
+  stack
+  |> Enum.map(fn s -> Enum.chunk_every(String.graphemes(s), 3, 4) end)
+  |> Enum.map(fn row ->
+    Enum.map(row, fn item ->
+      List.to_string(item)
+      |> String.trim()
+      |> String.trim("[")
+      |> String.trim("]")
+    end)
+  end)
+
+{ids, rows} = List.pop_at(rows, -1)
+
+stacks =
+  ids
+  |> Enum.map(fn i -> String.to_integer(i) end)
+  |> Map.from_keys([])
+
+stacks =
+  Enum.reduce(rows, stacks, fn r, stacks ->
+    r = Enum.with_index(r, 1)
+
+    Enum.reduce(r, stacks, fn {c, i}, stacks ->
+      if c == "" do
+        stacks
+      else
+        %{stacks | i => List.insert_at(stacks[i], -1, c)}
+      end
+    end)
+  end)
+
+new_stacks =
+  instructions
+  |> Enum.reduce(stacks, fn {count, from, to}, stacks ->
+    {stacks, to_move, _, _} =
+      Enum.reduce(1..count, {stacks, [], from, to}, fn _, {stacks, to_move, from, to} ->
+        f = stacks[from]
+        {item, f} = List.pop_at(f, 0)
+        to_move = List.insert_at(to_move, 0, item)
+        s = %{stacks | from => f}
+        {s, to_move, from, to}
+      end)
+
+    t = stacks[to]
+    t = List.insert_at(t, 0, Enum.reverse(to_move) |> List.flatten())
+    %{stacks | to: t}
+  end)
+
+Map.keys(new_stacks)
+|> Enum.map(fn k -> List.first(new_stacks[k]) end)
+|> List.to_string()
 ```
