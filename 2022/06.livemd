@@ -40,18 +40,6 @@ Here are a few more examples:
 ## Input
 
 ```elixir
-input_test = """
-mjqjpqmgbljsphdztnvjfqwrcgsmlb
-"""
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-"mjqjpqmgbljsphdztnvjfqwrcgsmlb\n"
-```
-
-```elixir
 input = File.read!("input06.txt")
 ```
 
@@ -67,7 +55,7 @@ input = File.read!("input06.txt")
 correct = 7
 
 [pattern, start] =
-  input_test
+  "mjqjpqmgbljsphdztnvjfqwrcgsmlb"
   |> String.trim()
   |> String.graphemes()
   |> Enum.with_index(1)
@@ -79,6 +67,7 @@ correct = 7
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
@@ -86,6 +75,7 @@ correct === start
 
 ```
 Correct: 7
+Actual: 7
 ```
 
 <!-- livebook:{"output":true} -->
@@ -93,6 +83,140 @@ Correct: 7
 ```
 true
 ```
+
+```elixir
+correct = 5
+
+[pattern, start] =
+  "bvwbjplbgvbhsrlpgdmjqwftvncz"
+  |> String.trim()
+  |> String.graphemes()
+  |> Enum.with_index(1)
+  |> Enum.chunk_every(4, 1, :discard)
+  |> Enum.map(fn [{a1, _}, {a2, _}, {a3, _}, {a4, start}] ->
+    [[a1, a2, a3, a4], start]
+  end)
+  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 4 end)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
+correct === start
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 5
+Actual: 5
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+```elixir
+correct = 6
+
+[pattern, start] =
+  "nppdvjthqldpwncqszvftbrmjlhg"
+  |> String.trim()
+  |> String.graphemes()
+  |> Enum.with_index(1)
+  |> Enum.chunk_every(4, 1, :discard)
+  |> Enum.map(fn [{a1, _}, {a2, _}, {a3, _}, {a4, start}] ->
+    [[a1, a2, a3, a4], start]
+  end)
+  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 4 end)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
+correct === start
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 6
+Actual: 6
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+```elixir
+correct = 10
+
+[pattern, start] =
+  "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"
+  |> String.trim()
+  |> String.graphemes()
+  |> Enum.with_index(1)
+  |> Enum.chunk_every(4, 1, :discard)
+  |> Enum.map(fn [{a1, _}, {a2, _}, {a3, _}, {a4, start}] ->
+    [[a1, a2, a3, a4], start]
+  end)
+  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 4 end)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
+correct === start
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 10
+Actual: 10
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+```elixir
+correct = 11
+
+[pattern, start] =
+  "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"
+  |> String.trim()
+  |> String.graphemes()
+  |> Enum.with_index(1)
+  |> Enum.chunk_every(4, 1, :discard)
+  |> Enum.map(fn [{a1, _}, {a2, _}, {a3, _}, {a4, start}] ->
+    [[a1, a2, a3, a4], start]
+  end)
+  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 4 end)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
+correct === start
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 11
+Actual: 11
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+## Attempt - part 1
 
 ```elixir
 correct = 1361
@@ -110,6 +234,7 @@ correct = 1361
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
@@ -117,6 +242,7 @@ correct === start
 
 ```
 Correct: 1361
+Actual: 1361
 ```
 
 <!-- livebook:{"output":true} -->
@@ -174,6 +300,7 @@ correct = 19
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
@@ -181,58 +308,13 @@ correct === start
 
 ```
 Correct: 19
+Actual: 19
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
 true
-```
-
-```elixir
-correct = 19
-
-[pattern, start] =
-  "bvwbjplbgvbhsrlpgdmjqwftvncz"
-  |> String.trim()
-  |> String.graphemes()
-  |> Enum.with_index(1)
-  |> Enum.chunk_every(14, 1, :discard)
-  |> Enum.map(fn [
-                   {a1, _},
-                   {a2, _},
-                   {a3, _},
-                   {a4, _},
-                   {a5, _},
-                   {a6, _},
-                   {a7, _},
-                   {a8, _},
-                   {a9, _},
-                   {a10, _},
-                   {a11, _},
-                   {a12, _},
-                   {a13, _},
-                   {a14, start}
-                 ] ->
-    [[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14], start]
-  end)
-  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 14 end)
-  |> List.first()
-
-IO.puts("Correct: #{correct}")
-correct === start
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-Correct: 19
-```
-
-<!-- livebook:{"output":true} -->
-
-```
-false
 ```
 
 ```elixir
@@ -266,6 +348,7 @@ correct = 23
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
@@ -273,6 +356,7 @@ correct === start
 
 ```
 Correct: 23
+Actual: 23
 ```
 
 <!-- livebook:{"output":true} -->
@@ -283,6 +367,54 @@ true
 
 ```elixir
 correct = 23
+
+[pattern, start] =
+  "bvwbjplbgvbhsrlpgdmjqwftvncz"
+  |> String.trim()
+  |> String.graphemes()
+  |> Enum.with_index(1)
+  |> Enum.chunk_every(14, 1, :discard)
+  |> Enum.map(fn [
+                   {a1, _},
+                   {a2, _},
+                   {a3, _},
+                   {a4, _},
+                   {a5, _},
+                   {a6, _},
+                   {a7, _},
+                   {a8, _},
+                   {a9, _},
+                   {a10, _},
+                   {a11, _},
+                   {a12, _},
+                   {a13, _},
+                   {a14, start}
+                 ] ->
+    [[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14], start]
+  end)
+  |> Enum.filter(fn [items, _] -> length(Enum.uniq(items)) == 14 end)
+  |> List.first()
+
+IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
+correct === start
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 23
+Actual: 23
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+```elixir
+correct = 29
 
 [pattern, start] =
   "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg"
@@ -312,23 +444,25 @@ correct = 23
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-Correct: 23
+Correct: 29
+Actual: 29
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-false
+true
 ```
 
 ```elixir
-correct = 19
+correct = 26
 
 [pattern, start] =
   "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw"
@@ -358,10 +492,24 @@ correct = 19
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
-Real input
+<!-- livebook:{"output":true} -->
+
+```
+Correct: 26
+Actual: 26
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+true
+```
+
+## Attempt - part 2
 
 ```elixir
 correct = 3263
@@ -394,6 +542,7 @@ correct = 3263
   |> List.first()
 
 IO.puts("Correct: #{correct}")
+IO.puts("Actual: #{start}")
 correct === start
 ```
 
@@ -401,6 +550,7 @@ correct === start
 
 ```
 Correct: 3263
+Actual: 3263
 ```
 
 <!-- livebook:{"output":true} -->
