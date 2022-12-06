@@ -10,6 +10,7 @@ Solutions (or at least attempts):
 - [Day 04](04.livemd)
 - [Day 05](05.livemd)
 - [Day 06](06.livemd)
+- [Day 07](07.livemd)
 
 ## Resources
 
