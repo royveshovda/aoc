@@ -10,18 +10,96 @@
 
 ```elixir
 input_test = """
-???
+$ cd /
+$ ls
+dir a
+14848514 b.txt
+8504156 c.dat
+dir d
+$ cd a
+$ ls
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
+$ cd ..
+$ cd ..
+$ cd d
+$ ls
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k
 """
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"$ cd /\n$ ls\ndir a\n14848514 b.txt\n8504156 c.dat\ndir d\n$ cd a\n$ ls\ndir e\n29116 f\n2557 g\n62596 h.lst\n$ cd e\n$ ls\n584 i\n$ cd ..\n$ cd ..\n$ cd d\n$ ls\n4060174 j\n8033020 d.log\n5626152 d.ext\n7214296 k\n"
 ```
 
 ```elixir
 input = File.read!("input07.txt")
 ```
 
+<!-- livebook:{"output":true} -->
+
+```
+"$ cd /\n$ ls\ndir fchrtcbh\ndir hlnbrj\ndir jbt\ndir nnn\n57400 pfqcbp\ndir qsdv\ndir tdl\ndir tmcpgtz\n$ cd fchrtcbh\n$ ls\ndir fct\ndir fwttfps\n61765 nlr\n28736 pfqcbp.pfg\n224426 qcmtlbss\n145764 sgpmfdlt.tnd\n273765 wzmrclw.qbq\n$ cd fct\n$ ls\ndir ctzphlhl\n$ cd ctzphlhl\n$ ls\n25094 cfmw.rdv\n$ cd ..\n$ cd ..\n$ cd fwttfps\n$ ls\n69990 hdf.fjn\n146885 hqrzgvgn.wqp\n21206 wzmrclw.qbq\n$ cd ..\n$ cd ..\n$ cd hlnbrj\n$ ls\ndir mbwgsdcv\n$ cd mbwgsdcv\n$ ls\n156396 rdm.ttb\n$ cd ..\n$ cd ..\n$ cd jbt\n$ ls\ndir bbm\ndir gqbvgbt\ndir hzjzlwv\ndir jcstr\ndir llf\n$ cd bbm\n$ ls\ndir nsshzppb\ndir pfqcbp\ndir tdz\ndir tvqh\n$ cd nsshzppb\n$ ls\n5640 bvpnq.tbm\n241745 cmjshlw.qjh\ndir jlcqcb\n78459 nlfv.dgr\ndir pfqcbp\n245461 rjftj.gtj\n169808 tgvqrvq.mrw\n$ cd jlcqcb\n$ ls\n314748 fzsvgrcw\n32649 mmbfqp.lqc\ndir nzpvt\ndir pmncbz\ndir qqtlm\n321229 shtc.vtw\n10052 tdz\n320999 tdz.vfc\n$ cd nzpvt\n$ ls\ndir fct\ndir lbsng\n209182 nlr\ndir pfqcbp\n243321 srt.tqh\n3325 tdz.dbz\n332295 wzmrclw.qbq\n$ cd fct\n$ ls\n185072 drcmppfs\ndir fct\n92835 nlr\n$ cd fct\n$ ls\n230981 bpnvm\n$ cd ..\n$ cd ..\n$ cd lbsng\n$ ls\ndir mzsj\n116041 nzpvt.nll\n$ cd mzsj\n$ ls\n279834 vshfrzsg\n$ cd ..\n$ cd ..\n$ cd pfqcbp\n$ ls\ndir fct\n173141 mzb.lcd\ndir ssbv\n$ cd fct\n$ ls\n33372 tjznm\n$ cd ..\n$ cd ssbv\n$ ls\n273126 bccsm.rqq\n298840 cqzglqw.ppf\ndir fct\ndir pmqj\n126839 qdvm.wsc\n$ cd fct\n$ ls\n323437 bcqms.cbt\n91849 drcmppfs\n103408 jbmbrg.ggs\n261735 mnfrhs\n326197 wvrj.pzg\n$ cd ..\n$ cd pmqj\n$ ls\n34310 vhpqwp\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd pmncbz\n$ ls\n102403 rjhq.blj\n$ cd ..\n$ cd qqtlm\n$ ls\ndir ggjzcsfn\ndir nzpvt\n134921 wzmrclw.qbq\n$ cd ggjzcsfn\n$ ls\ndir nlfv\n$ cd nlfv\n$ ls\n219183 nbfqvdhb.pgr\n$ cd ..\n$ cd ..\n$ cd nzpvt\n$ ls\n141177 fct.bmj\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd pfqcbp\n$ ls\n312723 ngbm\n$ cd ..\n$ cd ..\n$ cd pfqcbp\n$ ls\ndir bvsj\n120921 cmzmmlqq.pqn\n308093 drcmppfs\ndir gvndh\n151290 hsjgzcf\n74851 tdz\n294395 wfp.lgp\n$ cd bvsj\n$ ls\n218258 qlnhddbw.pql\ndir sdjddn\n$ cd sdjddn\n$ ls\ndir tdl\ndir trpcd\n$ cd tdl\n$ ls\n271008 sqdggvm.hbh\n$ cd ..\n$ cd trpcd\n$ ls\n119088 wzmrclw.qbq\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd gvndh\n$ ls\ndir bvg\ndir hsqmsqt\n125116 pfqcbp.fpb\n182960 wfp.lgp\n$ cd bvg\n$ ls\n183661 wzmrclw.qbq\n$ cd ..\n$ cd hsqmsqt\n$ ls\ndir bmvcv\n$ cd bmvcv\n$ ls\n85871 nlfv\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd tdz\n$ ls\ndir nzpvt\n$ cd nzpvt\n$ ls\ndir ttcwr\n$ cd ttcwr\n$ ls\n58678 wfp.lgp\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd tvqh\n$ ls\n111924 bccsm.rqq\n155539 drcmppfs\ndir hvqgrlb\ndir njqd\n67089 nlr\ndir nzpvt\n109311 nzpvt.bzz\n249415 nzpvt.ptr\ndir srq\ndir tdz\ndir vjdjl\ndir zmgzph\n$ cd hvqgrlb\n$ ls\ndir fct\n105914 jqtjglmh.glw\n94476 mst\n180432 nbb.fvv\ndir nhnp\ndir nlfv\n$ cd fct\n$ ls\n67110 fct\n310128 gdzswr.phr\n67231 mjbjvb.ngb\n285357 vtnlzs.slj\ndir zzl\n$ cd zzl\n$ ls\n118330 bccsm.rqq\n317825 cchprc\n$ cd ..\n$ cd ..\n$ cd nhnp\n$ ls\n302625 cwt\n319999 htrj.mgt\n$ cd ..\n$ cd nlfv\n$ ls\ndir tdz\n$ cd tdz\n$ ls\n127844 bccsm.rqq\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd njqd\n$ ls\n27880 jpscpmzn.thz\ndir ntrnlms\ndir nzpvt\n41048 pfqcbp.qzf\ndir vtvwjhm\n$ cd ntrnlms\n$ ls\n15229 sfr\n$ cd ..\n$ cd nzpvt\n$ ls\ndir fct\ndir ltzw\ndir sfwhmn\ndir tdz\n$ cd fct\n$ ls\n185362 fddlqjnn\n$ cd ..\n$ cd ltzw\n$ ls\n290023 wslq\n$ cd ..\n$ cd sfwhmn\n$ ls\ndir jmgzcqvd\n159166 mfdhjq\n15995 nddsdb.tcg\n173881 pqnh.nvt\n37665 qnbbmgtl.vcg\n275256 tdz.zrs\n$ cd jmgzcqvd\n$ ls\ndir dtr\n$ cd dtr\n$ ls\ndir tdz\n$ cd tdz\n$ ls\n12772 mzmpvqrt\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd tdz\n$ ls\ndir fgd\ndir pfqcbp\ndir tdz\n137421 vttcn.mgp\n308378 wzmrclw.qbq\n$ cd fgd\n$ ls\n75974 gdzrjn\ndir zfvwp\n$ cd zfvwp\n$ ls\n48696 nlr\n$ cd ..\n$ cd ..\n$ cd pfqcbp\n$ ls\n126220 wfp.lgp\n68328 zshscwhf.wvm\n$ cd ..\n$ cd tdz\n$ ls\ndir gwpps\ndir zdbsq\n$ cd gwpps\n$ ls\n193706 bccsm.rqq\n$ cd ..\n$ cd zdbsq\n$ ls\n90049 vqwwh\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd ..\n$ cd vtvwjhm\n$ ls\n291688 bccsm.rqq\ndir dnjgl\n17554 drcmppfs\n$ cd dnjgl\n$ ls\ndir lpdzhhf\ndir nlfv\ndir nmbrz\n168524 vbgwhhnq\n$ cd lpdzhhf\n$ ls\n317727 nlfv.wsf\n75497 nlr\n105712 wfp.lgp\n$ cd ..\n$ cd nlfv\n$ ls\n121726 fct.lsw\n$ cd ..\n$ cd nmbrz\n$ ls\n14788 bccsm.rqq\ndir cjv\n64895 cqndrd.rbb\ndir fnmsjd\ndir hgzgq\ndir hst\n33320 nlfv.wwb\n111373 nlr\n271844 nzpvt.llp\ndir pfqcbp\n$ cd cjv\n$ ls\n108233 wfp.lgp\n$ cd ..\n$ cd fnmsjd\n$ ls\n108902 drcmppfs\ndir fbnmd" <> ...
+```
+
 ## Part 1
 
 ```elixir
+defmodule Day07 do
+  def parse_line(s) do
+    String.split(s)
+    |> parse
+  end
 
+  defp parse(["$", "cd", "/"]), do: {:cd, :root}
+  defp parse(["$", "cd", ".."]), do: {:cd, :parent}
+  defp parse(["$", "cd", dir]), do: {:cd, dir}
+  defp parse(["$", "ls"]), do: {:ls}
+  defp parse(["dir", dir]), do: {:directory, dir}
+  defp parse([size, name]), do: {:file, size, name}
+
+  # TODO
+  def build_tree(command, {tree, current}), do: {tree, current}
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+warning: variable "command" is unused (if the variable is not meant to be used, prefix it with an underscore)
+  07.livemd#cell:c4mdglnk3hgkuijxpxyry6qra5jcnwfu:15: Day07.build_tree/2
+
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day07, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:build_tree, 2}}
+```
+
+```elixir
+input_test
+|> String.split("\n", trim: true)
+|> Enum.map(fn s -> Day07.parse_line(s) end)
+|> Enum.reduce({%{dirs: [], files: []}, :root}, fn command, {tree, current} ->
+  Day07.build_tree(command, {tree, current})
+end)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{%{dirs: [], files: []}, :root}
 ```
 
 ## Intro - Part 2
@@ -32,4 +110,10 @@ input = File.read!("input07.txt")
 
 ```elixir
 
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{dirs: [], files: []}
 ```
