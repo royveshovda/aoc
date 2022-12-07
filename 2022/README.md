@@ -11,7 +11,7 @@ Solutions (or at least attempts):
 - [Day 05](05.livemd)
 - [Day 06](06.livemd)
 - [Day 07](07.livemd)
-<!-- - [Day 08](08.livemd) -->
+- [Day 08](08.livemd)
 <!-- - [Day 09](09.livemd) -->
 <!-- - [Day 10](10.livemd) -->
 <!-- - [Day 11](11.livemd) -->
