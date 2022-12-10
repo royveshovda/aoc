@@ -1,6 +1,6 @@
 import AOC
 
-aoc 2022,9 do
+aoc 2022, 9 do
   def p1(input) do
     solve(input, 1)
   end
