@@ -4,9 +4,18 @@ aoc 2022, 10 do
 
   @screen_width 40
   @on_char "█"
-  @off_char "."
+  @off_char " "
 
-  # Correct: 12460
+  @doc """
+  1. The first line contains the number of instructions.
+  2. The next N lines contain the instructions.
+  3. The last line contains the signal.
+      iex> Y2022.D10.p1(Y2022.D10.example_string())
+      13140
+
+      iex> Y2022.D10.p1(Y2022.D10.input_string())
+      12460
+  """
   def p1(input) do
 
     values =
@@ -62,7 +71,6 @@ aoc 2022, 10 do
   end
 
   def p2(input) do
-
     res =
       input
       |> String.split("\n", trim: true)
