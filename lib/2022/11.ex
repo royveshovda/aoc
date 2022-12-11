@@ -2,12 +2,6 @@ import AOC
 
 aoc 2022, 11 do
   def p1(input) do
-    input
-    |> parse_monkies()
-
-  end
-
-  def parse_monkies(input) do
     monkies =
       input
       |> String.split("\n\n")
@@ -16,9 +10,7 @@ aoc 2022, 11 do
     order = Enum.map(monkies, fn m -> m.id end)
     monkies = Map.new(monkies, fn m -> {m.id, m} end)
 
-    #inspect_items(monkies[0])
     new_monkies = Enum.reduce(1..20, monkies, fn _, monkies -> round(monkies, order) end)
-
     new_monkies |> Enum.map(fn {_, m} -> m.inspected end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
   end
 
@@ -55,7 +47,6 @@ aoc 2022, 11 do
       end)
 
     m = %{monkey | items: [], inspected: monkey.inspected + length(new_items)}
-
     {m, new_items}
   end
 
