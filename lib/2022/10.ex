@@ -3,8 +3,6 @@ import AOC
 aoc 2022, 10 do
 
   @screen_width 40
-  @on_char "█"
-  @off_char " "
 
   @doc """
   1. The first line contains the number of instructions.
@@ -65,8 +63,8 @@ aoc 2022, 10 do
     |> Kernel.-(location)
     |> Kernel.abs()
     |> case do
-      diff when diff <= 1 -> @on_char
-      _ -> @off_char
+      diff when diff <= 1 -> "█"
+      _ -> " "
     end
   end
 
