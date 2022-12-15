@@ -26,5 +26,10 @@
 	"postCreateCommand": "mix deps.get",
 
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"remoteUser": "vscode",
+	"hostRequirements": {
+	   "cpus": 4,
+	   "memory": "4gb",
+	   "storage": "16gb" 
+	}
 }
