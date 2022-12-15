@@ -1,8 +1,8 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:linux",
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {},
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/devcontainers-contrib/features/elixir-asdf:1": {}
+    "ghcr.io/devcontainers/features/python:latest": {},
+    "ghcr.io/devcontainers/features/node:latest": {},
+    "ghcr.io/devcontainers-contrib/features/elixir-asdf:latest": {}
   }
 }
