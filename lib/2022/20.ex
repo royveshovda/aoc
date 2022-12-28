@@ -9,28 +9,35 @@ aoc 2022, 20 do
       |> Enum.with_index()
       |> Enum.map(fn {v, i} -> %{current: i, orig: i, value: v} end)
 
-    l = length(start) - 1
+    l = length(start)
 
-    i = 0
-
-
-    #move(start, i, l)
     new_grid =
-      Enum.reduce(0..l, start, fn x, acc ->
-      #Enum.reduce(0..2, start, fn x, acc ->
+      Enum.reduce(0..(l-1), start, fn x, acc ->
         move(acc, x, l)
       end)
-      |> Enum.sort_by(& &1.current)
+      |> Enum.filter(fn x -> x.current in [1000,2000,3000] end)
+      #|> Enum.sort_by(& &1.current)
       |> Enum.map(& &1.value)
+      #|> Enum.sum()
+
+    # new_grid
+    # |> IO.inspect(label: "New Grid")
+
+    #|> Enum.map(& &1.value)
+    #|> Enum.sum()
+
+    # Correct: 9687
   end
 
   def move(list, position, length) do
-    IO.puts("Position: #{position} -- #{length} -- List: #{inspect(list)}")
+    #IO.puts("Position: #{position} -- #{length} -- List: #{inspect(list)}")
+    IO.puts("Position: #{position}")
     current = Enum.find(list, fn x -> x.orig == position end)
 
     current_index = current.current
-    new_index = Integer.mod(current_index + current.value, length)
-    IO.puts("Current: #{current_index}, New: #{new_index}")
+    new_index = Integer.mod(current_index + current.value - 1, (length-1)) + 1
+    #curr = (prev + number - 1) % (N - 1) + 1
+    #IO.puts("Current: #{current_index}, New: #{new_index}")
 
     case new_index > current_index do
       true ->
@@ -45,7 +52,7 @@ aoc 2022, 20 do
       false ->
         list
         |> Enum.map(fn x ->
-          if x.orig != position and x.current <= current_index and x.current > new_index do
+          if x.orig != position and x.current < current_index and x.current >= new_index do
             %{x | current: x.current + 1}
           else
             x
@@ -59,7 +66,7 @@ aoc 2022, 20 do
         x
       end
     end)
-    |> IO.inspect(label: "New List")
+    #|> IO.inspect(label: "New List")
 
   end
 
