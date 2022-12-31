@@ -7,6 +7,7 @@ aoc 2022, 25 do
     |> Enum.map(&to_decimal(String.to_charlist(&1), 0))
     |> Enum.sum()
     |> to_snafu([])
+    |> inspect(charlist: :infer)
   end
 
   def p2(input) do
