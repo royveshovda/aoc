@@ -9,7 +9,7 @@ aoc 2022, 20 do
       |> Enum.with_index()
       |> Enum.map(fn {v, i} -> %{current: i, orig: i, value: v} end)
 
-    l = length(start)
+    l = length(start) - 1
 
     new_grid =
       Enum.reduce(0..(l-1), start, fn x, acc ->
@@ -18,15 +18,8 @@ aoc 2022, 20 do
       |> Enum.filter(fn x -> x.current in [1000,2000,3000] end)
       #|> Enum.sort_by(& &1.current)
       |> Enum.map(& &1.value)
-      #|> Enum.sum()
 
-    # new_grid
-    # |> IO.inspect(label: "New Grid")
-
-    #|> Enum.map(& &1.value)
-    #|> Enum.sum()
-
-    # Correct: 9687
+    new_grid
   end
 
   def move(list, position, length) do

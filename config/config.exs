@@ -25,5 +25,5 @@ config :advent_of_code_utils,
   #time_zone: :aoc,
   session: aoc_token
 
-config :iex,
-  inspect: [charlists: :as_lists]
+# config :iex,
+#   inspect: [charlists: :as_lists]
