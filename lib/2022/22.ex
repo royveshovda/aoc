@@ -16,7 +16,7 @@ aoc 2022, 22 do
     start_face = @right
     traverse = %{{1, start_col} => start_face}
 
-    {{row, col}, face, traverse} =
+    {{row, col}, face, _traverse} =
       Enum.reduce(moves, {{1, start_col}, start_face, traverse}, fn
         :left, {pos, face, traverse} ->
           face = rotate(face, :left)
