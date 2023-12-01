@@ -1,5 +1,5 @@
 defmodule AOC.Tests do
   use ExUnit.Case, async: true
-  doctest Y2022.D10
+  doctest Y2023.D1
 
 end
