@@ -1,9 +1,17 @@
 import AOC
 
 aoc 2023, 1 do
+  @moduledoc """
+  https://adventofcode.com/2023/day/1
+  """
+
   @doc """
-      iex> p1(example_input())
-      # 142
+
+      iex> p1(example_input1())
+      142
+
+      iex> p1(input_string())
+      54968
   """
   def p1(input) do
     input
@@ -15,6 +23,22 @@ aoc 2023, 1 do
     |> Enum.sum()
   end
 
+  def example_input1() do
+    """
+    1abc2
+    pqr3stu8vwx
+    a1b2c3d4e5f
+    treb7uchet
+    """
+  end
+
+  @doc """
+      iex> p2(example_string())
+      281
+
+      iex> p2(input_string())
+      54094
+  """
   def p2(input) do
     input
     |> String.split("\n", trim: true)

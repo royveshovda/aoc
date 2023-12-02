@@ -7,6 +7,9 @@ aoc 2023, 2 do
 
   @doc """
       iex> p1(example_string())
+      8
+
+      iex> p1(input_string())
       2348
   """
   def p1(input) do
@@ -19,7 +22,10 @@ aoc 2023, 2 do
   end
 
   @doc """
-      iex> p2(AOC.IEx.example_example())
+      iex> p2(example_string())
+      2286
+
+      iex> p2(input_string())
       76008
   """
   def p2(input) do
