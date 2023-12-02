@@ -6,18 +6,43 @@ aoc 2023, 2 do
   """
 
   @doc """
-      iex> p1(example_input())
+      iex> p1(example_string())
+      2348
   """
   def p1(input) do
     input
     |> String.split("\n", trim: true)
     |> Enum.map(&parse/1)
+    |> Enum.filter(fn g -> valid_game?(g, 12, 13, 14) end)
+    |> Enum.map(fn g -> g.game end)
+    |> Enum.sum()
   end
 
   @doc """
-      iex> p2(example_input())
+      iex> p2(AOC.IEx.example_example())
+      76008
   """
   def p2(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(&parse/1)
+    |> Enum.map(&calculate_minimum_per_game/1)
+    |> Enum.map(fn %{red: red, green: green, blue: blue} -> red * green * blue end)
+    |> Enum.sum()
+  end
+
+  def calculate_minimum_per_game(%{game: _game, rounds: rounds}) do
+    Enum.reduce(rounds, %{red: 0, green: 0, blue: 0}, fn %{red: red, green: green, blue: blue}, acc ->
+      %{red: [red, acc.red] |> Enum.max(), green: [green, acc.green] |> Enum.max(), blue: [blue, acc.blue] |> Enum.max()}
+    end)
+  end
+
+  def valid_game?(%{game: _game, rounds: rounds}, max_red, max_green, max_blue) do
+    Enum.all?(rounds, fn r -> valid_round?(r, max_red, max_green, max_blue) end)
+  end
+
+  def valid_round?(%{red: red, green: green, blue: blue}, max_red, max_green, max_blue) do
+    red <= max_red and green <= max_green and blue <= max_blue
   end
 
   def parse(line) do
@@ -28,8 +53,6 @@ aoc 2023, 2 do
     %{game: String.to_integer(game_id), rounds: rounds}
   end
 
-  # Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
-
   def parse_rounds(counts) do
     counts
     |> String.split(";", trim: true)
@@ -37,17 +60,17 @@ aoc 2023, 2 do
   end
 
   def parse_round(round) do
-    round
-    |> String.split(",", trim: true)
-    |> Enum.map(&parse_color/1)
+    raw_colors =
+      round
+      |> String.split(",", trim: true)
+      |> Enum.map(&parse_color/1)
+    Enum.reduce(raw_colors, %{red: 0, green: 0, blue: 0}, fn {color, count}, acc ->
+      Map.update(acc, color, count, &(&1 + count))
+    end)
   end
 
   def parse_color(color) do
     [count, color] = String.split(color, " ", trim: true)
-
-    def parse_color(color) do
-      [count, color] = String.split(color, " ", trim: true)
-      [{String.to_atom(color), String.to_integer(color)}]
-    end
+    {String.to_atom(color), String.to_integer(count)}
   end
 end
