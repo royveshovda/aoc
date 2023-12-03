@@ -24,7 +24,8 @@ aoc 2023, 3 do
       input
       |> parse()
 
-    expand_pos(grid, {0,0}, [], [])
+      #expand_number_in_pos(grid, {2,6})
+      expand_number_in_pos(grid, {0,5})
   end
 
   @doc """
@@ -62,7 +63,7 @@ aoc 2023, 3 do
       false ->
         case (number?(grid[coord])) do
           true -> # add to visited and parts
-            expand_number_in_pos(grid, coord, visited, parts)
+          {visited, number} = expand_number_in_pos(grid, coord)
           false -> # add to visited and parts
             {grid, visited, parts}
         end
@@ -77,9 +78,19 @@ aoc 2023, 3 do
     {grid, visited, parts}
   end
 
-  def expand_number_in_pos(grid, coord, visited, parts) do
-    # add to visited and parts
-    {grid, visited, parts}
+  def expand_number_in_pos(grid, coord) do
+    {_grid, visited, raw_number} = do_expand_number_in_pos(grid, coord, [coord], [grid[coord]])
+    number = raw_number |> Enum.join() |> String.to_integer()
+    {visited, number}
+  end
+
+  def do_expand_number_in_pos(grid, {row, col} = coord, visited, number) do
+    case number?(grid[{row, col+1}]) do
+      true -> # add to visited and parts
+        do_expand_number_in_pos(grid, {row, col + 1}, visited ++ [{row, col + 1}], number ++ [grid[{row, col + 1}]])
+      false -> # add to visited and parts
+        {grid, visited, number}
+    end
   end
 
   def visited?(coord, visited) do
