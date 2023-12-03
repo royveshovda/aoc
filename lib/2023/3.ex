@@ -9,38 +9,53 @@ aoc 2023, 3 do
       iex> p1(example_string())
       4361
 
-      #iex> p1(input_string())
-      #321
+      iex> p1(input_string())
+      527364
   """
   def p1(input) do
-    # parse input into array
-    # loop over whole array
-    # keep track of visited numbers
-    # check if number is in visited numbers
-    # if not expand to find all other numbers on same line
-    # check if number has any adjacent symbols
-    # if yes, add number to part number list
     grid =
       input
       |> parse()
 
-      #expand_number_in_pos(grid, {2,6})
-      expand_number_in_pos(grid, {0,5})
+    {_grid, _visited, numbers} =
+      Enum.reduce(grid, {grid, [], []}, fn {coord, _value}, {grid, visited, parts} ->
+        expand_pos(grid, coord, visited, parts)
+      end)
+
+    Enum.sum(numbers)
   end
 
   @doc """
-      #iex> p2(example_string())
-      #123
+      iex> p2(example_string())
+      467835
 
-      #iex> p2(input_string())
-      3321
+      iex> p2(input_string())
+      79026871
 
   """
   def p2(input) do
-    input
+    grid =
+      input
+      |> parse()
+
+    {_grid, _visited, numbers} =
+      Enum.reduce(grid, {grid, [], []}, fn {coord, _value}, {grid, visited, parts} ->
+        expand_pos_for_gear(grid, coord, visited, parts)
+      end)
+
+
+    gear_list =
+      Enum.filter(numbers, fn {_number, [g1], start_pos1} -> Enum.any?(numbers, fn {_number, [g2], start_pos2} -> g1 == g2 and start_pos1 != start_pos2 end) end)
+
+    Enum.map(gear_list, fn {number1, [g1], start_pos1} ->
+      {number2, [_g2], _start_pos2} = Enum.find(numbers, fn {_number2, [g2], start_pos2} -> g1 == g2 and start_pos1 != start_pos2 end)
+      {g1, number1, number2} end)
+    |> Enum.uniq_by(fn {g1, _number1, _number2} -> g1 end)
+    |> Enum.map(fn {_g1, number1, number2} -> number1 * number2 end)
+    |> Enum.sum()
   end
 
-  defp parse(input) do
+  def parse(input) do
     for {line, row} <- Enum.with_index(input |> String.split("\n")),
         {value, col} <- Enum.with_index(String.graphemes(line)),
         into: %{} do
@@ -48,12 +63,27 @@ aoc 2023, 3 do
     end
   end
 
-  def number?(char) do
-    char in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-  end
-
-  def symbol?(char) do
-    char in ["&", "*", "/", "-", "%", "=", "@", "$", "#", "+"]
+  def expand_pos_for_gear(grid, coord, visited, parts) do
+    # check if number is in visited numbers
+    case visited?(coord, visited) do
+      true -> {grid, visited, parts} # do nothing
+      false ->
+        case (number?(grid[coord])) do
+          true -> # add to visited and parts
+            {new_visited, number} = expand_number_in_pos(grid, coord)
+            case gear?(grid, new_visited) do
+              {true, gear_symbols, start_pos} -> # add to parts
+                v = visited ++ new_visited
+                p = parts ++ [{number, gear_symbols, start_pos}]
+                {grid, v, p}
+              {false, _, _} -> # add to visited
+                v = visited ++ new_visited
+                {grid, v, parts}
+            end
+          false -> # add to visited and parts
+            {grid, visited, parts}
+        end
+    end
   end
 
   def expand_pos(grid, coord, visited, parts) do
@@ -63,37 +93,85 @@ aoc 2023, 3 do
       false ->
         case (number?(grid[coord])) do
           true -> # add to visited and parts
-          {visited, number} = expand_number_in_pos(grid, coord)
+            {new_visited, number} = expand_number_in_pos(grid, coord)
+            case part_number?(grid, new_visited) do
+              true -> # add to parts
+                v = visited ++ new_visited
+                p = parts ++ [number]
+                {grid, v, p}
+              false -> # add to visited
+                v = visited ++ new_visited
+                {grid, v, parts}
+            end
           false -> # add to visited and parts
             {grid, visited, parts}
         end
-        # if not expand to find all other numbers on same line
-        # check if number has any adjacent symbols
-        # if yes, add number to part number list
-        {grid, visited, parts}
     end
-    # if not expand to find all other numbers on same line
-    # check if number has any adjacent symbols
-    # if yes, add number to part number list
-    {grid, visited, parts}
   end
 
   def expand_number_in_pos(grid, coord) do
-    {_grid, visited, raw_number} = do_expand_number_in_pos(grid, coord, [coord], [grid[coord]])
-    number = raw_number |> Enum.join() |> String.to_integer()
-    {visited, number}
+    number_positions = do_expand_number_in_pos(grid, [coord], [coord])
+
+  number =
+    number_positions
+    |> Enum.sort(fn {_row1, col1}, {_row2, col2} -> col1 < col2 end)
+    |> Enum.map(fn {row, col} -> grid[{row, col}] end)
+    |> Enum.join()
+    |> String.to_integer()
+  {number_positions, number}
   end
 
-  def do_expand_number_in_pos(grid, {row, col} = coord, visited, number) do
-    case number?(grid[{row, col+1}]) do
-      true -> # add to visited and parts
-        do_expand_number_in_pos(grid, {row, col + 1}, visited ++ [{row, col + 1}], number ++ [grid[{row, col + 1}]])
-      false -> # add to visited and parts
-        {grid, visited, number}
+  def do_expand_number_in_pos(grid, expand, visited) do
+    next =
+      expand
+      |> Enum.flat_map(fn {row, col} ->
+        [{row, col + 1}, {row, col - 1}]
+        |> Enum.filter(&number?(grid[&1]))
+        |> Enum.filter(&!visited?(&1, visited))
+      end)
+
+    case next do
+      [] -> visited
+      _ -> do_expand_number_in_pos(grid, next, visited ++ next)
     end
   end
 
-  def visited?(coord, visited) do
+  def part_number?(grid, coords_in_number) do
+    # check if number has any adjacent symbols
+    expanded_coords =
+      Enum.flat_map(coords_in_number, fn {row, col} ->
+        [{row-1, col-1}, {row-1, col}, {row-1, col+1},
+        {row, col-1}, {row, col+1},
+        {row+1, col-1}, {row+1, col}, {row+1, col+1}] end)
+    Enum.any?(expanded_coords, fn coord -> symbol?(grid[coord]) end)
+  end
+
+  def gear?(grid, coords_in_number) do
+    # check if number has any adjacent symbols
+    expanded_coords =
+      Enum.flat_map(coords_in_number, fn {row, col} ->
+        [{row-1, col-1}, {row-1, col}, {row-1, col+1},
+        {row, col-1}, {row, col+1},
+        {row+1, col-1}, {row+1, col}, {row+1, col+1}] end)
+    gear_symbols = Enum.filter(expanded_coords, fn coord -> gear_symbol?(grid[coord]) end) |> Enum.uniq()
+    is_gear = Enum.any?(expanded_coords, fn coord -> gear_symbol?(grid[coord]) end)
+    number_start_pos = Enum.min(coords_in_number, fn {_row1, col1}, {_row2, col2} -> col1 < col2 end)
+    {is_gear, gear_symbols, number_start_pos}
+  end
+
+  defp visited?(coord, visited) do
     coord in visited
+  end
+
+  defp number?(char) do
+    char in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+  end
+
+  defp symbol?(char) do
+    char in ["&", "*", "/", "-", "%", "=", "@", "$", "#", "+"]
+  end
+
+  defp gear_symbol?(char) do
+    char == "*"
   end
 end
