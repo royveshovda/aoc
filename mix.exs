@@ -12,7 +12,7 @@ defmodule Aoc.MixProject do
 
   defp deps do
     [
-      {:advent_of_code_utils, "~> 4.0"},
+      {:advent_of_code_utils, "~> 4.0.1"},
       {:nimble_parsec, "~> 1.4"},
       {:arrays, "~> 2.1.1"},
       {:heap, "~> 3.0"},
