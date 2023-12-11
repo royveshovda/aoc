@@ -1,10 +1,19 @@
 # Advent of Code
 
-[Current (2022)](/2022)
+[Current (2023)](/2023)
 
 ## Archive
 
-[2021](/2021)
+
+- [2021](/2021)
+
+## Livebook installation
+
+```bash
+mix do local.rebar --force, local.hex --force
+mix escript.install hex livebook
+asdf reshim elixir
+```
 
 ## Resources
 
