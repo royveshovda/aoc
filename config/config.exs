@@ -22,12 +22,9 @@ aoc_token =
 
 config :advent_of_code_utils,
   auto_compile?: true,
-  #time_zone: :aoc,
   session: aoc_token,
   time_calls?: true,
   gen_tests?: true
-
-
 
 config :iex,
   inspect: [charlists: :as_lists]
