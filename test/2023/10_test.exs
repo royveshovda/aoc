@@ -51,8 +51,8 @@ aoc_test 2023, 10, async: true do
   end
 
   test "count line segments: |" do
-    assert count_line_segments([{{1,1}, "-"},{{1,2}, "|"},{{1,3}, "J"}]) == 1
-    assert count_line_segments([{{1,1}, "-"},{{1,2}, "|"},{{1,3}, "J"}, {{1,4},"|"}, {{1,5}, "J"}]) == 2
+    assert count_line_segments([{{1,1}, "-"},{{1,2}, "|"},{{1,3}, "F"}]) == 1
+    assert count_line_segments([{{1,1}, "-"},{{1,2}, "|"},{{1,3}, "-"}, {{1,4},"|"}, {{1,5}, "7"}]) == 2
   end
 
   test "count line segments: L,7" do

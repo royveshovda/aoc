@@ -191,50 +191,9 @@ aoc 2023, 10 do
   end
 
   def count_line_segments(slice) do
-    vert = Enum.filter(slice, fn {{_r,_c}, v} -> v == "|" end) |> Enum.count()
-    l7_count = count_l7_line_segments(slice)
-    fj_count = count_fj_line_segments(slice)
-
-    vert + l7_count + fj_count
+    # Only count "top" of line segments
+    Enum.filter(slice, fn {{_r,_c}, v} -> v in ["|", "L", "J"] end) |> Enum.count()
   end
-
-  def count_l7_line_segments(slice) do
-    slice
-    |> Enum.filter(fn {_, v} -> v == "L" end)
-    |> Enum.map(fn {pos, _v} -> verify_l7_segment(pos, slice) end)
-    |> Enum.filter(fn x -> x == true end)
-    |> Enum.count()
-  end
-
-  def count_fj_line_segments(slice) do
-    slice
-    |> Enum.filter(fn {_, v} -> v == "F" end)
-    |> Enum.map(fn {pos, _v} -> verify_fj_segment(pos, slice) end)
-    |> Enum.filter(fn x -> x == true end)
-    |> Enum.count()
-  end
-
-  def verify_fj_segment({row,col}, slice) do
-    next = Enum.find(slice, fn {{r,c}, _v} -> r == row and c == col + 1  end)
-    {_, next_val} = next
-    case next_val do
-      "J" -> true
-      "-" -> verify_fj_segment({row,col+1}, slice)
-      _ -> false
-    end
-  end
-
-
-  def verify_l7_segment({row,col}, slice) do
-    next = Enum.find(slice, fn {{r,c}, _v} -> r == row and c == col + 1  end)
-    {_, next_val} = next
-    case next_val do
-      "7" -> true
-      "-" -> verify_l7_segment({row,col+1}, slice)
-      _ -> false
-    end
-  end
-
 
   def get_pipe(grid) do
     start = Enum.find(grid, fn {_, point} -> point == "S" end)
