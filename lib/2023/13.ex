@@ -9,24 +9,28 @@ aoc 2023, 13 do
       iex> p1(example_string())
       405
 
-      #iex> p1(input_string())
-      #123
+      iex> p1(input_string())
+      30677
   """
   def p1(input) do
-    grids =
-      input
-      |> parse()
-
-    {grid1, max_row1, max_col1} = grids |> Enum.at(0)
-    {grid1, max_row1, max_col1}
-
-    check_grid(grid1, max_row1, max_col1)
+    input
+    |> parse()
+    |> Enum.map(fn {grid, max_row, max_col} ->
+      check_grid(grid, max_row, max_col)
+    end)
+    |> Enum.sum()
   end
 
   def check_grid(grid, max_row, max_col) do
     vertical = find_vertical_reflections(grid, max_row, max_col)
     horizontal = find_horizontal_reflections(grid, max_row, max_col)
-    vertical + (100 * horizontal)
+    res = vertical + (100 * horizontal)
+    case res do
+      0 ->
+        IO.inspect(grid)
+        res
+      _ -> res
+    end
   end
 
   def find_vertical_reflections(grid, max_row, max_col) do
@@ -46,14 +50,69 @@ aoc 2023, 13 do
       end)
 
     lines_to_check = 1..(max_col-1) |> Enum.to_list()
-    IO.inspect(lines_to_check)
 
-    #IO.inspect(columns)
-    0
+    res =
+      lines_to_check
+      |> Enum.map(fn l -> get_pairs_for_line(l, max_col) end)
+      |> Enum.map(fn {n, pairs} -> {n, compare_pairs(pairs, columns)} end)
+      |> Enum.filter(fn {_n, res} -> res end)
+
+    case res do
+      [] -> 0
+      [{n, _}] -> n
+    end
+  end
+
+  def get_pairs_for_line(n, max) do
+    steps = min(max-n, n-1)
+    left = (n-steps-1)..(n - 1) |> Enum.to_list()
+    right = (n+steps)..n |> Enum.to_list()
+    {n, Enum.zip(left, right)}
+  end
+
+  def compare_pairs(pairs, lines) do
+    pairs
+    |> Enum.map(fn {l, r} ->
+      {Enum.at(lines, l), Enum.at(lines, r)}
+    end)
+    |> Enum.map(fn {l, r} ->
+      if l == r do
+        true
+      else
+        false
+      end
+    end)
+    |> Enum.all?()
   end
 
   def find_horizontal_reflections(grid, max_row, max_col) do
-    0
+    rows =
+      for row <- 0..max_row,
+        into: [] do
+          for col <- 0..max_col do
+            grid[{row, col}]
+          end
+        end
+
+    rows =
+      rows
+      |> Enum.map(fn row ->
+        row
+        |> Enum.join()
+      end)
+
+    lines_to_check = 1..(max_row-1) |> Enum.to_list()
+
+    res =
+      lines_to_check
+      |> Enum.map(fn l -> get_pairs_for_line(l, max_row) end)
+      |> Enum.map(fn {n, pairs} -> {n, compare_pairs(pairs, rows)} end)
+      |> Enum.filter(fn {_n, res} -> res end)
+
+    case res do
+      [] -> 0
+      [{n, _}] -> n
+    end
   end
 
   def parse(input) do
