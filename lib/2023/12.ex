@@ -104,20 +104,48 @@ aoc 2023, 12 do
   end
 
   @doc """
-      #iex> p2(example_string())
-      #525152
+      iex> p2(example_string())
+      525152
 
-      #iex> p2(input_string())
-      #123
+      iex> p2(input_string())
+      620189727003627
   """
   def p2(input) do
-    input
-    |> parse()
-    |> expand_for_p2()
-    # Not working
-    |> Enum.map(&calculate_options_for_line/1)
+    for {s, ns} <- parse_p2(input) do
+      solve("#{s}?#{s}?#{s}?#{s}?#{s}", nil, List.flatten([ns, ns, ns, ns, ns]))
+    end
     |> Enum.sum()
   end
+
+  defp parse_p2(input) do
+    for line <- String.split(input, "\n", trim: true) do
+      [pattern, ns] = String.split(line)
+      {pattern, String.split(ns, ",") |> Enum.map(&String.to_integer/1)}
+    end
+  end
+
+  defp solve(a, b, c) do
+    if cached = Process.get({a, b, c}) do
+      cached
+    else
+      r = solver(a, b, c)
+      Process.put({a, b, c}, r)
+      r
+    end
+  end
+
+  defp solver("", n, [n]), do: 1
+  defp solver("", nil, []), do: 1
+  defp solver("", _, _), do: 0
+  defp solver("." <> s, nil, cons), do: solve(s, nil, cons)
+  defp solver("?" <> s, nil, []), do: solve(s, nil, [])
+  defp solver("?" <> s, nil, cons), do: solve(s, 1, cons) + solve(s, nil, cons)
+  defp solver("#" <> s, nil, cons = [_ | _]), do: solve(s, 1, cons)
+  defp solver("." <> s, n, [n | ns]), do: solve(s, nil, ns)
+  defp solver("?" <> s, n, [n | ns]), do: solve(s, nil, ns)
+  defp solver("#" <> s, n, cons = [e | _]) when n < e, do: solve(s, n + 1, cons)
+  defp solver("?" <> s, n, cons = [e | _]) when n < e, do: solve(s, n + 1, cons)
+  defp solver(_, _, _), do: 0
 
   def expand_for_p2(lines) do
     Enum.map(lines, fn {positions, pattern} ->
