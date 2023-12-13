@@ -10,7 +10,10 @@ aoc 2023, 13 do
       405
 
       iex> p1(input_string())
-      30677
+      37975
+
+      iex> p1(exmample_p1_1())
+      14
   """
   def p1(input) do
     input
@@ -21,15 +24,38 @@ aoc 2023, 13 do
     |> Enum.sum()
   end
 
+  def exmample_p1_1() do
+    """
+    .##.#####.##...
+    .#.#.##..###.##
+    .#.#.##..###.##
+    .##.########...
+    ###.##.#.##.###
+    #####..#.#...##
+    ....##...#.####
+    .##.##.#.#.####
+    #.#..#######.##
+    """
+  end
+
   def check_grid(grid, max_row, max_col) do
     vertical = find_vertical_reflections(grid, max_row, max_col)
     horizontal = find_horizontal_reflections(grid, max_row, max_col)
     res = vertical + (100 * horizontal)
     case res do
       0 ->
-        IO.inspect(grid)
+        print_grid(grid, max_row, max_col)
         res
       _ -> res
+    end
+  end
+
+  def print_grid(grid, max_row, max_col) do
+    for row <- 0..max_row do
+      for col <- 0..max_col do
+        IO.write(grid[{row, col}])
+      end
+      IO.puts("")
     end
   end
 
@@ -49,7 +75,7 @@ aoc 2023, 13 do
         |> Enum.join()
       end)
 
-    lines_to_check = 1..(max_col-1) |> Enum.to_list()
+    lines_to_check = 1..(max_col) |> Enum.to_list()
 
     res =
       lines_to_check
@@ -101,7 +127,7 @@ aoc 2023, 13 do
         |> Enum.join()
       end)
 
-    lines_to_check = 1..(max_row-1) |> Enum.to_list()
+    lines_to_check = 1..(max_row) |> Enum.to_list()
 
     res =
       lines_to_check
