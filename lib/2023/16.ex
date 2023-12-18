@@ -38,14 +38,13 @@ aoc 2023, 16 do
       |> parse_input()
 
     generate_start_points(grid)
-    |> Enum.with_index()
-    |> Enum.map(fn {start, index} ->
-      IO.puts("#{index}")
+    |> Task.async_stream(fn start ->
       beam(grid, [start], [])
       |> Enum.map(fn {_, row, col} -> {row, col} end)
       |> Enum.uniq()
       |> Enum.count()
     end)
+    |> Enum.map(fn {:ok, res} -> res end)
     |> Enum.max()
   end
 
@@ -69,9 +68,7 @@ aoc 2023, 16 do
       {:left, row, max_col}
     end
 
-    edges = top_edge ++ bottom_edge ++ left_edge ++ right_edge
-    IO.puts("#{inspect(length(edges))}")
-    edges
+    top_edge ++ bottom_edge ++ left_edge ++ right_edge
   end
 
   def beam(_grid, [], energized) do
