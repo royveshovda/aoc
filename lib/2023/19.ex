@@ -17,9 +17,6 @@ aoc 2023, 19 do
       input
       |> parse_input()
 
-    # xmas1 = Enum.at(xmas, 2)
-    # execute_p1(rules, xmas1, rules["in"])
-
     xmas
     |> Enum.map(fn x -> execute_p1(rules, x, rules["in"]) end)
     |> Enum.filter(fn {:accepted, _} -> true; _ -> false end)
@@ -29,7 +26,6 @@ aoc 2023, 19 do
   end
 
   def execute_p1(rules, xmas, [current_rule | rest]) do
-    #IO.puts("xmas: #{inspect(xmas)}, current_rule: #{inspect(current_rule)}, rest: #{inspect(rest)}")
     case current_rule do
       {:accept} -> {:accepted, xmas}
       {:reject} -> :rejected
@@ -87,10 +83,8 @@ aoc 2023, 19 do
             right = search(rules, rest, %{ranges | v => %{min: value, max: max}})
             left + right
           ">" ->
-            left_range = %{ranges | v => %{min: value + 1, max: max}}
-            right_range = %{ranges | v => %{min: min, max: value}}
-            left = search(rules, [op], left_range)
-            right = search(rules, rest, right_range)
+            left = search(rules, [op], %{ranges | v => %{min: value + 1, max: max}})
+            right = search(rules, rest, %{ranges | v => %{min: min, max: value}})
             left + right
         end
     end
