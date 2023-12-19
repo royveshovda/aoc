@@ -54,17 +54,46 @@ aoc 2023, 19 do
 
   @doc """
       iex> p2(example_string())
-      123
+      167409079868000
 
-      #iex> p2(input_string())
-      #123
+      iex> p2(input_string())
+      136146366355609
   """
   def p2(input) do
     {rules, _xmas} =
       input
       |> parse_input()
 
-    rules
+    search(rules, rules["in"], %{"x" => %{min: 1, max: 4000}, "m" => %{min: 1, max: 4000}, "a" => %{min: 1, max: 4000}, "s" => %{min: 1, max: 4000}})
+  end
+
+  def search(_rules, [{:accept} | _], %{"x" => %{min: x_min, max: x_max}, "m" => %{min: m_min, max: m_max}, "a" => %{min: a_min, max: a_max}, "s" => %{min: s_min, max: s_max}}) do
+    (x_max - x_min + 1) * (m_max - m_min + 1) * (a_max - a_min + 1) * (s_max - s_min + 1)
+  end
+
+  def search(_rules, [{:reject} | _], _) do
+    0
+  end
+
+  def search(rules, [current_rule | rest], ranges) do
+    case current_rule do
+      {:go_to, label} -> search(rules, rules[label], ranges)
+      {:condition, v, ltgt, value, op} ->
+        min = ranges[v][:min]
+        max = ranges[v][:max]
+        case ltgt do
+          "<" ->
+            left = search(rules, [op], %{ranges | v => %{min: min, max: value - 1}})
+            right = search(rules, rest, %{ranges | v => %{min: value, max: max}})
+            left + right
+          ">" ->
+            left_range = %{ranges | v => %{min: value + 1, max: max}}
+            right_range = %{ranges | v => %{min: min, max: value}}
+            left = search(rules, [op], left_range)
+            right = search(rules, rest, right_range)
+            left + right
+        end
+    end
   end
 
   def parse_input(input) do
