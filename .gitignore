@@ -11,7 +11,7 @@ erl_crash.dump
 
 
 # Ignore inputs
-#input/
+input/
 
 # The directory Mix will write compiled artifacts to.
 /_build/
