@@ -12,8 +12,8 @@ aoc 2023, 20 do
       iex> p1(example_string_p1_2())
       11687500
 
-      #iex> p1(input_string())
-      #123
+      iex> p1(input_string())
+      747304011
   """
   def p1(input) do
     initial_config =
@@ -55,14 +55,10 @@ aoc 2023, 20 do
     case module do
       nil ->
         #IO.puts("Module #{current_module_label} not found")
-        {h,l} = {0,0}
-          # case pulse_type do
-          #   :high -> {1, 0}
-          #   :low -> {0, 1}
-          # end
-        pulse(config, rest, {high_pulses + h, low_pulses + l})
+        pulse(config, rest, {high_pulses, low_pulses})
       _ ->
         {new_config, new_emits, {add_high, add_low}} = pulse_module(config, module, pulse_type, from)
+        #IO.puts("Pulsed #{current_module_label} with #{inspect(pulse_type)} to #{inspect(new_emits)} - Add High #{inspect(add_high)} - Add Low #{inspect(add_low)})}")
         pulse(new_config, rest ++ new_emits, {high_pulses + add_high, low_pulses + add_low})
     end
   end
@@ -87,10 +83,10 @@ aoc 2023, 20 do
         case Enum.all?(new_state, fn {_, v} -> v == :high end) do
           true ->
             dest = for x <- module.destinations, do: {x, :low, module.label}
-            {Map.put(config, module.label, %{module | state: new_state}), dest, {length(dest), 0}}
+            {Map.put(config, module.label, %{module | state: new_state}), dest, {0, length(dest)}}
           false ->
             dest = for x <- module.destinations, do: {x, :high, module.label}
-            {Map.put(config, module.label, %{module | state: new_state}), dest, {0, length(dest)}}
+            {Map.put(config, module.label, %{module | state: new_state}), dest, {length(dest), 0}}
         end
       :broadcaster ->
         dest = for x <- module.destinations, do: {x, pulse_type, module.label}
