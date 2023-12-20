@@ -20,8 +20,6 @@ aoc 2023, 20 do
       input
       |> parse_input()
 
-    #IO.inspect(initial_config)
-
     presses =
       for _i <- 1..1000 do
         {[{"broadcaster", :low, :button}], {0, 1}}
@@ -29,7 +27,6 @@ aoc 2023, 20 do
 
     {{high, low}, _} =
       Enum.reduce(presses, {{0, 0}, initial_config}, fn {press, {h,l}}, {{high, low}, c} ->
-        #IO.puts("running")
         {{new_high, new_low}, new_c} = pulse(c, press, {h, l})
         {{new_high + high, new_low + low}, new_c}
       end)
@@ -50,15 +47,12 @@ aoc 2023, 20 do
   def pulse(config, [], pulses), do: {pulses, config}
 
   def pulse(config, [{current_module_label, pulse_type, from} | rest], {high_pulses, low_pulses}) do
-    #IO.puts("Pulsing #{current_module_label} with #{pulse_type} from #{from}")
     module = config[current_module_label]
     case module do
       nil ->
-        #IO.puts("Module #{current_module_label} not found")
         pulse(config, rest, {high_pulses, low_pulses})
       _ ->
         {new_config, new_emits, {add_high, add_low}} = pulse_module(config, module, pulse_type, from)
-        #IO.puts("Pulsed #{current_module_label} with #{inspect(pulse_type)} to #{inspect(new_emits)} - Add High #{inspect(add_high)} - Add Low #{inspect(add_low)})}")
         pulse(new_config, rest ++ new_emits, {high_pulses + add_high, low_pulses + add_low})
     end
   end
@@ -102,15 +96,37 @@ aoc 2023, 20 do
   end
 
   @doc """
-      #iex> p1(example_string())
-      #123
-
-      #iex> p1(input_string())
-      #123
+      iex> p2(input_string())
+      123
   """
   def p2(input) do
-    input
-    |> parse_input()
+    initial_config =
+      input
+      |> parse_input()
+
+    presses =
+      for _i <- 1..10000 do
+        {[{"broadcaster", :low, :button}], {0, 1}}
+      end
+
+    # TODO: Search for cyclic patterns for "bm", "cl", "tn" and "dr"
+    # Can search for eash time each of them gets a low signal
+    # Stop when all of them have been low at least 2 times each
+    # Calculate using LCM of the cycle lengths
+    # TODO: Consider if offset is needed
+    :ok
+
+  end
+
+  def pulse_p2(config, [{current_module_label, pulse_type, from} | rest]) do
+    module = config[current_module_label]
+    case module do
+      nil ->
+        pulse_p2(config, rest)
+      _ ->
+        {new_config, new_emits, _} = pulse_module(config, module, pulse_type, from)
+        pulse_p2(new_config, rest ++ new_emits)
+    end
   end
 
   def parse_input(input) do
