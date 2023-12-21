@@ -1,35 +1,26 @@
+// For format details, see https:https://containers.dev/implementors/spec/. For config options, see the README at:
+// https://github.com/devcontainers/images/tree/main/src/base-debian
 {
-	"name": "Elixir",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			// Elixir Version: 1.9, 1.10, 1.10.4, ...
-			"VARIANT": "1.14.2"
-		}
+	"name": "Elixir dev environment",
+	
+	"image": "mcr.microsoft.com/devcontainers/base:bullseye",
+
+	// Install utils, elixir, docker-in-docker, and other tools
+	// For more info about dev container Features see https://containers.dev/features
+	"features": {
+		// Install elixir latest.
+		"ghcr.io/devcontainers-contrib/features/elixir-asdf:2": {},
+		// Enable running docker in docker
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": "true"
+		},
+		//"ghcr.io/devcontainers/features/sshd:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		// Python required for some hack tools
+		"ghcr.io/devcontainers/features/python:1": {}
 	},
-
-	// Configure tool-specific properties.
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {			
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"jakebecker.elixir-ls"
-			]
-		}
-	},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "mix deps.get",
-
-	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
-	"hostRequirements": {
-	   "cpus": 4,
-	   "memory": "4gb",
-	   "storage": "16gb" 
+	"containerEnv": {
+		"ELIXIR_ERL_OPTIONS": "+fnu"
 	}
 }
