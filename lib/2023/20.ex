@@ -97,7 +97,7 @@ aoc 2023, 20 do
 
   @doc """
       iex> p2(input_string())
-      123
+      220366255099387
   """
   def p2(input) do
     initial_config =
@@ -105,27 +105,64 @@ aoc 2023, 20 do
       |> parse_input()
 
     presses =
-      for _i <- 1..10000 do
-        {[{"broadcaster", :low, :button}], {0, 1}}
+      for i <- 1..5000 do
+        {[{"broadcaster", :low, :button}], i}
       end
 
-    # TODO: Search for cyclic patterns for "bm", "cl", "tn" and "dr"
-    # Can search for eash time each of them gets a low signal
+    # Search for cyclic patterns for "bm", "cl", "tn" and "dr"
+    # Can search for each time each of them gets a low signal
     # Stop when all of them have been low at least 2 times each
     # Calculate using LCM of the cycle lengths
-    # TODO: Consider if offset is needed
-    :ok
+    # Consider if offset is needed
 
+    # TODO: Find these from config
+    pulsars = %{"bm" => [], "cl" => [], "tn" => [], "dr" => []}
+
+    {cycles, _c} =
+      Enum.reduce(presses, {pulsars, initial_config}, fn {press, i}, {p, c} ->
+        {new_pulsars, new_c} = pulse_p2(c, press, p, i)
+        {new_pulsars, new_c}
+      end)
+
+    cycles
+    |> Enum.map(fn {k, v} -> Enum.min(v) end)
+    |> Enum.reduce(&lcm/2)
   end
 
-  def pulse_p2(config, [{current_module_label, pulse_type, from} | rest]) do
+  def lcm(a, b) do
+    div(a * b, Integer.gcd(a, b))
+  end
+
+  def pulse_p2(config, [], pulsars, _i), do: {pulsars, config}
+
+  def pulse_p2(config, [{current_module_label, pulse_type, from} | rest], pulsars, i) do
     module = config[current_module_label]
     case module do
       nil ->
-        pulse_p2(config, rest)
+        pulse_p2(config, rest, pulsars, i)
       _ ->
         {new_config, new_emits, _} = pulse_module(config, module, pulse_type, from)
-        pulse_p2(new_config, rest ++ new_emits)
+        ps = Map.keys(pulsars)
+        candidates =
+          new_emits
+          |> Enum.filter(fn {_, type, _} ->
+            type == :low
+          end)
+          |> Enum.filter(fn {l, _, _} ->
+            l in ps
+          end)
+
+        new_pulsars =
+          case length(candidates) > 0 do
+            true ->
+              Enum.reduce(candidates, pulsars, fn {l, t, _}, acc ->
+                Map.update(acc, l, [t], fn x -> [i | x] end)
+              end)
+            false ->
+              pulsars
+          end
+
+        pulse_p2(new_config, rest ++ new_emits, new_pulsars, i)
     end
   end
 
@@ -140,8 +177,6 @@ aoc 2023, 20 do
       |> Enum.into(%{})
 
     populate_connections(config)
-
-    # TODO: populate initial connections for conjuctions
   end
 
   def populate_connections(config) do
