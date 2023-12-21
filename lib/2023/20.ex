@@ -125,7 +125,7 @@ aoc 2023, 20 do
       end)
 
     cycles
-    |> Enum.map(fn {k, v} -> Enum.min(v) end)
+    |> Enum.map(fn {_k, v} -> Enum.min(v) end)
     |> Enum.reduce(&lcm/2)
   end
 
