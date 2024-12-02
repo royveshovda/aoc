@@ -1,6 +1,6 @@
 # Advent of Code
 
-[2023](lib/2024)
+[2024](lib/2024)
 
 ## Archive
 
