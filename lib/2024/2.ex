@@ -32,11 +32,14 @@ aoc 2024, 2 do
     |> String.split("\n", trim: true)
     |> Enum.map(&String.split/1)
     |> Enum.map(fn line -> Enum.map(line, &String.to_integer/1) end)
-    |> Enum.map(
-      fn line ->
-        line
-        |> Enum.chunk_every(3, 1, :discard)
-        |> Enum.map(fn [a, b, c] -> {a - b, b - c, a - c} end)
-      end)
+    |> Enum.filter(fn line -> safe_line?(line) || almost_safe?(line) end)
+    |> Enum.count()
+  end
+
+  defp almost_safe?(report) do
+    report
+    |> Enum.with_index()
+    |> Enum.any?(fn {_, idx} -> report |> List.delete_at(idx) |> safe_line?()
+    end)
   end
 end
