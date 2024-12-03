@@ -18,7 +18,7 @@ aoc 2023, 1 do
     |> String.split("\n", trim: true)
     |> Enum.map(&String.graphemes/1)
     |> Enum.map(fn x -> Enum.filter(x, &integer?/1) end)
-    |> Enum.map(fn x -> [Enum.at(x,0) , Enum.at(x,-1)] end)
+    |> Enum.map(fn x -> [Enum.at(x, 0) , Enum.at(x, -1)] end)
     |> Enum.map(fn x -> Enum.join(x, "") |> String.to_integer() end)
     |> Enum.sum()
   end
@@ -45,7 +45,7 @@ aoc 2023, 1 do
     |> Enum.map(&String.graphemes/1)
     |> Enum.map(&convert_to_digits/1)
     |> Enum.map(fn x -> Enum.filter(x, &integer?/1) end)
-    |> Enum.map(fn x -> [Enum.at(x,0) , Enum.at(x,-1)] end)
+    |> Enum.map(fn x -> [Enum.at(x, 0) , Enum.at(x, -1)] end)
     |> Enum.map(fn x -> Enum.join(x, "") |> String.to_integer() end)
     |> Enum.sum()
   end
@@ -64,7 +64,7 @@ aoc 2023, 1 do
   def convert_to_digits(["f", "i", "v", "e" | rest]), do: ["5" | convert_to_digits(["e" | rest])]
   def convert_to_digits(["s", "i", "x" | rest]), do: ["6" | convert_to_digits(rest)]
   def convert_to_digits(["s", "e", "v", "e", "n" | rest]), do: ["7" | convert_to_digits(["n" | rest])]
-  def convert_to_digits(["e", "i", "g", "h", "t" | rest]), do: ["8" | convert_to_digits([ "t" | rest])]
+  def convert_to_digits(["e", "i", "g", "h", "t" | rest]), do: ["8" | convert_to_digits(["t" | rest])]
   def convert_to_digits(["n", "i", "n", "e" | rest]), do: ["9" | convert_to_digits(["e" | rest])]
   def convert_to_digits([x | rest]), do: [x | convert_to_digits(rest)]
   def convert_to_digits([]), do: []

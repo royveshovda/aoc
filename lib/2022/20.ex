@@ -12,10 +12,10 @@ aoc 2022, 20 do
     l = length(start) - 1
 
     new_grid =
-      Enum.reduce(0..(l-1), start, fn x, acc ->
+      Enum.reduce(0..(l - 1), start, fn x, acc ->
         move(acc, x, l)
       end)
-      |> Enum.filter(fn x -> x.current in [1000,2000,3000] end)
+      |> Enum.filter(fn x -> x.current in [1000, 2000, 3000] end)
       #|> Enum.sort_by(& &1.current)
       |> Enum.map(& &1.value)
 

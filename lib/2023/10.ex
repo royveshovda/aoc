@@ -172,8 +172,7 @@ aoc 2023, 10 do
       |> Enum.filter(fn {{r,c}, _v} -> {r,c} not in pipe end)
       |> Enum.map(fn {{r,c}, _v} -> {r,c} end)
 
-    Enum.filter(non_pipe, fn {r,c} -> inside?(pipe_with_values, {r,c}) end)
-    |> Enum.count()
+    Enum.count(non_pipe, fn {r,c} -> inside?(pipe_with_values, {r,c}) end)
   end
 
   def inside?(_pipe, {_row, 0}), do: false
@@ -192,7 +191,7 @@ aoc 2023, 10 do
 
   def count_line_segments(slice) do
     # Only count "top" of line segments
-    Enum.filter(slice, fn {{_r,_c}, v} -> v in ["|", "L", "J"] end) |> Enum.count()
+    Enum.count(slice, fn {{_r,_c}, v} -> v in ["|", "L", "J"] end)
   end
 
   def get_pipe(grid) do

@@ -37,21 +37,21 @@ aoc_test 2023, 7, async: true do
 
   test "compare cards" do
     #assert Y2023.D7.compare_cards([1,2,3,4,5], [1,2,3,4,5]) == :tie
-    assert Y2023.D7.compare_cards(%{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}, %{c1: 11,c2: 22,c3: 33,c4: 44, c5: 55}) == :right_hand_wins
-    assert Y2023.D7.compare_cards(%{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}, %{c1: 1,c2: 2,c3: 3,c4: 4, c5: 5}) == :tie
-    assert Y2023.D7.compare_cards(%{c1: 1,c2: 2,c3: 3, c4: 4,c5: 6}, %{c1: 1,c2: 2,c3: 3,c4: 4, c5: 5}) == :left_hand_wins
-    assert Y2023.D7.compare_cards(%{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}, %{c1: 1,c2: 2,c3: 3,c4: 4, c5: 6}) == :right_hand_wins
+    assert Y2023.D7.compare_cards(%{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}, %{c1: 11, c2: 22, c3: 33, c4: 44, c5: 55}) == :right_hand_wins
+    assert Y2023.D7.compare_cards(%{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}, %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}) == :tie
+    assert Y2023.D7.compare_cards(%{c1: 1, c2: 2, c3: 3, c4: 4, c5: 6}, %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}) == :left_hand_wins
+    assert Y2023.D7.compare_cards(%{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}, %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 6}) == :right_hand_wins
   end
 
   test "left hand less than or equal" do
     assert Y2023.D7.left_hand_less_than_or_equal(
-      %{hand_type: :five_of_a_kind, cards: %{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}},
-      %{hand_type: :five_of_a_kind, cards: %{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}})
+      %{hand_type: :five_of_a_kind, cards: %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}},
+      %{hand_type: :five_of_a_kind, cards: %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}})
       == true
 
       assert Y2023.D7.left_hand_less_than_or_equal(
-        %{hand_type: :five_of_a_kind, cards: %{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}},
-        %{hand_type: :four_of_a_kind, cards: %{c1: 1,c2: 2,c3: 3, c4: 4,c5: 5}})
+        %{hand_type: :five_of_a_kind, cards: %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}},
+        %{hand_type: :four_of_a_kind, cards: %{c1: 1, c2: 2, c3: 3, c4: 4, c5: 5}})
         == false
   end
 end

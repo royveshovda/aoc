@@ -115,7 +115,6 @@ aoc 2023, 20 do
     # Calculate using LCM of the cycle lengths
     # Consider if offset is needed
 
-    # TODO: Find these from config
     pulsars = %{"bm" => [], "cl" => [], "tn" => [], "dr" => []}
 
     {cycles, _c} =

@@ -113,7 +113,7 @@ aoc 2023, 19 do
         m = String.slice(m, 2..-1//-1) |> String.to_integer()
         a = String.slice(a, 2..-1//-1) |> String.to_integer()
         s = String.slice(s, 2..-1//-1) |> String.to_integer()
-        %{"x" => x,"m" => m, "a" => a, "s" => s}
+        %{"x" => x, "m" => m, "a" => a, "s" => s}
       end)
     {rules, xmas}
   end

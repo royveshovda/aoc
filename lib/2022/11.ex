@@ -51,7 +51,7 @@ aoc 2022, 11 do
   end
 
   def parse_monkey(input) do
-    [id,items,operation,test,truthy,falsy] = String.split(input, "\n")
+    [id, items,operation,test, truthy, falsy] = String.split(input, "\n")
     id = id |> String.split(" ") |> List.last() |> String.trim() |> String.trim_trailing(":") |> String.to_integer()
     items =
       items

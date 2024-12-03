@@ -24,7 +24,7 @@ aoc 2022, 10 do
       |> Enum.flat_map(&expand/1)
       |> List.insert_at(0, 1)
 
-    signal = [20,60,100,140,180,220]
+    signal = [20, 60, 100, 140, 180, 220]
 
     signal
     |> Enum.map(fn v -> ((Enum.take(values, v) |> Enum.sum())) * v end)

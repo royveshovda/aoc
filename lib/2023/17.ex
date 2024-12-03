@@ -38,7 +38,7 @@ aoc 2023, 17 do
     |> Utils.Grid.input_to_map_with_bounds(&String.to_integer/1)
   end
 
-  def find_path(grid = {_, {_..max_x, _..max_y}}, line_fun) do
+  def find_path({_, {_..max_x, _..max_y} = grid}, line_fun) do
     [{0, 0, :v}, {0, 0, :h}]
     |> Enum.map(&{manhattan(&1, {max_x, max_y}), &1})
     |> Enum.reduce({Heap.min(), %{}}, fn el = {_, option}, {queue, cheapest_paths} ->

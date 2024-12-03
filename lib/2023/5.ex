@@ -167,9 +167,9 @@ aoc 2023, 5 do
     def fill_stage([], _, result), do: result
     def fill_stage([{s, d, l} | rest], current, result) do
       if (current < s) do
-        fill_stage(rest, s + l, [{s,d,l} | [{current, current, s - current} | result]])
+        fill_stage(rest, s + l, [{s, d, l} | [{current, current, s - current} | result]])
       else
-        fill_stage(rest, s + l, [{s,d,l} | result])
+        fill_stage(rest, s + l, [{s, d, l} | result])
       end
     end
 

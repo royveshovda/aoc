@@ -13,8 +13,7 @@ aoc 2024, 2 do
     |> String.split("\n", trim: true)
     |> Enum.map(&String.split/1)
     |> Enum.map(fn line -> Enum.map(line, &String.to_integer/1) end)
-    |> Enum.filter(fn line -> safe_line?(line) end)
-    |> Enum.count()
+    |> Enum.count(fn line -> safe_line?(line) end)
   end
 
   def safe_line?(line) do
@@ -32,8 +31,7 @@ aoc 2024, 2 do
     |> String.split("\n", trim: true)
     |> Enum.map(&String.split/1)
     |> Enum.map(fn line -> Enum.map(line, &String.to_integer/1) end)
-    |> Enum.filter(fn line -> safe_line?(line) || almost_safe?(line) end)
-    |> Enum.count()
+    |> Enum.count(fn line -> safe_line?(line) || almost_safe?(line) end)
   end
 
   defp almost_safe?(report) do

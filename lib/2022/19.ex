@@ -155,11 +155,11 @@ aoc 2022, 19 do
     }
     |> Map.to_list
     |> Enum.filter(fn {_, found} -> found end)
-    |> Enum.map(fn {type,_} -> type end)
+    |> Enum.map(fn {type, _} -> type end)
     |> List.insert_at(0, :nothing)
   end
 
-  def score(state,_,0) do
+  def score(state, _, 0) do
     state.geode
   end
 

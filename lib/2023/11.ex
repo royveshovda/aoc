@@ -19,8 +19,8 @@ aoc 2023, 11 do
       galaxies
       |> Enum.map(fn {r, c} ->
 
-        rows_to_add = Enum.filter(rows_to_expand, fn row -> row < r end) |> Enum.count()
-        cols_to_add = Enum.filter(cols_to_expand, fn col -> col < c end) |> Enum.count()
+        rows_to_add = Enum.count(rows_to_expand, fn row -> row < r end)
+        cols_to_add = Enum.count(cols_to_expand, fn col -> col < c end)
         {r + rows_to_add, c + cols_to_add}
        end)
 
@@ -46,10 +46,10 @@ aoc 2023, 11 do
 
     expanded_galaxies =
       galaxies
-      |> Enum.map(fn {r,c} ->
+      |> Enum.map(fn {r, c} ->
 
-        rows_to_add = Enum.filter(rows_to_expand, fn row -> row < r end) |> Enum.count()
-        cols_to_add = Enum.filter(cols_to_expand, fn col -> col < c end) |> Enum.count()
+        rows_to_add = Enum.count(rows_to_expand, fn row -> row < r end)
+        cols_to_add = Enum.count(cols_to_expand, fn col -> col < c end)
         # remeber to add the expansion rate and subtract the rows_to_add/cols_to_add
         # because we are replacing the galaxy with a bigger one, not just multiplying
         {r + (rows_to_add * expansion_rate - rows_to_add), c + (cols_to_add * expansion_rate - cols_to_add)}
@@ -71,26 +71,26 @@ aoc 2023, 11 do
       end
 
     # find all rows to expand
-    max_row = Enum.map(grid, fn {{r,_},_} -> r end) |> Enum.max()
+    max_row = Enum.map(grid, fn {{r, _}, _} -> r end) |> Enum.max()
 
     rows_to_expand =
       (0..max_row)
-      |> Enum.map(fn row_id -> {row_id, Enum.filter(grid, fn {{r,_},_} -> r == row_id end)} end)
-      |> Enum.filter(fn {_row_id, rows} -> Enum.all?(rows, fn {{_,_},v} -> v == "." end) end)
+      |> Enum.map(fn row_id -> {row_id, Enum.filter(grid, fn {{r, _}, _} -> r == row_id end)} end)
+      |> Enum.filter(fn {_row_id, rows} -> Enum.all?(rows, fn {{_, _} , v} -> v == "." end) end)
       |> Enum.map(fn {row_id, _} -> row_id end)
 
-    max_cols = Enum.map(grid, fn {{_,c},_} -> c end) |> Enum.max()
+    max_cols = Enum.map(grid, fn {{_, c}, _} -> c end) |> Enum.max()
 
     cols_to_expand =
       (0..max_cols)
-      |> Enum.map(fn col_id -> {col_id, Enum.filter(grid, fn {{_,c},_} -> c == col_id end)} end)
-      |> Enum.filter(fn {_col_id, cols} -> Enum.all?(cols, fn {{_,_},v} -> v == "." end) end)
+      |> Enum.map(fn col_id -> {col_id, Enum.filter(grid, fn {{_, c}, _} -> c == col_id end)} end)
+      |> Enum.filter(fn {_col_id, cols} -> Enum.all?(cols, fn {{_, _} ,v} -> v == "." end) end)
       |> Enum.map(fn {col_id, _} -> col_id end)
 
     galaxies =
       grid
-      |> Enum.filter(fn {{_,_},v} -> v == "#" end)
-      |> Enum.map(fn {{r,c},_} -> {r,c} end)
+      |> Enum.filter(fn {{_, _} ,v} -> v == "#" end)
+      |> Enum.map(fn {{r, c}, _} -> {r, c} end)
 
     {galaxies, rows_to_expand, cols_to_expand}
   end

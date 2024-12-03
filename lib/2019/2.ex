@@ -21,10 +21,10 @@ aoc 2019, 2 do
     case instructions[i] do
       1 ->
         u = add(instructions, i)
-        run(u, i+4)
+        run(u, i + 4)
       2 ->
         u = multiply(instructions, i)
-        run(u, i+4)
+        run(u, i + 4)
       99 -> instructions
     end
   end
@@ -49,7 +49,7 @@ aoc 2019, 2 do
     l = length(Map.keys(instructions)) - 1
     options = for n <- 0..l, v <- 0..l, do: {n, v}
 
-    {n,y} =
+    {n, y} =
       options
       |> Enum.find(fn {n, v} ->
         instructions

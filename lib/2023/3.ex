@@ -115,8 +115,7 @@ aoc 2023, 3 do
   number =
     number_positions
     |> Enum.sort(fn {_row1, col1}, {_row2, col2} -> col1 < col2 end)
-    |> Enum.map(fn {row, col} -> grid[{row, col}] end)
-    |> Enum.join()
+    |> Enum.map_join(fn {row, col} -> grid[{row, col}] end)
     |> String.to_integer()
   {number_positions, number}
   end

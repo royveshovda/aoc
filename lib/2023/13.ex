@@ -139,8 +139,8 @@ aoc 2023, 13 do
       end)
 
     Enum.map(grids, fn grid ->
-      max_row = Enum.map(grid, fn {{r,_},_} -> r end) |> Enum.max()
-      max_col = Enum.map(grid, fn {{_,c},_} -> c end) |> Enum.max()
+      max_row = Enum.map(grid, fn {{r, _}, _} -> r end) |> Enum.max()
+      max_col = Enum.map(grid, fn {{_, c}, _} -> c end) |> Enum.max()
       {grid, max_row, max_col}
     end)
   end

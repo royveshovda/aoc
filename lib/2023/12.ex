@@ -38,7 +38,7 @@ aoc 2023, 12 do
 
   def calculate_options_for_line({positions, pattern}) do
     options = expand_options(positions)
-    Enum.filter(options, fn o -> correct_pattern?(o, pattern) end) |> Enum.count()
+    Enum.count(options, fn o -> correct_pattern?(o, pattern) end)
     #{positions, pattern}
   end
 
@@ -60,7 +60,7 @@ aoc 2023, 12 do
   end
 
   def expand_options(arrantment) do
-    count = Enum.filter(arrantment, &(&1 == "?")) |> Enum.count()
+    count = Enum.count(arrantment, &(&1 == "?"))
     # create all permutations of # and . with length count
     combinations(count)
     |> Enum.map(fn c -> merge_options(arrantment, c, []) end)
@@ -140,7 +140,7 @@ aoc 2023, 12 do
   defp solver("." <> s, nil, cons), do: solve(s, nil, cons)
   defp solver("?" <> s, nil, []), do: solve(s, nil, [])
   defp solver("?" <> s, nil, cons), do: solve(s, 1, cons) + solve(s, nil, cons)
-  defp solver("#" <> s, nil, cons = [_ | _]), do: solve(s, 1, cons)
+  defp solver("#" <> s, nil, [_ | _] = cons), do: solve(s, 1, cons)
   defp solver("." <> s, n, [n | ns]), do: solve(s, nil, ns)
   defp solver("?" <> s, n, [n | ns]), do: solve(s, nil, ns)
   defp solver("#" <> s, n, cons = [e | _]) when n < e, do: solve(s, n + 1, cons)

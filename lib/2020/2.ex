@@ -5,8 +5,7 @@ aoc 2020, 2 do
     input
     |> String.split("\n")
     |> Enum.map(&parse/1)
-    |> Enum.filter(&valid?/1)
-    |> Enum.count()
+    |> Enum.count(&valid?/1)
   end
 
   def valid?({min, max, char, password}) do
@@ -25,8 +24,7 @@ aoc 2020, 2 do
     input
     |> String.split("\n")
     |> Enum.map(&parse/1)
-    |> Enum.filter(&valid2?/1)
-    |> Enum.count()
+    |> Enum.count(&valid2?/1)
   end
 
   def valid2?({pos1, pos2, char, password}) do

@@ -35,7 +35,7 @@ aoc 2022, 9 do
   def move_tail(h, t), do: if(adjacent?(h, t), do: t, else: do_move_tail(h, t))
   def adjacent?({hx, hy}, {tx, ty}), do: tx in (hx - 1)..(hx + 1) and ty in (hy - 1)..(hy + 1)
 
-  def do_move_tail(h = {hx, hy}, t = {tx, ty}) do
+  def do_move_tail({hx, hy} = h, {tx, ty} = t) do
     if hx == tx or hy == ty do
       h |> vert_horiz_moves() |> Enum.find(&adjacent?(t, &1))
     else

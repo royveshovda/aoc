@@ -39,8 +39,7 @@ aoc 2023, 6 do
     |> Enum.map(fn t ->
       run_time(t, time)
     end)
-    |> Enum.filter(fn d -> d > distance end)
-    |> Enum.count()
+    |> Enum.count(fn d -> d > distance end)
   end
 
   def run_time(time_pressed, max_time) do

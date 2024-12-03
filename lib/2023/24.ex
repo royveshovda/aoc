@@ -21,7 +21,7 @@ aoc 2023, 24 do
       {{px, py}, {vx, vy}}
     end)
     |> intersections
-    |> Enum.filter(fn coordinate ->
+    |> Enum.count(fn coordinate ->
       if coordinate === nil do
         false
       else
@@ -33,7 +33,6 @@ aoc 2023, 24 do
         (y - y2) * vy2 > 0
       end
     end)
-    |> Enum.count
   end
 
 

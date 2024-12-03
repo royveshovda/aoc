@@ -114,7 +114,7 @@ aoc 2022, 22 do
       |> Enum.map(fn
         {?., i} -> {{row, i}, :open}
         {?#, i} -> {{row, i}, :wall}
-        {unknown, _i}-> raise "Unknown char #{unknown}"
+        {unknown, _i} -> raise "Unknown char #{unknown}"
       end)
       |> Enum.into(grid)
 
