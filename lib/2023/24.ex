@@ -125,16 +125,16 @@ aoc 2023, 24 do
     {slope, -slope * px + py}
   end
 
-  defp sub({v10,v11,v12}, {v20,v21,v22}) do
-    {v10-v20,v11-v21,v12-v22}
+  defp sub({v10, v11, v12}, {v20, v21, v22}) do
+    {v10 - v20, v11 - v21, v12 - v22}
   end
 
-  defp cross({v10,v11,v12}, {v20,v21,v22}) do
-    {v11*v22-v12*v21,v12*v20-v10*v22,v10*v21-v11*v20}
+  defp cross({v10, v11, v12}, {v20, v21, v22}) do
+    {v11 * v22 - v12 * v21, v12 * v20 - v10 * v22, v10 * v21 - v11 * v20}
   end
 
-  defp add({v10,v11,v12}, {v20,v21,v22}) do
-    {v10+v20,v11+v21,v12+v22}
+  defp add({v10, v11, v12}, {v20, v21, v22}) do
+    {v10 + v20, v11 + v21, v12 + v22}
   end
 
   defp zero(), do: {0, 0, 0}
@@ -148,19 +148,19 @@ aoc 2023, 24 do
     {p, t}
   end
 
-  defp dot({v10,v11,v12}, {v20,v21,v22}) do
-    v10*v20 + v11*v21 + v12*v22
+  defp dot({v10, v11, v12}, {v20, v21, v22}) do
+    v10 * v20 + v11 * v21 + v12 * v22
   end
 
-  defp add_prod({v10,v11,v12}, {v20,v21,v22}, s) do
-    {s*v20+v10,s*v21+v11,s*v22+v12}
+  defp add_prod({v10, v11, v12}, {v20, v21, v22}, s) do
+    {s * v20 + v10, s * v21 + v11, s * v22 + v12}
   end
 
-  defp mul({v10,v11,v12}, s) do
-    {v10*s,v11*s,v12*s}
+  defp mul({v10, v11, v12}, s) do
+    {v10 * s, v11 * s, v12 * s}
   end
 
-  defp vec_div({v10,v11,v12}, s) do
+  defp vec_div({v10, v11, v12}, s) do
     {div(v10, s), div(v11, s), div(v12, s)}
   end
 end

@@ -140,9 +140,9 @@ aoc 2023, 3 do
     # check if number has any adjacent symbols
     expanded_coords =
       Enum.flat_map(coords_in_number, fn {row, col} ->
-        [{row-1, col-1}, {row-1, col}, {row-1, col+1},
-        {row, col-1}, {row, col+1},
-        {row+1, col-1}, {row+1, col}, {row+1, col+1}] end)
+        [{row - 1, col - 1}, {row - 1, col}, {row - 1, col + 1},
+        {row, col - 1}, {row, col + 1},
+        {row + 1, col - 1}, {row + 1, col}, {row + 1, col + 1}] end)
     Enum.any?(expanded_coords, fn coord -> symbol?(grid[coord]) end)
   end
 

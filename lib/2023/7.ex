@@ -102,31 +102,31 @@ aoc 2023, 7 do
 
   def get_hand_type(cards) do
     cond do
-      is_five_of_a_kind(cards) -> :five_of_a_kind
-      is_four_of_a_kind(cards) -> :four_of_a_kind
-      is_full_house(cards) -> :full_house
-      is_three_of_a_kind(cards) -> :three_of_a_kind
-      is_two_pairs(cards) -> :two_pairs
-      is_one_pair(cards) -> :one_pair
+      is_five_of_a_kind?(cards) -> :five_of_a_kind
+      is_four_of_a_kind?(cards) -> :four_of_a_kind
+      is_full_house?(cards) -> :full_house
+      is_three_of_a_kind?(cards) -> :three_of_a_kind
+      is_two_pairs?(cards) -> :two_pairs
+      is_one_pair?(cards) -> :one_pair
       true -> :high_card
     end
   end
 
-  def is_five_of_a_kind(cards) do
+  def is_five_of_a_kind?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)
     |> Enum.any?(fn {_, list} -> length(list) == 5 end)
   end
 
-  def is_four_of_a_kind(cards) do
+  def is_four_of_a_kind?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)
     |> Enum.any?(fn {_, list} -> length(list) == 4 end)
   end
 
-  def is_full_house(cards) do
+  def is_full_house?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)
@@ -138,14 +138,14 @@ aoc 2023, 7 do
     |> Enum.any?(fn {_, list} -> length(list) == 2 end)
   end
 
-  def is_three_of_a_kind(cards) do
+  def is_three_of_a_kind?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)
     |> Enum.any?(fn {_, list} -> length(list) == 3 end)
   end
 
-  def is_two_pairs(cards) do
+  def is_two_pairs?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)
@@ -153,7 +153,7 @@ aoc 2023, 7 do
     |> length() == 2
   end
 
-  def is_one_pair(cards) do
+  def is_one_pair?(cards) do
     cards
     |> Enum.map(fn {_pos, value} -> value end)
     |> Enum.group_by(& &1)

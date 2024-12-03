@@ -108,11 +108,11 @@ aoc 2023, 19 do
       xmas
       |> String.split("\n")
       |> Enum.map(fn l -> l |> String.trim("{") |> String.trim("}") |> String.split(",") end)
-      |> Enum.map(fn [x,m,a,s] ->
-        x = String.slice(x, 2..-1) |> String.to_integer()
-        m = String.slice(m, 2..-1) |> String.to_integer()
-        a = String.slice(a, 2..-1) |> String.to_integer()
-        s = String.slice(s, 2..-1) |> String.to_integer()
+      |> Enum.map(fn [x, m, a, s] ->
+        x = String.slice(x, 2..-1//-1) |> String.to_integer()
+        m = String.slice(m, 2..-1//-1) |> String.to_integer()
+        a = String.slice(a, 2..-1//-1) |> String.to_integer()
+        s = String.slice(s, 2..-1//-1) |> String.to_integer()
         %{"x" => x,"m" => m, "a" => a, "s" => s}
       end)
     {rules, xmas}
@@ -121,7 +121,7 @@ aoc 2023, 19 do
   def parse_rules(input) do
     input
     |> String.split(",")
-    |> Enum.map( fn l ->
+    |> Enum.map(fn l ->
       ops = String.split(l, ":")
       parse_rule(ops)
     end)
@@ -134,7 +134,7 @@ aoc 2023, 19 do
   def parse_rule([condition, operation]) do
     v = String.at(condition, 0)
     ltgt = String.at(condition, 1)
-    value = String.slice(condition, 2..-1) |> String.to_integer()
+    value = String.slice(condition, 2..-1//-1) |> String.to_integer()
 
     op = parse_rule([operation])
     {:condition, v, ltgt, value, op}

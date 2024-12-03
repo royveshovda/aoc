@@ -46,7 +46,7 @@ aoc 2023, 18 do
 
   def shoelace_area(polygons) do
     n = length(polygons)
-    0..n-1
+    0..n - 1
     |> Enum.map(fn i ->
       {x1, y1} = polygons |> Enum.at(i)
       {x2, y2} = polygons |> Enum.at(rem(i + 1, n))

@@ -156,8 +156,8 @@ aoc 2023, 14 do
   end
 
   def roll(line, position_to_evaluate) do
-    line
-    #|> Enum.filter(fn {i, _} -> i < position_to_evaluate end)
+    # line
+    # |> Enum.filter(fn {i, _} -> i < position_to_evaluate end)
     case can_roll?(line, position_to_evaluate - 1) do
       false -> line
       {true, to_pos} ->

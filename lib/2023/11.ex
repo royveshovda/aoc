@@ -17,17 +17,17 @@ aoc 2023, 11 do
 
     expanded_galaxies =
       galaxies
-      |> Enum.map(fn {r,c} ->
+      |> Enum.map(fn {r, c} ->
 
         rows_to_add = Enum.filter(rows_to_expand, fn row -> row < r end) |> Enum.count()
         cols_to_add = Enum.filter(cols_to_expand, fn col -> col < c end) |> Enum.count()
-        {r+rows_to_add, c+cols_to_add}
+        {r + rows_to_add, c + cols_to_add}
        end)
 
     pairs = combinations(2, expanded_galaxies)
 
     pairs
-    |> Enum.map(fn [g1,g2] -> calculate_distance(g1,g2) end)
+    |> Enum.map(fn [g1, g2] -> calculate_distance(g1, g2) end)
     |> Enum.sum()
   end
 
@@ -52,13 +52,13 @@ aoc 2023, 11 do
         cols_to_add = Enum.filter(cols_to_expand, fn col -> col < c end) |> Enum.count()
         # remeber to add the expansion rate and subtract the rows_to_add/cols_to_add
         # because we are replacing the galaxy with a bigger one, not just multiplying
-        {r+(rows_to_add*expansion_rate-rows_to_add), c+(cols_to_add*expansion_rate-cols_to_add)}
+        {r + (rows_to_add * expansion_rate - rows_to_add), c + (cols_to_add * expansion_rate - cols_to_add)}
        end)
 
     pairs = combinations(2, expanded_galaxies)
 
     pairs
-    |> Enum.map(fn [g1,g2] -> calculate_distance(g1,g2) end)
+    |> Enum.map(fn [g1, g2] -> calculate_distance(g1, g2) end)
     |> Enum.sum()
   end
 
@@ -95,13 +95,13 @@ aoc 2023, 11 do
     {galaxies, rows_to_expand, cols_to_expand}
   end
 
-  defp calculate_distance({r1,c1}, {r2,c2}) do
-    abs(r1-r2) + abs(c1-c2)
+  defp calculate_distance({r1, c1}, {r2, c2}) do
+    abs(r1 - r2) + abs(c1 - c2)
   end
 
   defp combinations(0, _), do: [[]]
   defp combinations(_, []), do: []
   defp combinations(size, [head | tail]) do
-      (for elem <- combinations(size-1, tail), do: [head|elem]) ++ combinations(size, tail)
+      (for elem <- combinations(size - 1, tail), do: [head|elem]) ++ combinations(size, tail)
   end
 end

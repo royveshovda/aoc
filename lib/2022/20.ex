@@ -28,7 +28,7 @@ aoc 2022, 20 do
     current = Enum.find(list, fn x -> x.orig == position end)
 
     current_index = current.current
-    new_index = Integer.mod(current_index + current.value - 1, (length-1)) + 1
+    new_index = Integer.mod(current_index + current.value - 1, (length - 1)) + 1
     #curr = (prev + number - 1) % (N - 1) + 1
     #IO.puts("Current: #{current_index}, New: #{new_index}")
 

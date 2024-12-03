@@ -75,9 +75,9 @@ aoc 2023, 13 do
   end
 
   def get_pairs_for_line(n, max) do
-    steps = min(max-n, n-1)
-    left = (n-steps-1)..(n - 1) |> Enum.to_list()
-    right = (n+steps)..n |> Enum.to_list()
+    steps = min(max - n, n - 1)
+    left = (n - steps - 1)..(n - 1) |> Enum.to_list()
+    right = (n + steps)..n |> Enum.to_list()
     {n, Enum.zip(left, right)}
   end
 
