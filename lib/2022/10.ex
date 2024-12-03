@@ -28,7 +28,6 @@ aoc 2022, 10 do
 
     signal
     |> Enum.map(fn v -> ((Enum.take(values, v) |> Enum.sum())) * v end)
-    |> IO.inspect()
     |> Enum.sum()
   end
 

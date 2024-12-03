@@ -31,10 +31,10 @@ aoc 2023, 10 do
     step_south_must_be = ["|", "L", "J"]
     step_west_must_be = ["-", "L", "F"]
     step_east_must_be = ["-", "7", "J"]
-    north = Enum.find(grid, fn {{r,c},v} -> r == start_row-1 and c == start_col and v in step_north_must_be end)
-    south = Enum.find(grid, fn {{r,c},v} -> r == start_row+1 and c == start_col and v in step_south_must_be end)
-    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col+1 and v in step_east_must_be end)
-    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col-1 and v in step_west_must_be end)
+    north = Enum.find(grid, fn {{r,c},v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
+    south = Enum.find(grid, fn {{r,c},v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
+    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
+    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
 
     first_steps =
       [north, south, east, west]
@@ -183,8 +183,8 @@ aoc 2023, 10 do
 
     passes_cols =
       potential_passes_cols
-      |> Enum.filter(fn {r,c} -> Enum.any?(pipe, fn {{r2,c2},_v} -> r==r2 and c==c2 end) end)
-      |> Enum.map(fn {r,c} -> Enum.find(pipe, fn {{r2,c2},_v} -> r==r2 and c==c2 end) end)
+      |> Enum.filter(fn {r,c} -> Enum.any?(pipe, fn {{r2,c2},_v} -> r == r2 and c == c2 end) end)
+      |> Enum.map(fn {r,c} -> Enum.find(pipe, fn {{r2,c2},_v} -> r == r2 and c == c2 end) end)
 
     elements_count = count_line_segments(passes_cols)
     rem(elements_count, 2) == 1
@@ -204,10 +204,10 @@ aoc 2023, 10 do
     step_south_must_be = ["|", "L", "J"]
     step_west_must_be = ["-", "L", "F"]
     step_east_must_be = ["-", "7", "J"]
-    north = Enum.find(grid, fn {{r,c},v} -> r == start_row-1 and c == start_col and v in step_north_must_be end)
-    south = Enum.find(grid, fn {{r,c},v} -> r == start_row+1 and c == start_col and v in step_south_must_be end)
-    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col+1 and v in step_east_must_be end)
-    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col-1 and v in step_west_must_be end)
+    north = Enum.find(grid, fn {{r,c},v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
+    south = Enum.find(grid, fn {{r,c},v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
+    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
+    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
 
     first_steps =
       [north, south, east, west]

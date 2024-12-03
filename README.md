@@ -20,3 +20,5 @@ asdf reshim elixir
 
 - [https://adventofcode.com](https://adventofcode.com)
 - [https://hexdocs.pm/elixir/Enum.html](https://hexdocs.pm/elixir/Enum.html)
+- <https://github.com/mathsaey/advent_of_code_utils/>
+- <https://hexdocs.pm/advent_of_code_utils/cheatsheet.html>

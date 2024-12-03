@@ -150,9 +150,9 @@ aoc 2023, 3 do
     # check if number has any adjacent symbols
     expanded_coords =
       Enum.flat_map(coords_in_number, fn {row, col} ->
-        [{row-1, col-1}, {row-1, col}, {row-1, col+1},
-        {row, col-1}, {row, col+1},
-        {row+1, col-1}, {row+1, col}, {row+1, col+1}] end)
+        [{row - 1, col - 1}, {row - 1, col}, {row - 1, col + 1},
+        {row, col - 1}, {row, col + 1},
+        {row + 1, col - 1}, {row + 1, col}, {row + 1, col + 1}] end)
     gear_symbols = Enum.filter(expanded_coords, fn coord -> gear_symbol?(grid[coord]) end) |> Enum.uniq()
     is_gear = Enum.any?(expanded_coords, fn coord -> gear_symbol?(grid[coord]) end)
     number_start_pos = Enum.min(coords_in_number, fn {_row1, col1}, {_row2, col2} -> col1 < col2 end)

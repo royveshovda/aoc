@@ -132,9 +132,9 @@ aoc 2022, 17 do
     {height - min_y_or_zero, new_stack}
   end
 
-  @pixels %{clear: '.', blocked: '#'}
+  @pixels %{clear: ".", blocked: "#"}
   def print_stack(stack) do
-    Enum.map(stack, fn line -> IO.puts(:stderr, '|' ++ Enum.map(line, &@pixels[&1]) ++ '|') end)
+    _res = Enum.map(stack, fn line -> IO.puts(:stderr, "|" ++ Enum.map(line, &@pixels[&1]) ++ "|") end)
     IO.puts(:stderr, "+-------+")
   end
 end

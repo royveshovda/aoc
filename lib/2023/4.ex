@@ -19,7 +19,7 @@ aoc 2023, 4 do
     |> Enum.map(&parse_line/1)
     |> Enum.map(&sum_correct/1)
     |> Enum.filter(fn x -> x > 0 end)
-    |> Enum.map(fn x -> :math.pow(2, x-1) end)
+    |> Enum.map(fn x -> :math.pow(2, x - 1) end)
     |> Enum.sum()
     |> round()
 

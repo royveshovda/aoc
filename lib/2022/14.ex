@@ -19,9 +19,9 @@ aoc 2022, 14 do
     [dx, dy] = dest|> String.trim() |> String.split(",") |> Enum.map(&String.to_integer/1)
 
     if sx == dx do
-      Enum.reduce(sy..dy, state, &Map.put(&2, {sx, &1}, '#'))
+      Enum.reduce(sy..dy, state, &Map.put(&2, {sx, &1}, "#"))
     else
-      Enum.reduce(sx..dx, state, &Map.put(&2, {&1, sy}, '#'))
+      Enum.reduce(sx..dx, state, &Map.put(&2, {&1, sy}, "#"))
     end
   end
 
@@ -45,7 +45,7 @@ aoc 2022, 14 do
   def place_sand(state, pos \\ {500, 0}) do
     case dest(pos, state) do
       {_, 1000} -> {false, state}
-      nil -> {true, Map.put(state, pos, 'o')}
+      nil -> {true, Map.put(state, pos, "o")}
       dest -> place_sand(state, dest)
     end
   end
@@ -65,7 +65,7 @@ aoc 2022, 14 do
 
 
     lowest = 2 + (state |> Map.keys |> Enum.map(&elem(&1,1)) |> Enum.max())
-    state = Enum.reduce(499-lowest..501+lowest, state, &Map.put(&2, {&1, lowest}, '='))
+    state = Enum.reduce(499-lowest..501+lowest, state, &Map.put(&2, {&1, lowest}, "="))
 
     run_it(state, 0)
   end

@@ -33,7 +33,6 @@ aoc 2023, 21 do
   def step(_grid, edge, 0), do: edge
 
   def step(grid, edge, steps_left) do
-    IO.inspect(steps_left)
     new_edge =
       edge
       |> Enum.flat_map(fn pos -> neighbours(grid, pos) end)
