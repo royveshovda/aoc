@@ -25,7 +25,7 @@ aoc 2023, 18 do
   def calculate_edge_length_and_polygons(instructions) do
     {edge, _stop_position, edge_length} =
       instructions
-      |> Enum.reduce({[], {0,0}, 0}, fn {op, length}, {edge, {current_row, current_col}, edge_length} ->
+      |> Enum.reduce({[], {0, 0}, 0}, fn {op, length}, {edge, {current_row, current_col}, edge_length} ->
         new_edge_length = edge_length + length
         next_pos =
           case op do

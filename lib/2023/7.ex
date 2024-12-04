@@ -83,7 +83,7 @@ aoc 2023, 7 do
     |> String.split("\n", trim: true)
     |> Enum.map(fn line ->
       [cards_s, bid] = String.split(line, " ", trim: true)
-      [c1,c2,c3,c4,c5] = String.graphemes(cards_s)
+      [c1, c2, c3, c4, c5] = String.graphemes(cards_s)
       bid = String.to_integer(bid)
       %{cards: %{c1: get_card_value(c1), c2: get_card_value(c2), c3: get_card_value(c3), c4: get_card_value(c4), c5: get_card_value(c5)}, bid: bid}
     end)
@@ -190,7 +190,7 @@ aoc 2023, 7 do
     |> String.split("\n", trim: true)
     |> Enum.map(fn line ->
       [cards_s, bid] = String.split(line, " ", trim: true)
-      [c1,c2,c3,c4,c5] = String.graphemes(cards_s)
+      [c1, c2, c3, c4, c5] = String.graphemes(cards_s)
       bid = String.to_integer(bid)
       %{cards: %{c1: get_card_value_p2(c1), c2: get_card_value_p2(c2), c3: get_card_value_p2(c3), c4: get_card_value_p2(c4), c5: get_card_value_p2(c5)}, bid: bid}
     end)
@@ -225,7 +225,7 @@ aoc 2023, 7 do
 
   def expand_card(card) do
     case card do
-      1 -> [1,2,3,4,5,6,7,8,9,10,12,13,14]
+      1 -> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14]
       2 -> [2]
       3 -> [3]
       4 -> [4]

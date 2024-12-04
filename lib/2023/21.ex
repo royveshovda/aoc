@@ -71,7 +71,7 @@ aoc 2023, 21 do
     |> Stream.map(fn {idx, steps} -> {idx, Enum.at(rocks, steps)} end)
     |> Enum.take(3)
     |> then(fn tups -> apply(&lagrange/3, tups) end)
-    |> apply([202300])
+    |> apply([202_300])
   end
 
   def lagrange({x0, y0}, {x1, y1}, {x2, y2}) do

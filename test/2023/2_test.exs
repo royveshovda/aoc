@@ -15,6 +15,6 @@ aoc_test 2023, 2, async: true do
   end
 
   test "p2i" do
-    assert Y2023.D2.p2(input_string()) == 76008
+    assert Y2023.D2.p2(input_string()) == 76_008
   end
 end

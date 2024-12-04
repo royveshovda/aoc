@@ -31,10 +31,10 @@ aoc 2023, 10 do
     step_south_must_be = ["|", "L", "J"]
     step_west_must_be = ["-", "L", "F"]
     step_east_must_be = ["-", "7", "J"]
-    north = Enum.find(grid, fn {{r,c},v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
-    south = Enum.find(grid, fn {{r,c},v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
-    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
-    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
+    north = Enum.find(grid, fn {{r, c}, v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
+    south = Enum.find(grid, fn {{r, c}, v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
+    east = Enum.find(grid, fn {{r, c}, v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
+    west = Enum.find(grid, fn {{r, c}, v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
 
     first_steps =
       [north, south, east, west]
@@ -165,14 +165,14 @@ aoc 2023, 10 do
 
     pipe_with_values =
       pipe
-      |> Enum.map(fn {r,c} -> {{r,c}, clean_grid[{r,c}]} end)
+      |> Enum.map(fn {r, c} -> {{r, c}, clean_grid[{r, c}]} end)
 
     non_pipe =
       grid
-      |> Enum.filter(fn {{r,c}, _v} -> {r,c} not in pipe end)
-      |> Enum.map(fn {{r,c}, _v} -> {r,c} end)
+      |> Enum.filter(fn {{r, c}, _v} -> {r, c} not in pipe end)
+      |> Enum.map(fn {{r, c}, _v} -> {r, c} end)
 
-    Enum.count(non_pipe, fn {r,c} -> inside?(pipe_with_values, {r,c}) end)
+    Enum.count(non_pipe, fn {r, c} -> inside?(pipe_with_values, {r, c}) end)
   end
 
   def inside?(_pipe, {_row, 0}), do: false
@@ -182,8 +182,8 @@ aoc 2023, 10 do
 
     passes_cols =
       potential_passes_cols
-      |> Enum.filter(fn {r,c} -> Enum.any?(pipe, fn {{r2,c2},_v} -> r == r2 and c == c2 end) end)
-      |> Enum.map(fn {r,c} -> Enum.find(pipe, fn {{r2,c2},_v} -> r == r2 and c == c2 end) end)
+      |> Enum.filter(fn {r, c} -> Enum.any?(pipe, fn {{r2, c2}, _v} -> r == r2 and c == c2 end) end)
+      |> Enum.map(fn {r, c} -> Enum.find(pipe, fn {{r2, c2}, _v} -> r == r2 and c == c2 end) end)
 
     elements_count = count_line_segments(passes_cols)
     rem(elements_count, 2) == 1
@@ -191,7 +191,7 @@ aoc 2023, 10 do
 
   def count_line_segments(slice) do
     # Only count "top" of line segments
-    Enum.count(slice, fn {{_r,_c}, v} -> v in ["|", "L", "J"] end)
+    Enum.count(slice, fn {{_r, _c}, v} -> v in ["|", "L", "J"] end)
   end
 
   def get_pipe(grid) do
@@ -203,10 +203,10 @@ aoc 2023, 10 do
     step_south_must_be = ["|", "L", "J"]
     step_west_must_be = ["-", "L", "F"]
     step_east_must_be = ["-", "7", "J"]
-    north = Enum.find(grid, fn {{r,c},v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
-    south = Enum.find(grid, fn {{r,c},v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
-    east = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
-    west = Enum.find(grid, fn {{r,c},v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
+    north = Enum.find(grid, fn {{r, c}, v} -> r == start_row - 1 and c == start_col and v in step_north_must_be end)
+    south = Enum.find(grid, fn {{r, c}, v} -> r == start_row + 1 and c == start_col and v in step_south_must_be end)
+    east = Enum.find(grid, fn {{r, c}, v} -> r == start_row and c == start_col + 1 and v in step_east_must_be end)
+    west = Enum.find(grid, fn {{r, c}, v} -> r == start_row and c == start_col - 1 and v in step_west_must_be end)
 
     first_steps =
       [north, south, east, west]
@@ -222,11 +222,11 @@ aoc 2023, 10 do
 
   def get_start_pipe_type(north, south, east, west) do
     case {north, south, east, west} do
-      {_north,_south, nil, nil} -> "|"
-      {_north,nil, _west, nil} -> "J"
-      {_north,nil, nil, _east} -> "L"
-      {nil,_south, _east, nil} -> "F"
-      {nil,_south, nil, _west} -> "7"
+      {_north, _south, nil, nil} -> "|"
+      {_north, nil, _west, nil} -> "J"
+      {_north, nil, nil, _east} -> "L"
+      {nil, _south, _east, nil} -> "F"
+      {nil, _south, nil, _west} -> "7"
     end
   end
 

@@ -51,7 +51,7 @@ aoc 2022, 11 do
   end
 
   def parse_monkey(input) do
-    [id, items,operation,test, truthy, falsy] = String.split(input, "\n")
+    [id, items, operation, test, truthy, falsy] = String.split(input, "\n")
     id = id |> String.split(" ") |> List.last() |> String.trim() |> String.trim_trailing(":") |> String.to_integer()
     items =
       items
@@ -130,7 +130,7 @@ aoc 2022, 11 do
 
     divider = Enum.map(monkies, fn {_, m} -> m.test end) |> Enum.product()
 
-    new_monkies = Enum.reduce(1..10000, monkies, fn _, monkies -> round_v2(monkies, order, divider) end)
+    new_monkies = Enum.reduce(1..10_000, monkies, fn _, monkies -> round_v2(monkies, order, divider) end)
     new_monkies |> Enum.map(fn {_, m} -> m.inspected end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
   end
 end

@@ -7,7 +7,7 @@ aoc 2022, 18 do
       |> String.split("\n")
       |> Enum.map(&String.split(&1, ","))
       |> Enum.map(fn l -> Enum.map(l, fn i -> String.to_integer(i) end) end)
-      |> Enum.map(fn [x,y,z] -> {x,y,z} end)
+      |> Enum.map(fn [x, y, z] -> {x, y, z} end)
       |> MapSet.new()
 
     pieces
@@ -15,7 +15,7 @@ aoc 2022, 18 do
     |> Enum.sum()
   end
 
-  def free_sides({x,y,z}, pieces) do
+  def free_sides({x, y, z}, pieces) do
     [
       {x - 1, y, z},
       {x + 1, y, z},
@@ -34,17 +34,17 @@ aoc 2022, 18 do
       |> String.split("\n")
       |> Enum.map(&String.split(&1, ","))
       |> Enum.map(fn l -> Enum.map(l, fn i -> String.to_integer(i) end) end)
-      |> Enum.map(fn [x,y,z] -> {x,y,z} end)
+      |> Enum.map(fn [x, y, z] -> {x, y, z} end)
       |> MapSet.new()
 
     # Set search space just outside the pieces
-    {x_min, x_max} = Enum.map(pieces, fn {x,_y,_z} -> x end) |> Enum.min_max()
+    {x_min, x_max} = Enum.map(pieces, fn {x, _y, _z} -> x end) |> Enum.min_max()
     x_min = x_min - 1
     x_max = x_max + 1
-    {y_min, y_max} = Enum.map(pieces, fn {_x,y,_z} -> y end) |> Enum.min_max()
+    {y_min, y_max} = Enum.map(pieces, fn {_x,  y , _z} -> y end) |> Enum.min_max()
     y_min = y_min - 1
     y_max = y_max + 1
-    {z_min, z_max} = Enum.map(pieces, fn {_x,_y,z} -> z end) |> Enum.min_max()
+    {z_min, z_max} = Enum.map(pieces, fn {_x, _y, z} -> z end) |> Enum.min_max()
     z_min = z_min - 1
     z_max = z_max + 1
 
@@ -69,7 +69,7 @@ aoc 2022, 18 do
     end
   end
 
-  def next({x,y,z}, pieces) do
+  def next({x, y, z}, pieces) do
     [
       {x - 1, y, z},
       {x + 1, y, z},

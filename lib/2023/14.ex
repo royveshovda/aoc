@@ -34,7 +34,7 @@ aoc 2023, 14 do
 
     {new_grid, tilt1, tilt2} = detect_cycle({grid, max_row, max_col}, 0)
     diff = tilt2 - tilt1
-    remaining = 1000000000 - tilt1
+    remaining = 1_000_000_000 - tilt1
     remaining = rem(remaining, diff) - 1
     {final_grid, _, _} =
       Enum.reduce(1..remaining, {new_grid, max_row, max_col}, fn _, {g, _, _} -> tilt_one_cycle({g, max_row, max_col}) end)

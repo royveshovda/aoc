@@ -56,7 +56,7 @@ aoc 2019, 2 do
         |> Map.put(1, n)
         |> Map.put(2, v)
         |> run(0)
-        |> Map.get(0) == 19690720
+        |> Map.get(0) == 19_690_720
       end)
 
     100 * n + y

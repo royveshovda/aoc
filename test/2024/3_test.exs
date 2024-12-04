@@ -6,7 +6,7 @@ aoc_test 2024, 3, async: true do
   end
 
   test "p1i" do
-    assert Y2024.D3.p1(input_string()) == 161085926
+    assert Y2024.D3.p1(input_string()) == 161_085_926
   end
 
   test "p2e" do

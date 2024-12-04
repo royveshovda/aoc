@@ -57,12 +57,12 @@ aoc 2023, 8 do
     start_nodes =
       map
       |> Map.keys()
-      |> Enum.filter(fn node -> to_string(node) |> String.graphemes() |> (fn [_l1,_l2,l3] -> l3 == "A" end).() end)
+      |> Enum.filter(fn node -> to_string(node) |> String.graphemes() |> (fn [_l1, _l2, l3] -> l3 == "A" end).() end)
 
     finish_nodes =
       map
       |> Map.keys()
-      |> Enum.filter(fn node -> to_string(node) |> String.graphemes() |> (fn [_l1,_l2,l3] -> l3 == "Z" end).() end)
+      |> Enum.filter(fn node -> to_string(node) |> String.graphemes() |> (fn [_l1, _l2, l3] -> l3 == "Z" end).() end)
 
     Enum.map(start_nodes, fn start ->
       Enum.reduce_while(i, {start, 0, 0, []}, fn instruction, {from, steps, bumps, stops} ->

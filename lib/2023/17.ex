@@ -38,7 +38,7 @@ aoc 2023, 17 do
     |> Utils.Grid.input_to_map_with_bounds(&String.to_integer/1)
   end
 
-  def find_path({_, {_..max_x, _..max_y} = grid}, line_fun) do
+  def find_path({_, {_..max_x//_, _..max_y//_} = grid}, line_fun) do
     [{0, 0, :v}, {0, 0, :h}]
     |> Enum.map(&{manhattan(&1, {max_x, max_y}), &1})
     |> Enum.reduce({Heap.min(), %{}}, fn el = {_, option}, {queue, cheapest_paths} ->
@@ -72,9 +72,9 @@ aoc 2023, 17 do
   def options({x, y, :v}, {bounds, _}, line), do: x |> line.(bounds) |> Enum.map(&{&1, y, :h})
   def options({x, y, :h}, {_, bounds}, line), do: y |> line.(bounds) |> Enum.map(&{x, &1, :v})
 
-  def p1_line(i, min..max), do: for(j <- i - 3..i + 3, j != i, j >= min, j <= max, do: j)
+  def p1_line(i, min..max//_), do: for(j <- i - 3..i + 3, j != i, j >= min, j <= max, do: j)
 
-  def p2_line(i, min..max) do
+  def p2_line(i, min..max//_) do
     Enum.concat(
       for(j <- i + 4..i + 10, j <= max, do: j),
       for(j <- i - 10..i - 4, j >= min, do: j)

@@ -5,7 +5,7 @@ require Logger
 aoc 2022, 15 do
   def p1(input) do
     #line_to_count = 10
-    line_to_count = 2000000
+    line_to_count = 2_000_000
 
     data =
       input
@@ -62,12 +62,12 @@ aoc 2022, 15 do
     #max_y = 20
     max_y = 4_000_000
 
-    {x,y} =
+    {x, y} =
       Enum.map(0..max_y, &check(&1, exclusions, max_y))
       |> Enum.reject(&is_nil/1)
       |> List.first()
 
-    x * 4000000 + y
+    x * 4_000_000 + y
   end
 
   def check(y, exclusions, max_y) do

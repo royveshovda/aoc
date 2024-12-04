@@ -123,7 +123,7 @@ aoc 2023, 5 do
   # Part 2
   def progress_seed(seed, stages) do
       for stage <- stages, reduce: [seed] do
-        acc -> Enum.flat_map(acc, fn item -> progress_stage(item, stage,[]) end)
+        acc -> Enum.flat_map(acc, fn item -> progress_stage(item, stage, []) end)
       end
     end
 
@@ -166,7 +166,7 @@ aoc 2023, 5 do
     def fill_stage(stage), do: fill_stage(stage, 0, [])
     def fill_stage([], _, result), do: result
     def fill_stage([{s, d, l} | rest], current, result) do
-      if (current < s) do
+      if current < s do
         fill_stage(rest, s + l, [{s, d, l} | [{current, current, s - current} | result]])
       else
         fill_stage(rest, s + l, [{s, d, l} | result])

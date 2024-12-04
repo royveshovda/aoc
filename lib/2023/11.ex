@@ -84,12 +84,12 @@ aoc 2023, 11 do
     cols_to_expand =
       (0..max_cols)
       |> Enum.map(fn col_id -> {col_id, Enum.filter(grid, fn {{_, c}, _} -> c == col_id end)} end)
-      |> Enum.filter(fn {_col_id, cols} -> Enum.all?(cols, fn {{_, _} ,v} -> v == "." end) end)
+      |> Enum.filter(fn {_col_id, cols} -> Enum.all?(cols, fn {{_, _} , v} -> v == "." end) end)
       |> Enum.map(fn {col_id, _} -> col_id end)
 
     galaxies =
       grid
-      |> Enum.filter(fn {{_, _} ,v} -> v == "#" end)
+      |> Enum.filter(fn {{_, _} , v} -> v == "#" end)
       |> Enum.map(fn {{r, c}, _} -> {r, c} end)
 
     {galaxies, rows_to_expand, cols_to_expand}

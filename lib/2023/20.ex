@@ -26,7 +26,7 @@ aoc 2023, 20 do
       end
 
     {{high, low}, _} =
-      Enum.reduce(presses, {{0, 0}, initial_config}, fn {press, {h,l}}, {{high, low}, c} ->
+      Enum.reduce(presses, {{0, 0}, initial_config}, fn {press, {h, l}}, {{high, low}, c} ->
         {{new_high, new_low}, new_c} = pulse(c, press, {h, l})
         {{new_high + high, new_low + low}, new_c}
       end)
@@ -210,7 +210,7 @@ aoc 2023, 20 do
 
   def parse_type(ins) do
     t = String.at(ins, 0)
-    label = String.slice(ins, 1..-1)
+    label = String.slice(ins, 1..-1//-1)
     {type, initial_state} =
       case t do
         "%" -> {:flipflop, :off}

@@ -64,7 +64,7 @@ aoc 2022, 14 do
 
 
 
-    lowest = 2 + (state |> Map.keys |> Enum.map(&elem(&1,1)) |> Enum.max())
+    lowest = 2 + (state |> Map.keys |> Enum.map(&elem(&1, 1)) |> Enum.max())
     state = Enum.reduce(499 - lowest..501 + lowest, state, &Map.put(&2, {&1, lowest}, "="))
 
     run_it(state, 0)
