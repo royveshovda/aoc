@@ -13,13 +13,13 @@ aoc 2024, 3 do
     |> String.split("mul(")
     |> Enum.map(fn x -> String.split(x, ")") |> hd end)
     |> Enum.map(fn x -> String.split(x, ",") end)
-    |> Enum.filter(fn x -> Enum.count(x) == 2 && Enum.all?(x, fn c -> is_integer_string?(c) end) end)
+    |> Enum.filter(fn x -> Enum.count(x) == 2 && Enum.all?(x, fn c -> integer_string?(c) end) end)
     |> Enum.map(fn [x1, x2] -> String.to_integer(x1) * String.to_integer(x2) end)
     |> Enum.sum()
 
   end
 
-  def is_integer_string?(str) do
+  def integer_string?(str) do
     case Integer.parse(str) do
       {_, ""} -> true
       _ -> false

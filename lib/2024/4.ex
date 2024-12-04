@@ -15,14 +15,14 @@ aoc 2024, 4 do
 
     starts =
       grid
-      |> Enum.filter(fn {{x, y}, el} -> el == "X" end)
+      |> Enum.filter(fn {_pos, el} -> el == "X" end)
 
     starts
     |> Enum.map(fn {pos, _el} -> find_xmas(grid, pos) end)
     |> Enum.sum()
   end
 
-  def find_xmas(grid, {x,y}) do
+  def find_xmas(grid, {x, y}) do
     # -x,+y(NW)  +y(N)  +x,+y(NE)
     # -x(W)       X      +x (E)
     # -x,-y(SW)  -y(S)  +x,-y(SE)
@@ -55,7 +55,7 @@ aoc 2024, 4 do
     |> Enum.count(fn {pos, _el} -> find_x_mas(grid, pos) end)
   end
 
-  def find_x_mas(grid, {x,y}) do
+  def find_x_mas(grid, {x, y}) do
     # -x,+y(NW)  +y(N)  +x,+y(NE)
     # -x(W)       X      +x (E)
     # -x,-y(SW)  -y(S)  +x,-y(SE)
