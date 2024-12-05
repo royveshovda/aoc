@@ -42,7 +42,7 @@ aoc 2024, 5 do
       |> Enum.filter(fn {a, b} -> a in print && b in print end)
 
     actual_rules
-    |> Enum.all?(fn {a, b} -> Enum.find_index(print, fn x -> x == a end) <Enum.find_index(print, fn x -> x == b end) end)
+    |> Enum.all?(fn {a, b} -> Enum.find_index(print, fn x -> x == a end) < Enum.find_index(print, fn x -> x == b end) end)
 
   end
 
@@ -72,8 +72,30 @@ aoc 2024, 5 do
 
     i = Enum.at(invalid_prints, 1)
     # Enum.reduce(invalid_prints, {false, i}, fn x, {_, print} -> apply_rule({i, x}, print) end)
-    apply_rule({29,13}, i)
-    #|> apply_rule({29,13}, i)
+
+    Enum.map(invalid_prints, fn p -> fix_print(rules, p) end)
+    |> Enum.map(&center_value/1)
+    |> Enum.sum()
+  end
+
+  def fix_print(rules, print) do
+    {swapped, new_print} = apply_all_rules(rules, print)
+
+    Stream.iterate({swapped, new_print}, fn {_, print} -> apply_all_rules(rules, print) end)
+    |> Stream.drop_while(fn {swapped, _} -> swapped end)
+    |> Enum.at(0)
+    |> elem(1)
+  end
+
+  def apply_all_rules(rules, print) do
+    actual_rules =
+      rules
+      |> Enum.filter(fn {a, b} -> a in print && b in print end)
+
+    Enum.reduce(actual_rules, {false, print}, fn rule, {swapped, print} ->
+      {current, new_print} = apply_rule(rule, print)
+      {swapped || current, new_print}
+    end)
   end
 
   def apply_rule({a, b} = _rule, print) do
