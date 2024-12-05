@@ -70,9 +70,6 @@ aoc 2024, 5 do
       prints
       |> Enum.filter(fn x -> valid_print(rules, x) == false end)
 
-    i = Enum.at(invalid_prints, 1)
-    # Enum.reduce(invalid_prints, {false, i}, fn x, {_, print} -> apply_rule({i, x}, print) end)
-
     Enum.map(invalid_prints, fn p -> fix_print(rules, p) end)
     |> Enum.map(&center_value/1)
     |> Enum.sum()
@@ -110,5 +107,4 @@ aoc 2024, 5 do
           |> List.replace_at(i_b, a)}
     end
   end
-
 end
