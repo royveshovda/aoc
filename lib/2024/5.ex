@@ -9,13 +9,84 @@ aoc 2024, 5 do
       iex> p1(example_string())
   """
   def p1(input) do
-    input
+    [rules, prints] =
+      input
+      |> String.split("\n\n", trim: true)
+
+    rules =
+      rules
+      |> String.split("\n")
+      |> Enum.map(&String.split(&1, "|"))
+      |> Enum.map(fn [a, b] -> {String.to_integer(a), String.to_integer(b)} end)
+
+    prints =
+      prints
+      |> String.split("\n")
+      |> Enum.map(&String.split(&1, ","))
+      |> Enum.map(&Enum.map(&1, fn x -> String.to_integer(x) end))
+
+    prints
+    |> Enum.filter(fn x -> valid_print(rules, x) end)
+    |> Enum.map(&center_value/1)
+    |> Enum.sum()
+  end
+
+  def center_value(list) do
+    middle_index = div(length(list), 2)
+    Enum.at(list, middle_index)
+  end
+
+  def valid_print(rules, print) do
+    actual_rules =
+      rules
+      |> Enum.filter(fn {a, b} -> a in print && b in print end)
+
+    actual_rules
+    |> Enum.all?(fn {a, b} -> Enum.find_index(print, fn x -> x == a end) <Enum.find_index(print, fn x -> x == b end) end)
+
   end
 
   @doc """
       iex> p2(example_string())
   """
   def p2(input) do
-    input
+    [rules, prints] =
+      input
+      |> String.split("\n\n", trim: true)
+
+    rules =
+      rules
+      |> String.split("\n")
+      |> Enum.map(&String.split(&1, "|"))
+      |> Enum.map(fn [a, b] -> {String.to_integer(a), String.to_integer(b)} end)
+
+    prints =
+      prints
+      |> String.split("\n")
+      |> Enum.map(&String.split(&1, ","))
+      |> Enum.map(&Enum.map(&1, fn x -> String.to_integer(x) end))
+
+    invalid_prints =
+      prints
+      |> Enum.filter(fn x -> valid_print(rules, x) == false end)
+
+    i = Enum.at(invalid_prints, 1)
+    # Enum.reduce(invalid_prints, {false, i}, fn x, {_, print} -> apply_rule({i, x}, print) end)
+    apply_rule({29,13}, i)
+    #|> apply_rule({29,13}, i)
   end
+
+  def apply_rule({a, b} = _rule, print) do
+    i_a = Enum.find_index(print, fn x -> x == a end)
+    i_b = Enum.find_index(print, fn x -> x == b end)
+    ordered = i_a < i_b
+    case ordered do
+      true -> {false, print}
+      false ->
+        {true,
+          List.replace_at(print, i_a, b)
+          |> List.replace_at(i_b, a)}
+    end
+  end
+
 end
