@@ -4,6 +4,7 @@ import AOC
 aoc 2022, 19 do
 
   defmodule State do
+    @moduledoc false
     defstruct robots: %{ore: 1, clay: 0, obsidian: 0, geode: 0},
               resources: %{ore: 0, clay: 0, obsidian: 0, geode: 0}
 

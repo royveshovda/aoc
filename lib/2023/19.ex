@@ -19,7 +19,10 @@ aoc 2023, 19 do
 
     xmas
     |> Enum.map(fn x -> execute_p1(rules, x, rules["in"]) end)
-    |> Enum.filter(fn {:accepted, _} -> true; _ -> false end)
+    |> Enum.filter(fn
+      {:accepted, _} -> true
+      _ -> false
+    end)
     |> Enum.map(fn {:accepted, %{"x" => x, "m" => m, "a" => a, "s" => s}} -> x + m + a + s end)
     |> Enum.sum()
 

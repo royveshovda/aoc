@@ -129,6 +129,7 @@ aoc 2022, 16 do
 end
 
 defmodule Parser do
+  @moduledoc false
   import NimbleParsec
 
   valve = ignore(string(" ")) |> ascii_string([?A..?Z], min: 2)

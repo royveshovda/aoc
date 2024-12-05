@@ -1,5 +1,7 @@
 defmodule Utils do
+  @moduledoc false
   defmodule Grid do
+    @moduledoc false
     def bounds(grid) do
       coords = Map.keys(grid)
       {min_x, max_x} = coords |> Enum.map(fn {x, _} -> x end) |> Enum.min_max()

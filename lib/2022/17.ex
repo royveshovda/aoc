@@ -4,10 +4,8 @@ import AOC
 
 aoc 2022, 17 do
 
-  @moduledoc """
-  https://adventofcode.com/2022/day/17
-  """
   defmodule Jetstream do
+    @moduledoc false
     defstruct line: "", index: 0
 
     def new(line), do: %Jetstream{line: line}

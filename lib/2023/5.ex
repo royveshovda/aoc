@@ -198,6 +198,7 @@ aoc 2023, 5 do
 end
 
 defmodule Aoc23.Day05Parser do
+  @moduledoc false
   import NimbleParsec
 
   whitespace =
