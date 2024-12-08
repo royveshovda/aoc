@@ -10,7 +10,7 @@ aoc 2024, 7 do
   """
   def p1(input) do
     input
-    |> String.split("\n")
+    |> String.split("\n", trim: true)
     |> Enum.map(fn l ->
       [res, values] = String.split(l, ":", trim: true)
       res = String.to_integer(res)
@@ -28,7 +28,7 @@ aoc 2024, 7 do
   """
   def p2(input) do
     input
-    |> String.split("\n")
+    |> String.split("\n", trim: true)
     |> Enum.map(fn l ->
       [res, values] = String.split(l, ":", trim: true)
       res = String.to_integer(res)

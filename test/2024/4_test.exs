@@ -1,8 +1,22 @@
 import AOC
 
 aoc_test 2024, 4, async: true do
+  def get_example_string() do
+    """
+    MMMSXXMASM
+    MSAMXMSMSA
+    AMXSXMAAMM
+    MSAMASMSMX
+    XMASAMXAMM
+    XXAMMXXAMA
+    SMSMSASXSS
+    SAXAMASAAA
+    MAMMMXMMMM
+    MXMXAXMASX
+    """
+  end
   test "p1e" do
-    assert Y2024.D4.p1(example_string()) == 18
+    assert Y2024.D4.p1(get_example_string()) == 18
   end
 
   test "p1i" do
@@ -10,7 +24,7 @@ aoc_test 2024, 4, async: true do
   end
 
   test "p2e" do
-    assert Y2024.D4.p2(example_string()) == 9
+    assert Y2024.D4.p2(get_example_string()) == 9
   end
 
   test "p2i" do

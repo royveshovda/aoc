@@ -21,7 +21,7 @@ aoc 2024, 5 do
 
     prints =
       prints
-      |> String.split("\n")
+      |> String.split("\n", trim: true)
       |> Enum.map(&String.split(&1, ","))
       |> Enum.map(&Enum.map(&1, fn x -> String.to_integer(x) end))
 
@@ -63,7 +63,7 @@ aoc 2024, 5 do
     prints =
       prints
       |> String.split("\n")
-      |> Enum.map(&String.split(&1, ","))
+      |> Enum.map(&String.split(&1, ",", trim: true))
       |> Enum.map(&Enum.map(&1, fn x -> String.to_integer(x) end))
 
     invalid_prints =
