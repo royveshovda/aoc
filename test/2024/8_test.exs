@@ -2,18 +2,18 @@ import AOC
 
 aoc_test 2024, 8, async: true do
   test "p1e" do
-    assert Y2024.D8.p1(example_string()) == 1
+    assert Y2024.D8.p1(example_string()) == 14
   end
 
-  # test "p1i" do
-  #   assert Y2024.D8.p1(input_string()) == 1
-  # end
+  test "p1i" do
+    assert Y2024.D8.p1(input_string()) == 359
+  end
 
-  # test "p2e" do
-  #   assert Y2024.D8.p2(example_string()) == 1
-  # end
+  test "p2e" do
+    assert Y2024.D8.p2(example_string()) == 34
+  end
 
-  # test "p2i" do
-  #   assert Y2024.D8.p2(input_string()) == 1
-  # end
+  test "p2i" do
+    assert Y2024.D8.p2(input_string()) == 1293
+  end
 end
