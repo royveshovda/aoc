@@ -13,7 +13,7 @@ aoc_test 2024, 6, async: true do
     assert Y2024.D6.p2(example_string()) == 6
   end
 
-  # test "p2i" do
-  #   assert Y2024.D6.p2(input_string()) == 1
-  # end
+  test "p2i" do
+    assert Y2024.D6.p2(input_string()) == 1562
+  end
 end
