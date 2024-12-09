@@ -5,9 +5,6 @@ aoc 2024, 1 do
   https://adventofcode.com/2024/day/1
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     input
     |> String.split("\n", trim: true)
@@ -20,9 +17,6 @@ aoc 2024, 1 do
     |> Enum.reduce(0, fn {a, b}, acc -> acc + abs(a - b) end)
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     input
     |> String.split("\n", trim: true)

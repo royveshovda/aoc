@@ -5,9 +5,6 @@ aoc 2024, 6 do
   https://adventofcode.com/2024/day/6
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     grid = Utils.Grid.input_to_map(input)
     {start_pos, _dir} = Enum.find(grid, fn {_, v} -> v == "^" end)
@@ -53,19 +50,7 @@ aoc 2024, 6 do
     end
   end
 
-
-
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
-    #grid = Utils.Grid.input_to_map(input)
-    # {start_pos, _dir} = Enum.find(grid, fn {_, v} -> v == "^" end)
-    # start = {start_pos, :north}
-
-    # patched_grid = Map.put(grid, start_pos, ".")
-    # {_exit, turns} = find_turns(start, patched_grid, [])
-
     map =
       input
       |> String.split("\n")

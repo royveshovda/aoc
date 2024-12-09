@@ -5,9 +5,6 @@ aoc 2024, 2 do
   https://adventofcode.com/2024/day/2
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     input
     |> String.split("\n", trim: true)
@@ -23,9 +20,6 @@ aoc 2024, 2 do
     |> then(fn l -> Enum.all?(l, fn x -> (x < 0 && x > -4) end) || Enum.all?(l, fn x -> (x > 0 && x < 4) end) end)
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     input
     |> String.split("\n", trim: true)

@@ -5,9 +5,6 @@ aoc 2024, 8 do
   https://adventofcode.com/2024/day/8
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     {grid, {min_x..max_x//1, min_y..max_y//1}} = Utils.Grid.input_to_map_with_bounds(input)
 
@@ -29,9 +26,6 @@ aoc 2024, 8 do
     [{x1 - dx, y1 - dy}, {x2 + dx, y2 + dy}]
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     {grid, {min_x..max_x//1, min_y..max_y//1}} = Utils.Grid.input_to_map_with_bounds(input)
 
@@ -41,12 +35,12 @@ aoc 2024, 8 do
       for {pos1, val1} <- antennas, {pos2, val2} <- antennas, pos1 != pos2 and val1 == val2, do: {pos1, pos2}
 
     pairs
-    |> Enum.flat_map(fn x -> create_all_antinodes(x, {{min_x, min_y},{max_x, max_y}}) end)
+    |> Enum.flat_map(fn x -> create_all_antinodes(x, {{min_x, min_y}, {max_x, max_y}}) end)
     |> Enum.uniq()
     |> Enum.count()
   end
 
-  def create_all_antinodes({{x1, y1}, {x2, y2}}, {{min_x, min_y},{max_x, max_y}}) do
+  def create_all_antinodes({{x1, y1}, {x2, y2}}, {{min_x, min_y}, {max_x, max_y}}) do
     dx = x2 - x1
     dy = y2 - y1
 

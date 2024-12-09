@@ -5,9 +5,6 @@ aoc 2024, 5 do
   https://adventofcode.com/2024/day/5
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     [rules, prints] =
       input
@@ -46,9 +43,6 @@ aoc 2024, 5 do
 
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     [rules, prints] =
       input

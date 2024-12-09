@@ -5,9 +5,6 @@ aoc 2024, 7 do
   https://adventofcode.com/2024/day/7
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     input
     |> String.split("\n", trim: true)
@@ -23,9 +20,6 @@ aoc 2024, 7 do
     |> Enum.sum()
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     input
     |> String.split("\n", trim: true)

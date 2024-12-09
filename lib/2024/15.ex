@@ -1,8 +1,8 @@
 import AOC
 
-aoc 2024, 9 do
+aoc 2024, 15 do
   @moduledoc """
-  https://adventofcode.com/2024/day/9
+  https://adventofcode.com/2024/day/15
   """
 
   def p1(input) do

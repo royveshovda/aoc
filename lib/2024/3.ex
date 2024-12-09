@@ -5,9 +5,6 @@ aoc 2024, 3 do
   https://adventofcode.com/2024/day/3
   """
 
-  @doc """
-      iex> p1(example_string())
-  """
   def p1(input) do
     input
     |> String.split("mul(")
@@ -26,9 +23,6 @@ aoc 2024, 3 do
     end
   end
 
-  @doc """
-      iex> p2(example_string())
-  """
   def p2(input) do
     pattern = ~r/mul\(([0-9]{1,3}),([0-9]{1,3})\)|do\(\)|don't\(\)/
     ops =
