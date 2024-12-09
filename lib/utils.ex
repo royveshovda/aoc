@@ -26,5 +26,11 @@ defmodule Utils do
       grid = input_to_map(input, parse_el)
       {grid, bounds(grid)}
     end
+
+    def input_to_map_with_limits(input, parse_el \\ &Function.identity/1) do
+      grid = input_to_map(input, parse_el)
+      {min_x..max_x//1, min_y..max_y//1} = bounds(grid)
+      {grid, {min_x, max_x, min_y, max_y}}
+    end
   end
 end

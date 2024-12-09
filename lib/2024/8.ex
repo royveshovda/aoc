@@ -6,7 +6,7 @@ aoc 2024, 8 do
   """
 
   def p1(input) do
-    {grid, {min_x..max_x//1, min_y..max_y//1}} = Utils.Grid.input_to_map_with_bounds(input)
+    {grid, {min_x, max_x, min_y, max_y}} = Utils.Grid.input_to_map_with_limits(input)
 
     antennas = Enum.filter(grid, fn {_, t} -> t != "." end)
 
@@ -27,7 +27,7 @@ aoc 2024, 8 do
   end
 
   def p2(input) do
-    {grid, {min_x..max_x//1, min_y..max_y//1}} = Utils.Grid.input_to_map_with_bounds(input)
+    {grid, {min_x, max_x, min_y, max_y}} = Utils.Grid.input_to_map_with_limits(input)
 
     antennas = Enum.filter(grid, fn {_, t} -> t != "." end)
 
