@@ -66,7 +66,6 @@ aoc 2024, 9 do
     Map.replace(disk, a, b_val) |> Map.replace(b, a_val)
   end
 
-
   def get_first_free(disk) do
     # find smallest index in disk map where value is :free
     disk
@@ -90,13 +89,26 @@ aoc 2024, 9 do
     start_file_id = next_file_id - 1
 
     file_ids = start_file_id..0//-1 |> Enum.to_list()
+    new_disk = Enum.reduce(file_ids, disk, fn file_id, acc -> process_file_by_id(acc, file_id) end)
 
-    file_9 = get_file_by_id(disk, start_file_id)
+    checksum(new_disk)
+  end
 
-    new_disk = swap_file_to_index(disk, file_9, 2)
-       |> Enum.sort(fn {index_a, _}, {index_b, _} -> index_a < index_b end)
+  def process_file_by_id(disk, file_id) do
+    file = get_file_by_id(disk, file_id)
+    free_space = get_first_free_of_size(disk, file |> Enum.count())
+    case should_move_file(file, free_space) do
+      true ->
+        swap_file_to_index(disk, file, free_space)
+      false -> disk
+    end
+  end
 
-    get_first_free_of_size(new_disk, 4)
+  def should_move_file(_file, nil), do: false
+
+  def should_move_file(file, free_space_index) do
+    first_file_index = file |> Enum.map(fn {index, _} -> index end) |> Enum.min()
+    first_file_index > free_space_index
   end
 
   def swap_file_to_index(disk, [], _to_index) do
@@ -104,10 +116,7 @@ aoc 2024, 9 do
   end
 
   def swap_file_to_index(disk, [{segment_index, _segment} | rest_of_file], to_index) do
-
-    IO.inspect({segment_index, to_index})
     new_disk = swap_positions(disk, segment_index, to_index)
-    IO.inspect(new_disk)
     swap_file_to_index(new_disk, rest_of_file, to_index + 1)
   end
 
@@ -118,12 +127,16 @@ aoc 2024, 9 do
   end
 
   def get_first_free_of_size(disk, size) do
-    disk
-    |> Enum.filter(fn {_, {type, _id}} -> type == :free end)
-    |> Enum.map(fn {index, _} -> index end)
-    |> Enum.sort()
-    |> Enum.chunk_every(size, 1, :discard)
-    |> Enum.find(fn chunk -> Enum.chunk_every(chunk, 2, 1, :discard) |> Enum.all?(fn [a, b] -> b == a + 1 end) end)
-    |> Enum.at(0, nil)
+    space =
+      disk
+      |> Enum.filter(fn {_, {type, _id}} -> type == :free end)
+      |> Enum.map(fn {index, _} -> index end)
+      |> Enum.sort()
+      |> Enum.chunk_every(size, 1, :discard)
+      |> Enum.find(fn chunk -> Enum.chunk_every(chunk, 2, 1, :discard) |> Enum.all?(fn [a, b] -> b == a + 1 end) end)
+    case space do
+      nil -> nil
+      _ -> Enum.min(space)
+    end
   end
 end
