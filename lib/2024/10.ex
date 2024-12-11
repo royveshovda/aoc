@@ -9,19 +9,10 @@ aoc 2024, 10 do
     grid = Utils.Grid.input_to_map(input, &String.to_integer/1)
     starts = grid |> Enum.filter(fn {_pos, v} -> v == 0 end)
 
-    # {start_0_pos, start_0_value} = Enum.at(starts, 0)
-    # {start_1_pos, start_1_value} = Enum.at(starts, 1)
-
-    # next_step(grid, start_0_pos, start_0_value)
-    # next_step(grid, start_1_pos, start_1_value)
-
     starts
     |> Enum.map(fn {pos, value} -> next_step_p1(grid, pos, value) end)
     |> Enum.map(fn x -> Enum.count(x) end)
     |> Enum.sum()
-
-
-
   end
 
   def next_step_p1(_grid, pos, 9), do: [pos]
