@@ -50,8 +50,7 @@ aoc 2023, 21 do
       {x, y - 1},
       {x, y + 1}
     ]
-    |> Enum.filter(fn {x, y} -> Map.get(grid, {x, y}) != "#" end)
-    |> Enum.filter(fn pos -> pos in Map.keys(grid) end)
+    |> Enum.filter(fn {x, y} -> Map.get(grid, {x, y}) != "#" and pos in Map.keys(grid) end)
   end
 
 

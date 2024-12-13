@@ -125,8 +125,7 @@ aoc 2023, 3 do
       expand
       |> Enum.flat_map(fn {row, col} ->
         [{row, col + 1}, {row, col - 1}]
-        |> Enum.filter(&number?(grid[&1]))
-        |> Enum.filter(&!visited?(&1, visited))
+        |> Enum.filter(fn coord -> number?(grid[coord]) and !visited?(coord, visited) end)
       end)
 
     case next do

@@ -9,7 +9,7 @@ aoc 2024, 13 do
     input
     |> String.split("\n\n", trim: true)
     |> Enum.map(&String.split(&1, "\n", trim: true))
-    |> Enum.map(fn [a,b,p] -> {parse_button(a), parse_button(b), parse_price(p)} end)
+    |> Enum.map(fn [a, b, p] -> {parse_button(a), parse_button(b), parse_price(p)} end)
     |> Enum.map(&solve/1)
     |> Enum.map(fn {a, b} -> 3 * a + b end)
     |> Enum.sum()
@@ -28,14 +28,14 @@ aoc 2024, 13 do
   end
 
   def parse_button(button) do
-    [_,_, x,_,y] = String.split(button, ["+", ",", ":"], trim: true)
+    [_, _, x, _, y] = String.split(button, ["+", ",", ":"], trim: true)
     x = String.to_integer(x)
     y = String.to_integer(y)
     {x, y}
   end
 
   def parse_price(price) do
-    [_,_,target_x, _, target_y] = String.split(price, ["=", ",", ":"], trim: true)
+    [_, _, target_x, _, target_y] = String.split(price, ["=", ",", ":"], trim: true)
     target_x = String.to_integer(target_x)
     target_y = String.to_integer(target_y)
     {target_x, target_y}
