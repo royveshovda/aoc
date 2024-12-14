@@ -5,7 +5,7 @@ aoc 2024, 14 do
   https://adventofcode.com/2024/day/14
   """
 
-  def p1(input, max_x, max_y) do
+  def p1({input, max_x, max_y}) do
     robots =
       input
       |> String.split("\n")
@@ -34,7 +34,6 @@ aoc 2024, 14 do
   end
 
   def move_robot({px, py}, {vx, vy}, max_x, max_y, steps) do
-    x = px + (steps * vx)
     x = positive_mod(px + (steps * vx), max_x)
     y = positive_mod(py + (steps * vy), max_y)
     {x, y}
@@ -49,7 +48,7 @@ aoc 2024, 14 do
     end
   end
 
-  def p2(input, max_x, max_y) do
+  def p2({input, max_x, max_y}) do
     robots =
       input
       |> String.split("\n")
@@ -61,5 +60,27 @@ aoc 2024, 14 do
         vy = String.to_integer(vy)
         {{px, py}, {vx, vy}}
       end)
+
+    1..10000
+    |> Enum.reduce_while(nil, fn i, _acc ->
+        res =
+          move_robots(robots, i, max_x, max_y)
+          |> check_robots()
+
+        if res do
+          {:halt, i}
+        else
+          {:cont, nil}
+        end
+      end)
+  end
+
+  def move_robots(robots, steps, max_x, max_y) do
+    robots
+    |> Enum.map(fn {p, v} -> move_robot(p, v, max_x, max_y, steps) end)
+  end
+
+  def check_robots(robots) do
+    length(robots) == Enum.uniq(robots) |> length()
   end
 end
