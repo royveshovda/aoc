@@ -33,13 +33,19 @@ aoc_test 2024, 17, async: true do
     """
   end
 
+  def get_example_string_4() do
+    """
+    Register A: 2024
+    Register B: 0
+    Register C: 0
+
+    Program: 0,3,5,4,3,0
+    """
+  end
+
   test "p1e_1" do
     assert Y2024.D17.p1(get_example_string_1()) == ""
   end
-
-  # test "p1e_2" do
-  #   assert Y2024.D17.p1(get_example_string_2()) == "0,1,2"
-  # end
 
   test "p1e_3" do
     assert Y2024.D17.p1(get_example_string_3()) == "4,2,5,6,7,7,7,7,3,1,0"
@@ -54,10 +60,10 @@ aoc_test 2024, 17, async: true do
   end
 
   test "p2e" do
-    assert Y2024.D17.p2(example_string()) == 117440
+    assert Y2024.D17.p2(get_example_string_4()) == 117_440
   end
 
   test "p2i" do
-    assert Y2024.D17.p2(input_string()) == 1
+    assert Y2024.D17.p2(input_string()) == 109_019_930_331_546
   end
 end

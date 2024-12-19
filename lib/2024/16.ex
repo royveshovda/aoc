@@ -5,8 +5,6 @@ aoc 2024, 16 do
   https://adventofcode.com/2024/day/16
   Source for code: https://elixirforum.com/t/advent-of-code-2024-day-16/68133
   """
-alias Y2022.D16
-
   def p1(input) do
     input = String.split(input, "\n", trim: true)
     # map =

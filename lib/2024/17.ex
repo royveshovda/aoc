@@ -34,16 +34,9 @@ aoc 2024, 17 do
   end
 
   def p2(input) do
-    [registers_raw, program_raw] =
+    [_registers_raw, program_raw] =
       input
       |> String.split("\n\n", trim: true)
-
-    [reg_a, _reg_b, _reg_c] =
-      registers_raw
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ": ", trim: true))
-      |> Enum.map(fn [_k, v] -> String.to_integer(v) end)
-
 
     [_, program_raw] =
       program_raw
