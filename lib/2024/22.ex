@@ -187,12 +187,9 @@ defmodule SecretNumbersPart2Optimized do
       end)
 
     # 5) Find the pattern with the maximum total price
-    {best_pattern, best_sum} =
+    {_best_pattern, best_sum} =
       aggregator
       |> Enum.max_by(fn {_pattern, sum} -> sum end, fn -> {nil, 0} end)
-
-    IO.puts("Best 4-change pattern: #{inspect(best_pattern)}")
-    IO.puts("Maximum total bananas: #{best_sum}")
     best_sum
   end
 end

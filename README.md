@@ -2,10 +2,6 @@
 
 [2024](lib/2024)
 
-## Refactor candidates for 2024
-
-- [Day 20](lib/2024/20.ex) (16s)
-
 ## Archive
 
 - [2023](lib/2023)

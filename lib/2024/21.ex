@@ -8,25 +8,17 @@ aoc 2024, 21 do
   """
 
   def p1(input) do
-    {time, value} = :timer.tc(&Day21.part/2, [1, input])
-    time = :erlang.float_to_binary(time / 1000, decimals: 1)
-
-    IO.inspect(value, label: "Part #{1} (#{time}ms)", charlists: :as_lists)
-
-    value
+    input
+    |> parse()
+    |> solve(2)
   end
 
   def p2(input) do
-    {time, value} = :timer.tc(&Day21.part/2, [2, input])
-    time = :erlang.float_to_binary(time / 1000, decimals: 1)
-
-    IO.inspect(value, label: "Part #{2} (#{time}ms)", charlists: :as_lists)
-
-    value
+    input
+    |> parse()
+    |> solve(25)
   end
-end
 
-defmodule Day21 do
   @numeric "
     789
     456
@@ -126,13 +118,5 @@ defmodule Day21 do
       {total + presses * number, cache}
     end)
     |> elem(0)
-  end
-
-  def part(1, input) do
-    input |> parse() |> solve(2)
-  end
-
-  def part(2, input) do
-    input |> parse() |> solve(25)
   end
 end
