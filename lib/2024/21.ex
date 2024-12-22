@@ -48,7 +48,7 @@ aoc 2024, 21 do
   def parse(input) do
     codes =
       input
-      |> String.split("\n")
+      |> String.split("\n", trim: true)
       |> Enum.map(fn line ->
         line |> String.codepoints()
       end)

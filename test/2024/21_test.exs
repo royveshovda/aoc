@@ -1,8 +1,18 @@
 import AOC
 
 aoc_test 2024, 21, async: true do
+  def get_example() do
+    """
+    029A
+    980A
+    179A
+    456A
+    379A
+    """
+  end
+
   test "p1e" do
-    assert Y2024.D21.p1(example_string()) == 126384
+    assert Y2024.D21.p1(get_example()) == 126384
   end
 
   test "p1i" do
@@ -10,7 +20,8 @@ aoc_test 2024, 21, async: true do
   end
 
   test "p2e" do
-    assert Y2024.D21.p2(example_string()) == 154_115_708_116_294
+
+    assert Y2024.D21.p2(get_example()) == 154_115_708_116_294
   end
 
   test "p2i" do
