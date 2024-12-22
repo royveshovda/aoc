@@ -13,7 +13,6 @@ aoc_test 2024, 20, async: true do
     assert Y2024.D20.p2(example_string()) == 0
   end
 
-  @tag timeout: :infinity
   test "p2i" do
     assert Y2024.D20.p2(input_string()) == 966_130
   end

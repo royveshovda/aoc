@@ -18,7 +18,6 @@ aoc_test 2024, 11, async: true do
     assert Y2024.D11.p2(get_example_input()) == 65_601_038_650_482
   end
 
-  @tag timeout: :infinity
   test "p2i" do
     assert Y2024.D11.p2(input_string()) == 259_593_838_049_805
   end
