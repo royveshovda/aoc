@@ -6,7 +6,6 @@
 
 - [Day 15](lib/2024/15.ex) (30s)
 - [Day 20](lib/2024/20.ex) (16s)
-- [Day 22](lib/2024/22.ex) (45s)
 
 ## Archive
 

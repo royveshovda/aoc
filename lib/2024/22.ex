@@ -10,7 +10,7 @@ aoc 2024, 22 do
   end
 
   def p2(input) do
-    SecretNumbersPart2.run(input)
+    SecretNumbersPart2Optimized.run(input)
   end
 end
 
@@ -59,14 +59,15 @@ defmodule SecretNumbers do
   end
 end
 
-defmodule SecretNumbersPart2 do
+defmodule SecretNumbersPart2Optimized do
 
   @mod 16_777_216  # 2^24
+  @steps 2000      # Each buyer generates 2000 new secret numbers
 
   @doc """
-  Given a secret number, returns its 'next secret' by the pseudorandom evolution:
+  Given a secret number, evolves it into the "next secret" via:
     1) multiply by 64, XOR, prune
-    2) divide by 32 (floor), XOR, prune
+    2) integer divide by 32, XOR, prune
     3) multiply by 2048, XOR, prune
   """
   def next_secret(secret) do
@@ -89,118 +90,108 @@ defmodule SecretNumbersPart2 do
   end
 
   @doc """
-  Generates a list of 2001 secrets for one buyer:
-    - the initial secret (index 0)
-    - followed by 2000 evolved secrets
+  Given an initial secret, returns a map of:
+    4-change-pattern -> first selling price
+  for the first occurrence of each 4-change pattern in the next 2000 steps.
+
+  We do this in a streaming/on-the-fly manner:
+    - Keep track of the last price (rem(secret,10))
+    - Each new secret yields a new price
+    - The difference (new_price - old_price) is a new change
+    - Accumulate changes in a 4-change queue
+    - When the queue has 4 changes, record the pattern -> current price
+      (the "sell price" is the price immediately after those 4 changes)
+
+  We only record the *first* occurrence of any 4-change pattern for this buyer.
   """
-  def generate_secrets(initial_secret, count \\ 2000) do
-    # We'll do a reduce over 1..count to build up all secrets.
-    # Another approach is a simple recursion or an Enum.scan.
-    Enum.scan(1..count, initial_secret, fn _, acc -> next_secret(acc) end)
-    # This scan only returns the new secrets, so we prepend the initial one:
-    |> then(fn tail -> [initial_secret | tail] end)
+  def patterns_for_buyer_on_the_fly(initial_secret, steps \\ @steps) do
+    # State structure
+    state = %{
+      current_secret: initial_secret,    # last generated secret
+      last_price: rem(initial_secret, 10),
+      changes_queue: [],                 # list of length <= 4
+      pattern_map: %{}                  # pattern -> sell_price
+    }
+
+    # We'll iterate exactly 'steps' times for new secrets
+    final_state =
+      Enum.reduce(1..steps, state, fn _, st ->
+        new_secret = next_secret(st.current_secret)
+        new_price = rem(new_secret, 10)
+        change = new_price - st.last_price
+
+        changes_queue = (st.changes_queue ++ [change]) |> Enum.take(-4)
+
+        # If we have exactly 4 changes, build a pattern (4-tuple)
+        # and record the "sell price" for the pattern if not seen before.
+        updated_pattern_map =
+          if length(changes_queue) == 4 do
+            pattern = List.to_tuple(changes_queue)
+
+            # The "sell price" is the price *after* these 4 changes,
+            # which is the new_price right now.
+            Map.update(st.pattern_map, pattern, new_price, & &1)
+            # (Map.update won't overwrite an existing key, we want the first occurrence only)
+          else
+            st.pattern_map
+          end
+
+        %{
+          st
+          | current_secret: new_secret,
+            last_price: new_price,
+            changes_queue: changes_queue,
+            pattern_map: updated_pattern_map
+        }
+      end)
+
+    final_state.pattern_map
   end
 
   @doc """
-  From a list of secrets, map them to last-digit prices.
-  If secret = 123, price = 3.
-  """
-  def secrets_to_prices(secrets) do
-    Enum.map(secrets, &rem(&1, 10))
-  end
-
-  @doc """
-  Given a list of prices p[0..n], returns the list of consecutive changes:
-    c[i] = p[i+1] - p[i]
-  So the result length is (n).
-  """
-  def price_changes(prices) do
-    prices
-    |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.map(fn [a, b] -> b - a end)
-  end
-
-  @doc """
-  For a single buyer (defined by its initial secret):
-    1) Generate secrets (2001 total).
-    2) Convert to prices (p[0..2000]).
-    3) Generate changes (c[0..1999]).
-    4) For each index i where i+3 < length(c), the 4-change subsequence is c[i..i+3].
-       - The *first* time a pattern appears is the only time that matters for that buyer.
-       - The selling price is p[i+4].
-  Returns a map: pattern_4 -> sell_price_for_first_occurrence
-  (If a pattern appears again, we ignore it; only the first occurrence matters.)
-  """
-  def patterns_for_buyer(initial_secret) do
-    secrets = generate_secrets(initial_secret, 2000)
-    prices = secrets_to_prices(secrets)
-    changes = price_changes(prices)
-
-    buyer_map = %{}
-
-    # We'll iterate over i in [0..(2000 - 4)] inclusive
-    # i.e. from 0 to 1996. But we'll just use 0..length(changes)-4
-    last_change_index = length(changes) - 4
-
-    Enum.reduce(0..last_change_index, buyer_map, fn i, acc ->
-      # Extract the 4-change pattern
-      pattern = {
-        Enum.at(changes, i),
-        Enum.at(changes, i + 1),
-        Enum.at(changes, i + 2),
-        Enum.at(changes, i + 3)
-      }
-
-      # If it's not in acc, store the *first occurrence* sell price
-      # The sell price is prices[i+4].
-      case Map.has_key?(acc, pattern) do
-        true ->
-          acc  # already found this pattern, do nothing
-        false ->
-          sell_price = Enum.at(prices, i + 4)
-          Map.put(acc, pattern, sell_price)
-      end
-    end)
-  end
-
-  @doc """
-  Merge the buyer-specific pattern->price maps into a global aggregator:
-    pattern_4 -> sum_of_first_occurrence_prices_across_all_buyers
+  Merges one buyer's pattern map into the global aggregator:
+    aggregator[pattern] += buyer_map[pattern]
   """
   def merge_buyer_patterns(buyer_map, aggregator) do
-    # For each pattern in buyer_map, add its price to the aggregator
     Enum.reduce(buyer_map, aggregator, fn {pattern, price}, acc ->
       Map.update(acc, pattern, price, &(&1 + price))
     end)
   end
 
   @doc """
-  Reads initial secrets from file, computes for each buyer all first-occurrence
-  4-change patterns. Aggregates them, then finds the pattern with the
-  maximum total sell price. Prints the result.
+  Main entry point. Reads initial secrets from file, processes each buyer *concurrently*,
+  and merges all pattern maps into a global aggregator. Finds and prints the pattern with
+  the highest total selling price.
   """
   def run(input) do
-    # Read the initial secrets
+    # 1) Read all initial secrets
     initial_secrets =
       input
       |> String.split("\n", trim: true)
       |> Enum.reject(&(&1 == ""))
       |> Enum.map(&String.to_integer/1)
 
-    # Build a global aggregator from all buyers
-    aggregator =
-      Enum.reduce(initial_secrets, %{}, fn secret, acc ->
-        acc
-        |> merge_buyer_patterns(patterns_for_buyer(secret))
+    # 2) For each secret, spawn a Task to compute patterns_on_the_fly
+    tasks =
+      Enum.map(initial_secrets, fn secret ->
+        Task.async(fn -> patterns_for_buyer_on_the_fly(secret) end)
       end)
 
-    # The aggregator is now a map from {c1, c2, c3, c4} -> sum_of_prices.
-    # We want the maximum sum_of_prices among all patterns.
+    # 3) Await all tasks, producing a list of buyer maps
+    buyer_maps = Enum.map(tasks, &Task.await/1)
+
+    # 4) Merge all buyer maps into one aggregator
+    aggregator =
+      Enum.reduce(buyer_maps, %{}, fn buyer_map, acc ->
+        merge_buyer_patterns(buyer_map, acc)
+      end)
+
+    # 5) Find the pattern with the maximum total price
     {best_pattern, best_sum} =
       aggregator
       |> Enum.max_by(fn {_pattern, sum} -> sum end, fn -> {nil, 0} end)
 
-    IO.puts("Best 4-change pattern is: #{inspect(best_pattern)}")
+    IO.puts("Best 4-change pattern: #{inspect(best_pattern)}")
     IO.puts("Maximum total bananas: #{best_sum}")
     best_sum
   end
