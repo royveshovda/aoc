@@ -3,140 +3,118 @@ import AOC
 aoc 2024, 9 do
   @moduledoc """
   https://adventofcode.com/2024/day/9
+  Source: https://github.com/liamcmitchell/advent-of-code/blob/main/2024/09/1.exs
   """
 
   def p1(input) do
-    {start, _next_file_id, disk_raw} =
-      input
-      |> String.graphemes()
-      |> Enum.map(&String.to_integer/1)
-      |> Enum.zip(Stream.cycle([:file, :free]))
-      |> Enum.reduce({0, 0, []}, fn {x_len, type}, {current_index, file_id, all} ->
-         {current_index + x_len, get_next_file_id_step(type, file_id), all ++ expand(current_index, x_len, type, file_id)}
-       end)
-
-      disk = disk_raw |> Enum.map(fn {index, type, file_id} -> {index, {type, file_id}} end) |> Enum.into(%{})
-
-      new_disk = compact_disk(disk, start - 1)
-      checksum(new_disk)
-  end
-
-  def expand(_current_index, 0, _type, _file_id) do
-    []
-  end
-
-  def expand(current_index, x_len, type, file_id) do
-    (for i <- current_index..(current_index + x_len - 1), do: get_file_index_step(i, type, file_id))
-  end
-
-  def get_next_file_id_step(type, file_id) do
-    case type do
-      :file -> file_id + 1
-      :free -> file_id
-    end
-  end
-
-  def get_file_index_step(index, type, file_id) do
-    case type do
-      :file -> {index, :file, file_id}
-      :free -> {index, :free, -1}
-    end
-  end
-
-
-  def checksum(disk) do
-    disk
-    |> Enum.filter(fn {_, {type, _}} -> type == :file end)
-    |> Enum.sort(fn {index_a, _}, {index_b, _} -> index_a < index_b end)
-    |> Enum.map(fn {index, {_type, file_id}} -> index * file_id end)
-    |> Enum.sum()
-  end
-
-  def compact_disk(disk, current_index_to_move) do
-    free_index = get_first_free(disk)
-    case free_index >= current_index_to_move do
-      true -> disk
-      false -> compact_disk(swap_positions(disk, free_index, current_index_to_move), current_index_to_move - 1)
-    end
-  end
-
-  def swap_positions(disk, a, b) do
-    a_val = disk[a]
-    b_val = disk[b]
-    Map.replace(disk, a, b_val) |> Map.replace(b, a_val)
-  end
-
-  def get_first_free(disk) do
-    # find smallest index in disk map where value is :free
-    disk
-    |> Enum.filter(fn {_, {type, _id}} -> type == :free end)
-    |> Enum.map(fn {index, _} -> index end)
-    |> Enum.min()
+    input
+    |> parse()
+    |> compact()
+    |> checksum()
   end
 
   def p2(input) do
-    {_start, next_file_id, disk_raw} =
-      input
-      |> String.graphemes()
-      |> Enum.map(&String.to_integer/1)
-      |> Enum.zip(Stream.cycle([:file, :free]))
-      |> Enum.reduce({0, 0, []}, fn {x_len, type}, {current_index, file_id, all} ->
-         {current_index + x_len, get_next_file_id_step(type, file_id), all ++ expand(current_index, x_len, type, file_id)}
-       end)
-
-    disk = disk_raw |> Enum.map(fn {index, type, file_id} -> {index, {type, file_id}} end) |> Enum.into(%{})
-
-    start_file_id = next_file_id - 1
-
-    file_ids = start_file_id..0//-1 |> Enum.to_list()
-    new_disk = Enum.reduce(file_ids, disk, fn file_id, acc -> process_file_by_id(acc, file_id) end)
-
-    checksum(new_disk)
+    input
+    |> parse_files()
+    |> compact_files()
+    |> files_to_disk()
+    |> checksum()
   end
 
-  def process_file_by_id(disk, file_id) do
-    file = get_file_by_id(disk, file_id)
-    free_space = get_first_free_of_size(disk, file |> Enum.count())
-    case should_move_file(file, free_space) do
-      true ->
-        swap_file_to_index(disk, file, free_space)
-      false -> disk
+  def parse(input) do
+    input
+    |> String.trim()
+    |> String.graphemes()
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {char, index} ->
+      length = String.to_integer(char)
+      id = if rem(index, 2) == 0, do: div(index, 2), else: -1
+      List.duplicate(id, length)
+    end)
+  end
+
+  def compact(disk) do
+    to_move = Enum.reverse(disk) |> Enum.filter(&(&1 != -1))
+    total = Enum.count(disk)
+    used = Enum.count(to_move)
+    unused = total - used
+    compact(Enum.slice(disk, 0, used), Enum.slice(to_move, 0, unused))
+  end
+
+  def compact([], _), do: []
+
+  def compact([block | rest], to_move) do
+    if block == -1 do
+      [hd(to_move) | compact(rest, tl(to_move))]
+    else
+      [block | compact(rest, to_move)]
     end
   end
 
-  def should_move_file(_file, nil), do: false
-
-  def should_move_file(file, free_space_index) do
-    first_file_index = file |> Enum.map(fn {index, _} -> index end) |> Enum.min()
-    first_file_index > free_space_index
-  end
-
-  def swap_file_to_index(disk, [], _to_index) do
+  def checksum(disk) do
     disk
+    |> Enum.with_index()
+    |> Enum.reduce(0, fn {id, index}, acc ->
+      if id == -1, do: acc, else: acc + id * index
+    end)
   end
 
-  def swap_file_to_index(disk, [{segment_index, _segment} | rest_of_file], to_index) do
-    new_disk = swap_positions(disk, segment_index, to_index)
-    swap_file_to_index(new_disk, rest_of_file, to_index + 1)
+  def part1(file) do
+    parse(file) |> compact() |> checksum()
   end
 
-  def get_file_by_id(disk, file_id) do
-    disk
-    |> Enum.filter(fn {_, {type, id}} -> type == :file and id == file_id end)
-    #|> Enum.map(fn {index, _} -> index end)
+  # Part 2
+  def parse_files(input) do
+    input
+    |> String.trim()
+    |> String.graphemes()
+    |> Enum.with_index()
+    |> Enum.map(fn {char, index} ->
+      length = String.to_integer(char)
+      id = if rem(index, 2) == 0, do: div(index, 2), else: -1
+      {id, length}
+    end)
   end
 
-  def get_first_free_of_size(disk, size) do
-    space =
-      disk
-      |> Enum.filter(fn {_, {type, _id}} -> type == :free end)
-      |> Enum.map(fn {index, _} -> index end)
-      |> Enum.sort()
-      |> Enum.chunk_every(size, 1, :discard)
-      |> Enum.find(fn chunk -> Enum.chunk_every(chunk, 2, 1, :discard) |> Enum.all?(fn [a, b] -> b == a + 1 end) end)
-    case space do
-      nil -> nil
-      _ -> Enum.min(space)
+  def compact_files(files) do
+    compact_files(files, Enum.reverse(files))
+  end
+
+  def compact_files(files, []), do: files
+
+  def compact_files(files, [moving | to_move]) do
+    compact_files(move_file(files, moving), to_move)
+  end
+
+  def move_file([], _), do: []
+  def move_file(files, {movingId, _}) when movingId == -1, do: files
+
+  def move_file([file | files], moving) do
+    if file == moving do
+      [file | files]
+    else
+      {fileId, fileLength} = file
+      {movingId, movingLength} = moving
+
+      if fileId == -1 and fileLength >= movingLength do
+        [moving, {-1, fileLength - movingLength} | remove_file(files, {movingId, movingLength})]
+      else
+        [file | move_file(files, moving)]
+      end
     end
+  end
+
+  def remove_file([], _), do: []
+
+  def remove_file([file | files], remove) do
+    if file == remove do
+      [{-1, elem(remove, 1)} | files]
+    else
+      [file | remove_file(files, remove)]
+    end
+  end
+
+  def files_to_disk(files) do
+    Enum.flat_map(files, fn {id, length} -> List.duplicate(id, length) end)
   end
 end
