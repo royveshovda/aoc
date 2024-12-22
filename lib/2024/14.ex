@@ -61,7 +61,7 @@ aoc 2024, 14 do
         {{px, py}, {vx, vy}}
       end)
 
-    1..10000
+    1..10_000
     |> Enum.reduce_while(nil, fn i, _acc ->
         res =
           move_robots(robots, i, max_x, max_y)

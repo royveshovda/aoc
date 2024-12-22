@@ -15,6 +15,9 @@ aoc 2024, 22 do
 end
 
 defmodule SecretNumbers do
+  @moduledoc """
+  Solution for Part 1 of 2024 Day 22.
+  """
 
   @mod 16_777_216  # 2^24
 
@@ -60,6 +63,9 @@ defmodule SecretNumbers do
 end
 
 defmodule SecretNumbersPart2Optimized do
+  @moduledoc """
+  Solution for Part 2 of 2024 Day 22.
+  """
 
   @mod 16_777_216  # 2^24
   @steps 2000      # Each buyer generates 2000 new secret numbers

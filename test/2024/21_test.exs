@@ -12,11 +12,11 @@ aoc_test 2024, 21, async: true do
   end
 
   test "p1e" do
-    assert Y2024.D21.p1(get_example()) == 126384
+    assert Y2024.D21.p1(get_example()) == 126_384
   end
 
   test "p1i" do
-    assert Y2024.D21.p1(input_string()) == 164960
+    assert Y2024.D21.p1(input_string()) == 164_960
   end
 
   test "p2e" do

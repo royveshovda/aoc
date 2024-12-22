@@ -52,8 +52,7 @@ aoc 2022, 10 do
     instructions
     |> Enum.map(&check_pixel/1)
     |> Enum.chunk_every(@screen_width)
-    |> Enum.map(&Enum.join(&1, ""))
-    |> Enum.join("\n")
+    |> Enum.map_join("\n", &Enum.join(&1, ""))
   end
 
   def check_pixel({location, index}) do

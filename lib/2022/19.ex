@@ -29,8 +29,7 @@ aoc 2022, 19 do
       [
         state
         | [:geode, :obsidian, :ore, :clay]
-          |> Enum.filter(&can_build?(state, blueprint[&1]))
-          |> Enum.filter(&worthwhile(state, blueprint, time, &1))
+          |> Enum.filter(fn type -> can_build?(state, blueprint[type]) and worthwhile(state, blueprint, time, type) end)
           |> Enum.take(2)
           |> Enum.map(&build(state, &1, blueprint[&1]))
       ]

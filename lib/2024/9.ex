@@ -87,17 +87,17 @@ aoc 2024, 9 do
   end
 
   def move_file([], _), do: []
-  def move_file(files, {movingId, _}) when movingId == -1, do: files
+  def move_file(files, {moving_id, _}) when moving_id == -1, do: files
 
   def move_file([file | files], moving) do
     if file == moving do
       [file | files]
     else
-      {fileId, fileLength} = file
-      {movingId, movingLength} = moving
+      {file_id, file_length} = file
+      {moving_id, moving_length} = moving
 
-      if fileId == -1 and fileLength >= movingLength do
-        [moving, {-1, fileLength - movingLength} | remove_file(files, {movingId, movingLength})]
+      if file_id == -1 and file_length >= moving_length do
+        [moving, {-1, file_length - moving_length} | remove_file(files, {moving_id, moving_length})]
       else
         [file | move_file(files, moving)]
       end

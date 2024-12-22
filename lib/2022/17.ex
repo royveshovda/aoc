@@ -73,21 +73,21 @@ aoc 2022, 17 do
               {height, i}
             else
               case :ets.lookup(cache, key) do
-                [] ->
-                  true = :ets.insert_new(cache, {key, {i, height}})
-                  {height, i}
+          [] ->
+            true = :ets.insert_new(cache, {key, {i, height}})
+            {height, i}
 
-                [{_, {prev_i, prev_height}}] ->
-                  with gap <- i - prev_i, chunk_height = height - prev_height do
-                    factor = div(@big_num - i, gap)
-                    new_i = i + gap * factor
-                    new_height = height + chunk_height * factor
-                    {new_height, new_i}
-                  end
+          [{_, {prev_i, prev_height}}] ->
+            with gap <- i - prev_i, chunk_height = height - prev_height do
+              factor = div(@big_num - i, gap)
+              new_i = i + gap * factor
+              new_height = height + chunk_height * factor
+              {new_height, new_i}
+            end
               end
             end
 
-          {:cont, Tuple.append(drop_rock(rock, full_height, stack, jets), iter + 1)}
+          {:cont, Tuple.insert_at(drop_rock(rock, full_height, stack, jets), 3, iter + 1)}
         end
       end)
 
@@ -135,7 +135,7 @@ aoc 2022, 17 do
 
   @pixels %{clear: ".", blocked: "#"}
   def print_stack(stack) do
-    _res = Enum.map(stack, fn line -> IO.puts(:stderr, "|" ++ Enum.map(line, &@pixels[&1]) ++ "|") end)
+    _res = Enum.map(stack, fn line -> IO.puts(:stderr, "|" <> Enum.join(Enum.map(line, &@pixels[&1]), "") <> "|") end)
     IO.puts(:stderr, "+-------+")
   end
 end
