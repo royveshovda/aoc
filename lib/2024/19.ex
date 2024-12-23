@@ -65,18 +65,29 @@ aoc 2024, 19 do
       Enum.reduce(1..len, dp, fn pos, dp_acc ->
         total =
           Enum.reduce(patterns, 0, fn pattern, acc ->
-            plen = String.length(pattern)
+            num_ways_sum(pattern, pos, design, acc, dp_acc)
+            # plen = String.length(pattern)
 
-            if pos >= plen and String.slice(design, pos - plen, plen) == pattern do
-              acc + Map.get(dp_acc, pos - plen, 0)
-            else
-              acc
-            end
+            # if pos >= plen and String.slice(design, pos - plen, plen) == pattern do
+            #   acc + Map.get(dp_acc, pos - plen, 0)
+            # else
+            #   acc
+            # end
           end)
 
         Map.put(dp_acc, pos, total)
       end)
 
     Map.get(dp, len, 0)
+  end
+
+  def num_ways_sum(pattern, pos, design, acc, dp_acc) do
+    plen = String.length(pattern)
+
+    if pos >= plen and String.slice(design, pos - plen, plen) == pattern do
+      acc + Map.get(dp_acc, pos - plen, 0)
+    else
+      acc
+    end
   end
 end
