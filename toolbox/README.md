@@ -18,10 +18,14 @@ This toolbox contains reusable algorithms, patterns, and code snippets extracted
 ### Dynamic Programming & Optimization
 - **[Dynamic Programming & Memoization](dynamic_programming.md)** - Overlapping subproblems, optimization
   - 2024 Days: 11, 21, 2023 Days: 12, 19, 2022 Days: 16, 17, 19
+- **[Optimization & Search Strategies](optimization_search.md)** - Branch & bound, greedy, pruning, beam search
+  - 2015 Days: 13, 15, 17, 22, 24
 
 ### Geometric & Mathematical
 - **[Mathematical Algorithms](mathematical_algorithms.md)** - GCD/LCM, linear systems, geometry formulas
   - 2024 Day: 13, 2023 Days: 6, 8, 11, 18, 21, 2022 Day: 11
+- **[Number Theory & Combinatorics](number_theory.md)** - Sieves, modular arithmetic, triangular numbers, partitions
+  - 2015 Days: 17, 20, 24, 25
 
 ### State & Simulation
 - **[Cycle Detection](cycle_detection.md)** - Finding repeating patterns for optimization
@@ -39,10 +43,16 @@ This toolbox contains reusable algorithms, patterns, and code snippets extracted
 - **[Parsing Patterns](parsing.md)** - Input processing strategies
   - Every problem requires parsing! Common patterns for all input types
 
+- **[String Algorithms](string_algorithms.md)** - Substring search, replacement, transformations, validation
+  - 2015 Days: 5, 8, 10, 11, 19
+
 ## Language-Specific
 
 - **[Elixir Idioms & Patterns](elixir_idioms.md)** - Elixir-specific patterns for AoC
   - Enum patterns, pipelines, pattern matching, MapSets, Streams
+
+- **[Interpreter & VM Patterns](interpreter_patterns.md)** - Assembly interpreters, circuit evaluation, game state machines
+  - 2015 Days: 7, 21, 22, 23
 
 ## Quick Reference by Problem Type
 

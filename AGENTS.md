@@ -40,16 +40,21 @@ The `toolbox/` directory contains a comprehensive collection of algorithms, patt
 
 ### Available Resources
 
+#### Core Algorithm Categories
 - **[BFS](toolbox/bfs.md)** - Breadth-first search for shortest paths
 - **[DFS](toolbox/dfs.md)** - Depth-first search for all paths and components
 - **[Dijkstra & A*](toolbox/dijkstra_astar.md)** - Weighted graph pathfinding
 - **[Graph Algorithms](toolbox/graph_algorithms.md)** - Cliques, topological sort, min-cut
 - **[Dynamic Programming](toolbox/dynamic_programming.md)** - Memoization and optimization
-- **[Mathematical Algorithms](toolbox/mathematical_algorithms.md)** - GCD/LCM, geometry, number theory
+- **[Optimization & Search](toolbox/optimization_search.md)** - Branch & bound, greedy, pruning strategies
+- **[Mathematical Algorithms](toolbox/mathematical_algorithms.md)** - GCD/LCM, geometry, linear systems
+- **[Number Theory & Combinatorics](toolbox/number_theory.md)** - Sieves, modular arithmetic, partitions
 - **[Cycle Detection](toolbox/cycle_detection.md)** - Optimizing long simulations
 - **[Simulation & State](toolbox/simulation.md)** - Managing complex state evolution
 - **[Grid Operations](toolbox/grid_operations.md)** - 2D/3D grid manipulation
 - **[Parsing Patterns](toolbox/parsing.md)** - Input processing strategies
+- **[String Algorithms](toolbox/string_algorithms.md)** - Substring operations, transformations, validation
+- **[Interpreter Patterns](toolbox/interpreter_patterns.md)** - VMs, assembly interpreters, circuit evaluation
 - **[Elixir Idioms](toolbox/elixir_idioms.md)** - Language-specific patterns
 
 ### When to Use the Toolbox
@@ -67,6 +72,11 @@ The `toolbox/` directory contains a comprehensive collection of algorithms, patt
 - **Grid problems** → Grid Operations + BFS/DFS
 - **Graph networks** → Graph Algorithms
 - **State evolution** → Simulation patterns
+- **String manipulation** → String Algorithms (replacement, transformation)
+- **Number properties** → Number Theory (sieves, modular arithmetic)
+- **Optimization with constraints** → Optimization & Search (branch & bound, greedy)
+- **Assembly/VM simulation** → Interpreter Patterns
+- **Partitioning items** → Combinatorics (incremental search by size)
 
 ## Dependencies
 
@@ -214,12 +224,27 @@ end)
 - Consider memoization (via `memoize` library) for recursive solutions
 - When checking if a string is composed of repeating patterns, try all divisors of the string length
 - For maximization problems with selections, consider greedy algorithms over brute force combinations
+- **String replacement at all positions:**
+  - Find all substring occurrences and generate all possible single replacements
+  - Use `MapSet` to deduplicate
+  - For reverse problems (generate target from seed), greedy may work if input has special structure
+- **ETS for performance:**
+  - Use `:ets.new/2` for mutable state in hot loops
+  - `update_counter` is very efficient for accumulation
+  - Always clean up with `:ets.delete/1` in `try/after` block
+- **Assembly interpreters:**
+  - Store instructions in a map indexed by position
+  - Use pattern matching for instruction dispatch
+  - Tail recursion for interpreter loop
+  - Memoization for dependent evaluations (circuit wires)
 - **Modular arithmetic edge cases:**
   - When dealing with circular/wrap-around logic (like dial positions 0-99)
   - Pay special attention to operations starting from position 0
   - Test edge cases: what happens at position 0? At max position?
   - Verify that "counting passes through X" logic handles starting at X correctly
   - Example: Moving left from position 0 doesn't immediately count as passing through 0 again
+
+> **💡 For comprehensive algorithm patterns, see the [Toolbox](toolbox/README.md) - it contains detailed guides for all these patterns and more.**
 
 #### Performance Considerations
 - Solutions should complete in < 15 seconds
@@ -228,6 +253,7 @@ end)
   - Small k (≤5): Brute force combinations usually work
   - Large k (≥10): Consider greedy algorithms, dynamic programming, or mathematical optimizations
   - Generating all combinations of C(20,12) = 125,970 is feasible, but C(100,12) = 4.26e12 is not
+  - **Partition problems:** Try smallest group sizes first - stop at first valid size
 - **Use timeouts when testing potentially slow solutions:**
   ```bash
   timeout 30 mix run -e 'YourModule.solve(input)'
@@ -238,11 +264,16 @@ end)
   - Then optimize with formula
   - If formula gives wrong answer, compare outputs between brute force and formula to find edge cases
   - Sometimes brute force is fast enough and more reliable than complex formulas
+- **State space search with pruning:**
+  - Track "best solution so far" and prune paths that can't improve it
+  - Use BFS/priority queue to explore state space systematically
+  - Return early when impossible state reached
 - For BFS/DFS: Consider using `:queue` or `qex` library
 - For priority queues: Use `heap` library
 - For large grids: Consider using flat maps with `{x, y}` keys
 - Use `Stream` for lazy evaluation when appropriate
 - Cache/memoize expensive recursive computations
+- **Sieve algorithms:** Each number marks its multiples - very efficient for divisor problems
 
 ### 5. Running Tests
 
@@ -304,6 +335,7 @@ This is useful for agents that need to read the Part 2 puzzle description progra
    - **When formulas don't match examples, implement brute force to verify correctness**
    - Compare optimized vs brute force approaches on small inputs to find discrepancies
 6. **Refactor after solving**: Clean up code once both parts work
+7. **⚠️ IMPORTANT - Answer Formatting**: When displaying answers for submission, **NEVER use thousand separators** (commas, spaces, etc.) in numbers. Always output plain integers like `14110788`, not `14,110,788`. The AoC submission form only accepts raw numbers.
 
 ### Part 2 Considerations
 - Part 2 often builds on Part 1 but with a twist
