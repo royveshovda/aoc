@@ -176,8 +176,19 @@ end)
 - Use `then/2` for pipeline continuation with custom logic
 - Consider memoization (via `memoize` library) for recursive solutions
 - When checking if a string is composed of repeating patterns, try all divisors of the string length
+- For maximization problems with selections, consider greedy algorithms over brute force combinations
 
 #### Performance Considerations
+- Solutions should complete in < 15 seconds
+- **Always consider algorithmic complexity before implementing**
+- **For combination problems (C(n,k)):**
+  - Small k (≤5): Brute force combinations usually work
+  - Large k (≥10): Consider greedy algorithms, dynamic programming, or mathematical optimizations
+  - Generating all combinations of C(20,12) = 125,970 is feasible, but C(100,12) = 4.26e12 is not
+- **Use timeouts when testing potentially slow solutions:**
+  ```bash
+  timeout 30 mix run -e 'YourModule.solve(input)'
+  ```
 - Solutions should complete in < 15 seconds
 - For BFS/DFS: Consider using `:queue` or `qex` library
 - For priority queues: Use `heap` library
