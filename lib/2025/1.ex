@@ -52,33 +52,15 @@ aoc 2025, 1 do
   end
 
   defp count_zeros_during_rotation(position, {direction, distance}) do
-    # Count how many times we click through or land on 0 during rotation
-    new_pos = apply_rotation(position, {direction, distance})
-
-    case direction do
+    # Count how many times the dial points at 0 during the rotation
+    # Generate all positions and count zeros (brute force for correctness)
+    positions = case direction do
       "L" ->
-        # Moving left/decreasing
-        if new_pos < position do
-          # No wrap: going from position down to new_pos, never hit 0
-          0
-        else
-          # Wrapped around: crossed through 0 one or more times
-          # Total clicks = distance
-          # We go from position to 0 (that's position clicks),
-          # then continue wrapping
-          div(distance, 100) + if(position >= distance, do: 0, else: 1)
-        end
-
+        for i <- 1..distance, do: rem(position - i + 100, 100)
       "R" ->
-        # Moving right/increasing
-        if new_pos > position do
-          # No wrap: going from position up to new_pos, never hit 0
-          0
-        else
-          # Wrapped around: crossed through 0 one or more times
-          # We need to reach 100 first (100-position clicks), then continue
-          div(distance + position, 100)
-        end
+        for i <- 1..distance, do: rem(position + i, 100)
     end
+
+    Enum.count(positions, &(&1 == 0))
   end
 end

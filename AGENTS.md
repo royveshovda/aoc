@@ -177,6 +177,12 @@ end)
 - Consider memoization (via `memoize` library) for recursive solutions
 - When checking if a string is composed of repeating patterns, try all divisors of the string length
 - For maximization problems with selections, consider greedy algorithms over brute force combinations
+- **Modular arithmetic edge cases:**
+  - When dealing with circular/wrap-around logic (like dial positions 0-99)
+  - Pay special attention to operations starting from position 0
+  - Test edge cases: what happens at position 0? At max position?
+  - Verify that "counting passes through X" logic handles starting at X correctly
+  - Example: Moving left from position 0 doesn't immediately count as passing through 0 again
 
 #### Performance Considerations
 - Solutions should complete in < 15 seconds
@@ -189,7 +195,12 @@ end)
   ```bash
   timeout 30 mix run -e 'YourModule.solve(input)'
   ```
-- Solutions should complete in < 15 seconds
+- **When optimizing with mathematical formulas:**
+  - Start with brute force approach that generates all intermediate values
+  - Verify brute force matches examples perfectly
+  - Then optimize with formula
+  - If formula gives wrong answer, compare outputs between brute force and formula to find edge cases
+  - Sometimes brute force is fast enough and more reliable than complex formulas
 - For BFS/DFS: Consider using `:queue` or `qex` library
 - For priority queues: Use `heap` library
 - For large grids: Consider using flat maps with `{x, y}` keys
@@ -253,6 +264,8 @@ This is useful for agents that need to read the Part 2 puzzle description progra
    - Test with smaller inputs
    - Verify intermediate results
    - Trace through examples manually to validate logic
+   - **When formulas don't match examples, implement brute force to verify correctness**
+   - Compare optimized vs brute force approaches on small inputs to find discrepancies
 6. **Refactor after solving**: Clean up code once both parts work
 
 ### Part 2 Considerations
@@ -355,6 +368,43 @@ mix compile
 ```
 
 This happens when dependencies were compiled with a different Erlang/OTP version than the one currently active.
+
+**For Hex-specific errors** (like "The module Hex.State was given as a child to a supervisor but it does not exist"):
+```bash
+# Reinstall Hex archive for current Erlang/OTP version
+mix local.hex --force
+```
+
+This fixes Hex compatibility issues with the current Erlang/OTP version, which can affect tools like Credo in VS Code.
+
+### Dependency Compatibility Issues
+
+**type_check incompatibility with Elixir 1.19+:**
+
+The `type_check` library (transitive dependency from `arrays`) has compatibility issues with Elixir 1.19. If you encounter errors like:
+
+```
+** (Kernel.TypespecError) undefined field :re_version on struct Regex
+```
+
+Workaround: Temporarily disable the `arrays` dependency in `mix.exs`:
+
+```elixir
+defp deps do
+  [
+    # {:arrays, "~> 2.1.1"}, # Temporarily disabled due to type_check incompatibility
+    # ... other deps
+  ]
+end
+```
+
+Then run:
+```bash
+mix deps.get
+mix compile
+```
+
+**Note:** Solutions that don't use Arrays will still work. For solutions requiring array functionality, consider alternative data structures or wait for library updates.
 
 ### Input Issues
 - Ensure session cookie is set in `config/config.exs`

@@ -12,9 +12,9 @@ defmodule Aoc.MixProject do
 
   defp deps do
     [
-      {:advent_of_code_utils, "~> 5.0.2"},
+      {:advent_of_code_utils, "~> 5.0.2", override: true},
       {:nimble_parsec, "~> 1.4.2"},
-      {:arrays, "~> 2.1.1"},
+      # {:arrays, "~> 2.1.1"}, # Temporarily disabled due to type_check incompatibility with Elixir 1.19
       {:heap, "~> 3.0"},
       {:qex, "~> 0.5"},
       {:memoize, "~> 1.4.4"},
