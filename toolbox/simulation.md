@@ -323,6 +323,115 @@ def simulate_parallel(initial_states, steps) do
 end
 ```
 
+## Particle Simulation with Collision Detection
+
+**Problem:** Simulate multiple particles with position, velocity, acceleration and detect collisions.
+
+**When to Use:**
+- Physics simulations (2017 Day 20)
+- Projectile motion
+- N-body problems
+- Collision detection
+
+**Used In**: 2017 Day 20 (Particle Swarm)
+
+```elixir
+def simulate_particles(particles) do
+  # Store particles by ID
+  particle_map = particles
+  |> Enum.with_index()
+  |> Map.new(fn {{pos, vel, acc}, id} -> {id, {pos, vel, acc}} end)
+  
+  simulate_with_collisions(particle_map, 0)
+end
+
+defp simulate_with_collisions(particles, ticks_no_change) do
+  # Stop if no collisions for 100 ticks
+  if ticks_no_change > 100 do
+    map_size(particles)
+  else
+    # Update all particles: v' = v + a, p' = p + v'
+    updated = Map.new(particles, fn {id, {{px, py, pz}, {vx, vy, vz}, {ax, ay, az}}} ->
+      new_vel = {vx + ax, vy + ay, vz + az}
+      {nvx, nvy, nvz} = new_vel
+      new_pos = {px + nvx, py + nvy, pz + nvz}
+      {id, {new_pos, new_vel, {ax, ay, az}}}
+    end)
+    
+    # Group by position to find collisions
+    by_position = Enum.group_by(updated, fn {_id, {pos, _v, _a}} -> pos end)
+    
+    # Find all particles at positions with multiple particles
+    colliding_ids = by_position
+    |> Enum.filter(fn {_pos, particles} -> length(particles) > 1 end)
+    |> Enum.flat_map(fn {_pos, particles} -> Enum.map(particles, &elem(&1, 0)) end)
+    |> MapSet.new()
+    
+    # Remove colliding particles
+    remaining = Map.drop(updated, MapSet.to_list(colliding_ids))
+    
+    # Increment tick counter if no collisions
+    new_ticks = if map_size(remaining) == map_size(particles), do: ticks_no_change + 1, else: 0
+    simulate_with_collisions(remaining, new_ticks)
+  end
+end
+
+# Find particle closest to origin in long term (based on acceleration)
+def closest_long_term(particles) do
+  particles
+  |> Enum.with_index()
+  |> Enum.min_by(fn {{pos, vel, acc}, _id} ->
+    # Sort by: smallest acceleration, then velocity, then position
+    {manhattan(acc), manhattan(vel), manhattan(pos)}
+  end)
+  |> elem(1)
+end
+
+defp manhattan({x, y, z}), do: abs(x) + abs(y) + abs(z)
+```
+
+**Key Insights**:
+- Acceleration dominates long-term behavior
+- Collisions are permanent (remove particles)
+- Stop when system stabilizes (no collisions for N iterations)
+- Group by position for efficient collision detection
+
+## Circular Buffer Optimization (Spinlock)
+
+**Problem:** Simulate circular buffer insertions, but tracking full buffer is too slow for large iterations.
+
+**When to Use:**
+- Circular buffer simulations (2017 Day 17)
+- Only care about specific position(s) in buffer
+- Millions of insertions needed
+
+**Used In**: 2017 Day 17 (Spinlock)
+
+```elixir
+# Naive approach (works for small iterations)
+def spinlock_naive(steps, iterations) do
+  Enum.reduce(1..iterations, {[0], 0}, fn val, {buffer, pos} ->
+    new_pos = rem(pos + steps, length(buffer)) + 1
+    {List.insert_at(buffer, new_pos, val), new_pos}
+  end)
+end
+
+# Optimized: Track only position after 0 (0 always stays at index 0)
+def spinlock_optimized(steps, iterations) do
+  Enum.reduce(1..iterations, {0, 0}, fn val, {pos, value_after_zero} ->
+    buffer_len = val
+    new_pos = rem(pos + steps, buffer_len) + 1
+    
+    # If inserting at position 1, update our tracked value
+    new_value = if new_pos == 1, do: val, else: value_after_zero
+    {new_pos, new_value}
+  end)
+  |> elem(1)
+end
+```
+
+**Key Insight**: Value `0` always stays at position 0. We only care about position 1, so we don't need to maintain the full buffer—just track when we insert at position 1.
+
 ## Key Points
 - **Immutable State**: Each step returns new state
 - **Reduce Pattern**: Natural fit for simulations

@@ -280,6 +280,75 @@ defp print_trace(trace) do
 end
 ```
 
+## 5. Concurrent Programs with Message Passing
+
+**Problem:** Two programs run concurrently, sending and receiving messages.
+
+**When to Use:**
+- Multi-program simulation (2017 Day 18)
+- Concurrent processes with communication
+- Producer-consumer patterns
+
+**Used In**: 2017 Day 18 (Duet)
+
+```elixir
+def run_concurrent_programs(instructions) do
+  state0 = %{regs: %{"p" => 0}, pc: 0, queue: [], waiting: false}
+  state1 = %{regs: %{"p" => 1}, pc: 0, queue: [], waiting: false}
+  execute_concurrent(instructions, state0, state1, 0)
+end
+
+defp execute_concurrent(instructions, state0, state1, send_count) do
+  # Run program 0 until it blocks
+  {new_state0, msgs0, blocked0} = run_until_block(instructions, state0)
+  
+  # Deliver messages to program 1
+  new_state1 = %{state1 | queue: state1.queue ++ msgs0, waiting: false}
+  
+  # Run program 1 until it blocks
+  {final_state1, msgs1, blocked1} = run_until_block(instructions, new_state1)
+  
+  # Deliver messages to program 0
+  final_state0 = %{new_state0 | queue: new_state0.queue ++ msgs1, waiting: false}
+  
+  new_send_count = send_count + length(msgs1)
+  
+  # Deadlock detection: both blocked with no messages exchanged
+  if blocked0 and blocked1 and Enum.empty?(msgs0) and Enum.empty?(msgs1) do
+    new_send_count
+  else
+    execute_concurrent(instructions, final_state0, final_state1, new_send_count)
+  end
+end
+
+defp run_until_block(instructions, state, sent \\ []) do
+  case Map.get(instructions, state.pc) do
+    nil -> {state, sent, true}
+    
+    {:snd, x} ->
+      # Send: continue running
+      val = get_val(state.regs, x)
+      run_until_block(instructions, %{state | pc: state.pc + 1}, sent ++ [val])
+    
+    {:rcv, x} ->
+      # Receive: block if queue empty, consume if available
+      case state.queue do
+        [] -> {%{state | waiting: true}, sent, true}
+        [val | rest] ->
+          new_regs = Map.put(state.regs, x, val)
+          run_until_block(instructions, %{state | regs: new_regs, pc: state.pc + 1, queue: rest}, sent)
+      end
+    
+    other ->
+      # Regular instructions
+      {new_regs, new_pc} = execute_instruction(other, state.regs, state.pc)
+      run_until_block(instructions, %{state | regs: new_regs, pc: new_pc}, sent)
+  end
+end
+```
+
+**Key Pattern**: Each program runs until it blocks (waiting for input or terminated), then the other program runs. Deadlock occurs when both are blocked with no messages in flight.
+
 ## Performance Considerations
 
 1. **Tail Call Optimization:** Ensure interpreter loop is tail-recursive

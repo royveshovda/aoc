@@ -228,6 +228,58 @@ end
 - Can be implemented recursively or with explicit stack
 - Tail call optimization possible with accumulator pattern
 
+## Tree Problems with DFS (2017 Day 7)
+
+Finding imbalanced nodes in trees:
+
+```elixir
+def find_imbalance(name, tree_map) do
+  {_name, weight, children} = Map.get(tree_map, name)
+  
+  if children == [] do
+    {:balanced, weight}
+  else
+    # Recursively get subtree weights
+    child_results = Enum.map(children, &find_imbalance(&1, tree_map))
+    
+    # Check if any child is already imbalanced
+    case Enum.find(child_results, fn r -> match?({:imbalanced, _, _}, r) end) do
+      {:imbalanced, _, _} = result -> 
+        result  # Propagate imbalance up
+      
+      nil ->
+        weights = Enum.map(child_results, fn {:balanced, w} -> w end)
+        
+        if length(Enum.uniq(weights)) == 1 do
+          # All children balanced and equal weight
+          {:balanced, weight + Enum.sum(weights)}
+        else
+          # Found the imbalanced node!
+          freq = Enum.frequencies(weights)
+          [{wrong_weight, 1}, {correct_weight, _}] = Enum.sort_by(freq, fn {_, c} -> c end)
+          diff = correct_weight - wrong_weight
+          
+          wrong_idx = Enum.find_index(weights, &(&1 == wrong_weight))
+          wrong_child = Enum.at(children, wrong_idx)
+          {_, child_weight, _} = Map.get(tree_map, wrong_child)
+          
+          {:imbalanced, wrong_child, child_weight + diff}
+        end
+    end
+  end
+end
+
+# Finding tree root (node with no parent)
+def find_root(tree_map) do
+  all_names = Map.keys(tree_map)
+  children = tree_map |> Map.values() |> Enum.flat_map(fn {_, _, c} -> c end) |> MapSet.new()
+  
+  Enum.find(all_names, fn name -> not MapSet.member?(children, name) end)
+end
+```
+
+**Pattern**: Return tagged tuples `{:balanced, value}` vs `{:imbalanced, node, correction}` to propagate results up the tree.
+
 ## When to Choose DFS Over BFS
 - Need to find ALL paths, not just shortest
 - Looking for any solution, not optimal one  

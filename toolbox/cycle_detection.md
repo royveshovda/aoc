@@ -13,6 +13,7 @@ Cycle detection finds repeating patterns in sequences. Critical for optimization
 - 2023 Day 14 (Parabolic Reflector - grid tilting cycles)
 - 2022 Day 17 (Pyroclastic Flow - falling blocks pattern)
 - 2018 Day 1 (Frequency - first repeat detection)
+- 2017 Day 6 (Memory Reallocation - detect when redistribution repeats)
 - 2024 Day 11 (would benefit from cycle detection for some inputs)
 
 ## Basic Cycle Detection with Cache (2023 Day 14)
@@ -103,6 +104,48 @@ defp find_cycle_length(start, count \\ 1) do
   else
     find_cycle_length(start, count + 1)
   end
+end
+```
+
+## Hash-Based Cycle Detection (2017 Day 6)
+
+Track both when cycles occur and their length for problems requiring both values:
+
+```elixir
+def find_cycle_with_hash(state) do
+  find_cycle_helper(state, %{}, 0)
+end
+
+defp find_cycle_helper(state, seen, count) do
+  # Use erlang hash for complex state structures
+  key = :erlang.phash2(state)
+  
+  case Map.get(seen, key) do
+    nil ->
+      new_state = transform(state)
+      find_cycle_helper(new_state, Map.put(seen, key, count), count + 1)
+    
+    first_seen ->
+      # Return both total iterations and cycle length
+      {count, count - first_seen}
+  end
+end
+
+# Example: Memory bank redistribution (2017 Day 6)
+defp redistribute(banks) do
+  max_blocks = Enum.max(banks)
+  idx = Enum.find_index(banks, &(&1 == max_blocks))
+  
+  banks
+  |> List.replace_at(idx, 0)
+  |> distribute_blocks(idx + 1, max_blocks)
+end
+
+defp distribute_blocks(banks, _pos, 0), do: banks
+defp distribute_blocks(banks, pos, remaining) do
+  idx = rem(pos, length(banks))
+  new_banks = List.update_at(banks, idx, &(&1 + 1))
+  distribute_blocks(new_banks, pos + 1, remaining - 1)
 end
 ```
 
@@ -310,6 +353,43 @@ end
   - Cycle start (μ): Where cycle begins
   - Cycle length (λ): Length of repeating pattern
 - **Skip Formula**: `final = start + skip * (target - start) / cycle_length`
+
+## Permutation Cycles (Lists with Known Elements)
+
+When working with permutations of a fixed set (like dance moves on fixed positions):
+
+**Used In**: 2017 Day 16 (Permutation Promenade)
+
+```elixir
+def find_permutation_cycle(initial, transform_fn, target) do
+  iterate(initial, transform_fn, 0, target, %{initial => 0})
+end
+
+defp iterate(state, transform_fn, step, target, seen) when step == target do
+  state
+end
+
+defp iterate(state, transform_fn, step, target, seen) do
+  next_state = transform_fn.(state)
+  
+  case Map.get(seen, next_state) do
+    nil ->
+      # New state, continue
+      iterate(next_state, transform_fn, step + 1, target, Map.put(seen, next_state, step + 1))
+    
+    cycle_start ->
+      # Found cycle!
+      cycle_length = step + 1 - cycle_start
+      remaining = target - step - 1
+      skip_count = rem(remaining, cycle_length)
+      
+      # Apply transformation only for remaining iterations after skipping full cycles
+      Enum.reduce(1..skip_count, next_state, fn _, s -> transform_fn.(s) end)
+  end
+end
+```
+
+**Key Difference**: Permutations often cycle quickly (factorial-bounded), making cache-based detection efficient.
 
 ## Choosing Algorithm
 - **Hash Table (Cache)**: Simplest, works for any cycle

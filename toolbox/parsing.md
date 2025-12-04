@@ -373,6 +373,59 @@ def parse_hex_instruction("#" <> hex) do
 end
 ```
 
+## Character-by-Character with Escape Sequences (2017 Day 9)
+
+For parsing with escape characters and nested structures:
+
+```elixir
+def parse_stream(input) do
+  chars = input |> String.trim() |> String.graphemes()
+  process(chars, 0, 0, false)
+end
+
+defp process([], score, garbage_count, _in_garbage), do: {score, garbage_count}
+
+# Handle escape character - skip next char
+defp process(["!" | rest], score, garbage_count, in_garbage) do
+  [_ | rest2] = rest
+  process(rest2, score, garbage_count, in_garbage)
+end
+
+# Start garbage section
+defp process(["<" | rest], score, garbage_count, false) do
+  process(rest, score, garbage_count, true)
+end
+
+# End garbage section
+defp process([">" | rest], score, garbage_count, true) do
+  process(rest, score, garbage_count, false)
+end
+
+# Count garbage characters
+defp process([_ | rest], score, garbage_count, true) do
+  process(rest, score, garbage_count + 1, true)
+end
+
+# Process groups when not in garbage
+defp process(["{" | rest], score, garbage_count, false) do
+  {new_score, new_garbage, rest2} = process_group(rest, score, garbage_count, 1)
+  process(rest2, new_score, new_garbage, false)
+end
+
+# Skip other characters
+defp process([_ | rest], score, garbage_count, false) do
+  process(rest, score, garbage_count, false)
+end
+
+# Helper for nested groups
+defp process_group(chars, score, garbage_count, depth) do
+  # Add depth to score, then process inner content
+  process_group_inner(chars, score + depth, garbage_count, depth)
+end
+```
+
+**Key Insight**: State machine with boolean flags for mode (in_garbage, escaped, etc.). Pattern match on head of list for each character type.
+
 ## Key Points
 - **String.split**: Most common tool, very flexible
 - **Pattern Matching**: Elegant for structured text

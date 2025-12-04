@@ -248,6 +248,26 @@ end)
   - Some operations are self-inverse (swap, reverse) - same in both directions
   - For complex operations (rotate based on position), compute inverse or brute-force search all possibilities
   - Store operations as data structures to enable bidirectional application
+- **Hexagonal grids (2017 Day 11):**
+  - Use cube coordinates `{x, y, z}` where `x + y + z = 0`
+  - Distance = `(|x| + |y| + |z|) / 2`
+  - Six directions: adjust two coordinates by ±1 each
+  - See [Grid Operations](toolbox/grid_operations.md) for full implementation
+- **Concurrent programs with message passing (2017 Day 18):**
+  - Run each program until it blocks (waiting for input or terminated)
+  - Exchange messages between blocked programs
+  - Deadlock = both blocked with no messages in flight
+  - See [Interpreter Patterns](toolbox/interpreter_patterns.md) for full implementation
+- **Circular buffer optimization (2017 Day 17):**
+  - For spinlock-style problems, track only the position you care about
+  - Value 0 always stays at index 0 in spinlocks
+  - Optimize by tracking when insertions happen at target position
+  - O(n) instead of O(n²) with full buffer maintenance
+- **Particle simulations (2017 Day 20):**
+  - Long-term behavior dominated by acceleration
+  - Group particles by position each tick to find collisions
+  - Use "no collisions for N ticks" as stopping condition
+  - See [Simulation](toolbox/simulation.md) for implementation
 - **Sliding puzzle problems:**
   - Model as state-space search: `{empty_position, goal_position}`
   - Moving empty to goal swaps them
@@ -264,6 +284,17 @@ end)
   - Test edge cases: what happens at position 0? At max position?
   - Verify that "counting passes through X" logic handles starting at X correctly
   - Example: Moving left from position 0 doesn't immediately count as passing through 0 again
+- **Pattern matching with transformations (2017 Day 21):**
+  - Generate all orientations (rotations + flips) during parsing, not during lookup
+  - 8 possible orientations: 4 rotations × 2 (original + flipped)
+  - Store all variants in lookup map for O(1) matching
+  - For grid splitting/joining: extract blocks, transform, reassemble
+  - See [Grid Operations](toolbox/grid_operations.md) for full implementation
+- **Component/bridge building problems (2017 Day 24):**
+  - Recursive DFS with backtracking through available components
+  - Track used components by removing from available set
+  - Base case: no matching components for current port
+  - Part 2 often asks for longest instead of strongest
 
 > **💡 For comprehensive algorithm patterns, see the [Toolbox](toolbox/README.md) - it contains detailed guides for all these patterns and more.**
 
@@ -606,6 +637,12 @@ iex -S mix
 
 # Run tests
 mix test
+
+# Run multiple days at once (universal script)
+mix run run_days.exs                  # Defaults to 2015 days 1-25
+mix run run_days.exs 2017 1 5         # Run 2017 days 1-5
+mix run run_days.exs 2024 1 25        # Run all of 2024
+# Note: Script automatically handles day 25 (single part) - shows ⭐ for part 2
 
 # Fetch input only
 mix aoc.get

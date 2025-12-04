@@ -221,7 +221,29 @@ list |> List.delete_at(index)
 
 # Replace
 list |> List.replace_at(index, new_value)
+
+# Update
+list |> List.update_at(index, fn val -> val + 1 end)
+
+# Circular access with rem (2017 Day 1)
+# Compare each element with element at offset
+digits
+|> Enum.with_index()
+|> Enum.reduce(0, fn {digit, i}, acc ->
+  next_idx = rem(i + offset, length(digits))
+  next_digit = Enum.at(digits, next_idx)
+  if digit == next_digit, do: acc + digit, else: acc
+end)
+
+# Circular redistribution (2017 Day 6, Day 10)
+defp distribute(list, pos, remaining) do
+  idx = rem(pos, length(list))
+  new_list = List.update_at(list, idx, &(&1 + 1))
+  distribute(new_list, pos + 1, remaining - 1)
+end
 ```
+
+**Key Pattern**: Use `rem(index, length)` for circular/wraparound access in lists.
 
 ## MapSet Patterns
 

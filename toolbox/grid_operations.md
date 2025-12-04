@@ -209,6 +209,80 @@ def transpose(grid) do
 end
 ```
 
+## List-of-Strings Grid Transformations (2017 Day 21)
+
+When grids are represented as lists of strings (common for pattern matching):
+
+```elixir
+# Rotate 90 degrees clockwise
+def rotate(grid) do
+  size = length(grid)
+  for row <- 0..(size - 1) do
+    for col <- (size - 1)..0//-1 do
+      grid |> Enum.at(col) |> String.at(row)
+    end
+    |> Enum.join()
+  end
+end
+
+# Flip horizontally
+def flip_h(grid) do
+  Enum.map(grid, &String.reverse/1)
+end
+
+# Flip vertically
+def flip_v(grid) do
+  Enum.reverse(grid)
+end
+
+# Generate all 8 unique orientations (rotations + flips)
+def all_orientations(grid) do
+  [
+    grid,
+    rotate(grid),
+    rotate(rotate(grid)),
+    rotate(rotate(rotate(grid))),
+    flip_h(grid),
+    flip_h(rotate(grid)),
+    flip_h(rotate(rotate(grid))),
+    flip_h(rotate(rotate(rotate(grid))))
+  ]
+  |> Enum.uniq()
+end
+
+# Split grid into blocks (2017 Day 21)
+def split_into_blocks(grid, block_size) do
+  size = length(grid)
+  blocks_per_side = div(size, block_size)
+  
+  for block_row <- 0..(blocks_per_side - 1) do
+    for block_col <- 0..(blocks_per_side - 1) do
+      extract_block(grid, block_row * block_size, block_col * block_size, block_size)
+    end
+  end
+end
+
+defp extract_block(grid, row, col, size) do
+  for r <- row..(row + size - 1) do
+    grid |> Enum.at(r) |> String.slice(col, size)
+  end
+end
+
+# Join blocks back into a single grid
+def join_blocks(blocks) do
+  blocks
+  |> Enum.flat_map(fn row_of_blocks ->
+    block_height = length(hd(row_of_blocks))
+    
+    for row_idx <- 0..(block_height - 1) do
+      row_of_blocks
+      |> Enum.map(fn block -> Enum.at(block, row_idx) end)
+      |> Enum.join()
+    end
+  end)
+end
+```
+
 ## Direction Vectors
 
 ```elixir
@@ -425,6 +499,161 @@ end
 - **Immutability**: Grid updates return new map, use reduce for multiple updates
 - **Performance**: Maps are efficient for random access, MapSet for membership testing
 - **Visualization**: Print grid for debugging, especially during development
+
+## Spiral Grid Generation (2017 Day 3)
+
+### Mathematical Spiral Position (Part 1)
+
+For calculating Manhattan distance without building the spiral:
+
+```elixir
+def spiral_manhattan_distance(n) do
+  # Find which ring the number is on
+  ring = ceil((:math.sqrt(n) - 1) / 2)
+  
+  # Max number in this ring
+  max_in_ring = (2 * ring + 1) * (2 * ring + 1)
+  
+  # Side length of this ring
+  side_length = 2 * ring
+  
+  # Position in ring (0-indexed from start of ring)
+  pos_in_ring = max_in_ring - n
+  
+  # Find offset from middle of side
+  offset = rem(pos_in_ring, side_length)
+  offset_from_middle = abs(offset - ring)
+  
+  ring + offset_from_middle
+end
+```
+
+### Building Spiral with Values (Part 2)
+
+For generating spiral where each cell depends on neighbors:
+
+```elixir
+def build_spiral_until(target) do
+  grid = %{{0, 0} => 1}
+  {x, y} = {1, 0}
+  
+  find_first_larger(grid, x, y, target)
+end
+
+defp find_first_larger(grid, x, y, target) do
+  # Sum all 8 neighbors
+  sum = 
+    [{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}]
+    |> Enum.reduce(0, fn {dx, dy}, acc ->
+      acc + Map.get(grid, {x + dx, y + dy}, 0)
+    end)
+  
+  if sum > target do
+    sum
+  else
+    new_grid = Map.put(grid, {x, y}, sum)
+    {next_x, next_y} = next_spiral_pos(x, y, new_grid)
+    find_first_larger(new_grid, next_x, next_y, target)
+  end
+end
+
+defp next_spiral_pos(x, y, grid) do
+  # Spiral pattern: right, up, left, down
+  # Always try to turn left (counterclockwise) first
+  right = {x + 1, y}
+  up = {x, y - 1}
+  left = {x - 1, y}
+  down = {x, y + 1}
+  
+  cond do
+    # Can turn left from current direction
+    not Map.has_key?(grid, right) and Map.has_key?(grid, down) -> right
+    not Map.has_key?(grid, up) and Map.has_key?(grid, right) -> up
+    not Map.has_key?(grid, left) and Map.has_key?(grid, up) -> left
+    not Map.has_key?(grid, down) and Map.has_key?(grid, left) -> down
+    # Continue straight
+    not Map.has_key?(grid, right) -> right
+    not Map.has_key?(grid, up) -> up
+    not Map.has_key?(grid, left) -> left
+    true -> down
+  end
+end
+```
+
+**Key Insight for Spirals**: Check if you can turn left (counterclockwise), otherwise continue straight. This naturally creates the spiral pattern without tracking explicit state.
+
+## Hexagonal Grids (Cube Coordinates)
+
+Hexagonal grids can be efficiently represented using cube coordinates `{x, y, z}` where `x + y + z = 0`.
+
+**Used In**: 2017 Day 11
+
+### Hex Movement (6 directions)
+
+```elixir
+def hex_move({x, y, z}, "n"),  do: {x, y + 1, z - 1}
+def hex_move({x, y, z}, "ne"), do: {x + 1, y, z - 1}
+def hex_move({x, y, z}, "se"), do: {x + 1, y - 1, z}
+def hex_move({x, y, z}, "s"),  do: {x, y - 1, z + 1}
+def hex_move({x, y, z}, "sw"), do: {x - 1, y, z + 1}
+def hex_move({x, y, z}, "nw"), do: {x - 1, y + 1, z}
+
+# Apply a sequence of moves
+def follow_hex_path(moves) do
+  Enum.reduce(moves, {0, 0, 0}, &hex_move(&2, &1))
+end
+```
+
+### Hex Distance (Manhattan-style on cube coordinates)
+
+```elixir
+def hex_distance({x, y, z}) do
+  div(abs(x) + abs(y) + abs(z), 2)
+end
+
+# Distance between two hex positions
+def hex_distance_between(pos1, pos2) do
+  {x1, y1, z1} = pos1
+  {x2, y2, z2} = pos2
+  hex_distance({x1 - x2, y1 - y2, z1 - z2})
+end
+```
+
+**Key Properties**:
+- Constraint: `x + y + z = 0` always holds
+- Distance formula works because moving one step changes two coordinates by ±1
+- Simpler than offset or axial coordinate systems for distance calculations
+
+## ASCII Path Following
+
+Track position and direction, follow pipes/lines, handle turns at `+` intersections.
+
+**Used In**: 2017 Day 19
+
+```elixir
+def follow_path(grid, start_pos, start_dir) do
+  follow(grid, start_pos, start_dir, [], 0)
+end
+
+defp follow(grid, {x, y}, {dx, dy}, letters, steps) do
+  next_pos = {x + dx, y + dy}
+  
+  case Map.get(grid, next_pos) do
+    nil -> {Enum.reverse(letters), steps}
+    "+" -> follow(grid, next_pos, find_turn(grid, next_pos, {dx, dy}), letters, steps + 1)
+    c when c in ["|", "-"] -> follow(grid, next_pos, {dx, dy}, letters, steps + 1)
+    letter -> follow(grid, next_pos, {dx, dy}, [letter | letters], steps + 1)
+  end
+end
+
+defp find_turn(grid, {x, y}, {dx, _dy}) do
+  # If moving vertically, try horizontal; if horizontal, try vertical
+  candidates = if dx == 0, do: [{1, 0}, {-1, 0}], else: [{0, 1}, {0, -1}]
+  Enum.find(candidates, fn {ndx, ndy} -> Map.has_key?(grid, {x + ndx, y + ndy}) end)
+end
+```
+
+**Pattern**: At `+` junctions, try perpendicular directions to find the continuing path.
 
 ## Common Grid Algorithms
 - **Flood Fill**: DFS/BFS to find connected regions
