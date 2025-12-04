@@ -26,10 +26,47 @@ aoc/
 │   └── YYYY_DD_example_N.txt    # Example inputs from puzzle descriptions
 ├── test/
 │   └── YYYY/           # Test files matching solution structure
+├── toolbox/            # Reusable algorithms and patterns (see below)
 ├── config/
 │   └── config.exs      # Configuration including AoC session cookie
 └── mix.exs             # Project dependencies
 ```
+
+## Algorithm Toolbox
+
+The `toolbox/` directory contains a comprehensive collection of algorithms, patterns, and code snippets extracted from all AoC solutions (2018-2025). This is your reference library for solving new problems.
+
+**📚 Start here: [toolbox/README.md](toolbox/README.md)**
+
+### Available Resources
+
+- **[BFS](toolbox/bfs.md)** - Breadth-first search for shortest paths
+- **[DFS](toolbox/dfs.md)** - Depth-first search for all paths and components
+- **[Dijkstra & A*](toolbox/dijkstra_astar.md)** - Weighted graph pathfinding
+- **[Graph Algorithms](toolbox/graph_algorithms.md)** - Cliques, topological sort, min-cut
+- **[Dynamic Programming](toolbox/dynamic_programming.md)** - Memoization and optimization
+- **[Mathematical Algorithms](toolbox/mathematical_algorithms.md)** - GCD/LCM, geometry, number theory
+- **[Cycle Detection](toolbox/cycle_detection.md)** - Optimizing long simulations
+- **[Simulation & State](toolbox/simulation.md)** - Managing complex state evolution
+- **[Grid Operations](toolbox/grid_operations.md)** - 2D/3D grid manipulation
+- **[Parsing Patterns](toolbox/parsing.md)** - Input processing strategies
+- **[Elixir Idioms](toolbox/elixir_idioms.md)** - Language-specific patterns
+
+### When to Use the Toolbox
+
+1. **Before Starting**: Check for similar problem types
+2. **When Stuck**: Look for applicable algorithms
+3. **For Optimization**: Find better approaches than brute force
+4. **Learning**: See how patterns were used in past solutions
+
+### Quick Problem Type → Algorithm Guide
+
+- **Shortest path** → BFS (unweighted) or Dijkstra (weighted)
+- **Count ways** → Dynamic Programming
+- **Large iterations** → Cycle Detection or Math formulas
+- **Grid problems** → Grid Operations + BFS/DFS
+- **Graph networks** → Graph Algorithms
+- **State evolution** → Simulation patterns
 
 ## Dependencies
 
