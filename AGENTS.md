@@ -154,6 +154,9 @@ input |> String.split("\n", trim: true)
 # Parse integers
 input |> String.split("\n", trim: true) |> Enum.map(&String.to_integer/1)
 
+# Handle multi-line input that should be single line (e.g., wrapped for display)
+input |> String.trim() |> String.replace("\n", "")
+
 # Parse grid/matrix
 input 
 |> String.split("\n", trim: true)
@@ -172,6 +175,7 @@ end)
 - Use pattern matching in function heads
 - Use `then/2` for pipeline continuation with custom logic
 - Consider memoization (via `memoize` library) for recursive solutions
+- When checking if a string is composed of repeating patterns, try all divisors of the string length
 
 #### Performance Considerations
 - Solutions should complete in < 15 seconds
