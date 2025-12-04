@@ -96,9 +96,22 @@ end
 ```
 
 The `aoc` macro from `advent_of_code_utils` handles:
-- Module definition
+- Module definition (creates module named `YYYYY.DDD` - e.g., `Y2025.D1`)
 - Input parsing
 - Integration with IEx helpers
+
+**IMPORTANT: Module Naming Convention**
+- The `aoc YYYY, DD` macro creates a module named `YYYYY.DDD`
+- Example: `aoc 2025, 1` creates module `Y2025.D1`
+- Example: `aoc 2024, 15` creates module `Y2024.D15`
+- When calling solutions programmatically, use the correct module name:
+  ```elixir
+  # Correct
+  Y2025.D1.p1(input)
+  
+  # Incorrect
+  AOC.Y2025.D1.p1(input)  # This won't work!
+  ```
 
 ### 3. Testing Solutions in IEx
 
@@ -188,6 +201,26 @@ mix aoc.get -y 2024 -d 1
 mix aoc.get --no-example
 ```
 
+**Note:** The session cookie is required for fetching puzzle inputs and is loaded from the `.env` file via `config/config.exs`. Make sure the `AOC_TOKEN` environment variable is set in `.env`.
+
+### 7. Working with Part 2
+
+After submitting Part 1, Part 2 becomes available. To fetch Part 2 content:
+
+```bash
+# Run the same command again to update puzzle data
+mix aoc.get -y 2025 -d 1
+```
+
+**Important:** The `mix aoc.get` command won't show Part 2 in its output, but you can fetch the Part 2 description from the website using the session cookie:
+
+```bash
+# Fetch Part 2 description using session cookie from .env
+source .env && curl -s -H "Cookie: session=$AOC_TOKEN" https://adventofcode.com/2025/day/1 | grep -A 200 "Part Two" | head -100
+```
+
+This is useful for agents that need to read the Part 2 puzzle description programmatically.
+
 ## Problem-Solving Strategy
 
 1. **Read carefully**: Understand the problem completely before coding
@@ -198,12 +231,23 @@ mix aoc.get --no-example
    - Solve part 1
    - Test with examples
    - Submit part 1
+   - Fetch Part 2 (use curl with session cookie if needed)
    - Adapt for part 2
 5. **Debug systematically**:
    - Use `IO.inspect/2` with labels
    - Test with smaller inputs
    - Verify intermediate results
+   - Trace through examples manually to validate logic
 6. **Refactor after solving**: Clean up code once both parts work
+
+### Part 2 Considerations
+- Part 2 often builds on Part 1 but with a twist
+- Common patterns:
+  - Same problem but count something different
+  - Same problem but with larger constraints requiring optimization
+  - Same problem but with additional rules or conditions
+- Always test Part 2 with the example before running on actual input
+- Part 2 may require rethinking the algorithm entirely (not just tweaking Part 1)
 
 ## Common Elixir Idioms for AoC
 
@@ -282,6 +326,21 @@ mix compile
 mix compile --force --warnings-as-errors
 ```
 
+### Erlang/OTP Version Compatibility Issues
+If you see errors like "please re-compile this module with an Erlang/OTP 28 compiler":
+```bash
+# Clean all dependencies and recompile with current Erlang/OTP version
+mix deps.clean --all
+mix deps.get
+mix deps.compile
+
+# Then clean and recompile your project
+mix clean
+mix compile
+```
+
+This happens when dependencies were compiled with a different Erlang/OTP version than the one currently active.
+
 ### Input Issues
 - Ensure session cookie is set in `config/config.exs`
 - Input files are cached; delete and re-run `mix aoc.get` to re-download
@@ -292,6 +351,21 @@ mix compile --force --warnings-as-errors
 - Consider algorithmic improvements before micro-optimizations
 - Use tail recursion for large iterations
 - Consider parallel processing with `Task.async_stream/3` if appropriate
+
+### Running Solutions from Command Line
+To run a solution programmatically (useful for testing):
+```bash
+# Correct way to run a solution
+mix run -e 'input = File.read!("input/2025_1.txt"); result = Y2025.D1.p1(input); IO.puts("Answer: #{result}")'
+
+# Run example input
+mix run -e 'input = File.read!("input/2025_1_example_0.txt"); result = Y2025.D1.p1(input); IO.puts("Answer: #{result}")'
+
+# Run tests
+mix test test/2025/1_test.exs
+```
+
+Note: Remember the module naming convention - use `Y2025.D1`, not `AOC.Y2025.D1`.
 
 ## Resources
 
@@ -330,6 +404,19 @@ config :iex,
   inspect: [charlists: :as_lists]
 ```
 
+**Session Cookie Setup:**
+The session cookie is loaded from `.env` file. Create a `.env` file in the project root with:
+```
+AOC_TOKEN=your_session_cookie_here
+```
+
+To get your session cookie:
+1. Log in to https://adventofcode.com
+2. Open browser developer tools (F12)
+3. Go to Application/Storage → Cookies → https://adventofcode.com
+4. Copy the value of the `session` cookie
+5. Add it to your `.env` file
+
 ## Quick Command Reference
 
 ```bash
@@ -345,6 +432,9 @@ mix test
 # Fetch input only
 mix aoc.get
 
+# Fetch Part 2 description (after submitting Part 1)
+source .env && curl -s -H "Cookie: session=$AOC_TOKEN" https://adventofcode.com/2025/day/1 | grep -A 200 "Part Two" | head -100
+
 # Update mise
 mise self-update -y
 
@@ -353,4 +443,7 @@ mix deps.get
 
 # Compile project
 mix compile
+
+# Clean and recompile everything (useful after Erlang/OTP version changes)
+mix deps.clean --all && mix deps.get && mix deps.compile && mix clean && mix compile
 ```
