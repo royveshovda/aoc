@@ -108,6 +108,77 @@ defp generate_code(position, start \\ 20151125) do
 end
 ```
 
+### Chinese Remainder Theorem / Timing Synchronization (2016 Day 15)
+
+**Problem:** Find time when multiple rotating discs all align.
+
+**Pattern:** Disc i has `positions_i` positions, starts at position `start_i`, needs to be at position 0 when capsule arrives at time `t + i`.
+
+```elixir
+# Simple approach: iterate and test
+defp find_time(discs) do
+  Stream.iterate(0, &(&1 + 1))
+  |> Enum.find(fn t ->
+    Enum.all?(discs, fn {disc_num, positions, start} ->
+      # At time t, capsule drops
+      # At time t + disc_num, capsule reaches this disc
+      # Disc position = (start + t + disc_num) mod positions
+      # Need position 0
+      rem(start + t + disc_num, positions) == 0
+    end)
+  end)
+end
+```
+
+**For Complex Cases:** Use Chinese Remainder Theorem when discs have coprime position counts.
+
+## 3. Josephus Problem
+
+**Problem:** N people in circle, eliminate every kth person. Who survives? (2016 Day 19)
+
+### Standard Josephus (eliminate left neighbor, k=2)
+
+**Formula:** `J(n) = 2L + 1` where `n = 2^m + L` and `0 ≤ L < 2^m`
+
+```elixir
+defp josephus_standard(n) do
+  import Bitwise
+  # Find highest power of 2 less than or equal to n
+  p = :math.log2(n) |> floor() |> then(&(1 <<< &1))
+  l = n - p
+  2 * l + 1
+end
+```
+
+**Example:** n=5
+- 2^2 = 4 ≤ 5 < 2^3 = 8, so m=2, p=4
+- L = 5 - 4 = 1
+- J(5) = 2(1) + 1 = 3 ✓
+
+### Modified Josephus (eliminate person across)
+
+**Pattern:** Depends on powers of 3.
+
+```elixir
+defp josephus_across(n) do
+  # Find highest power of 3 less than or equal to n
+  p = :math.log(n) / :math.log(3) |> floor() |> then(&(round(:math.pow(3, &1))))
+  
+  cond do
+    n == p -> n                    # Exactly a power of 3
+    n <= 2 * p -> n - p           # First half after power of 3
+    true -> 2 * n - 3 * p         # Second half
+  end
+end
+```
+
+**Key Insight:** Josephus problems have closed-form formulas based on powers. Look for patterns in small examples to derive formula.
+
+**When to Use:**
+- Circle elimination games
+- "Every kth element" problems
+- Can avoid simulation for large N
+
 ### Modular Inverse
 ```elixir
 # Extended Euclidean Algorithm

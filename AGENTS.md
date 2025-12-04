@@ -224,6 +224,10 @@ end)
 - Consider memoization (via `memoize` library) for recursive solutions
 - When checking if a string is composed of repeating patterns, try all divisors of the string length
 - For maximization problems with selections, consider greedy algorithms over brute force combinations
+- **Keypad/Grid navigation with boundary checking:**
+  - Use `Map.has_key?(grid, new_pos)` to check if move is valid
+  - Only update position if new position exists in map
+  - Works well for irregular/shaped grids (like diamond keypads)
 - **String replacement at all positions:**
   - Find all substring occurrences and generate all possible single replacements
   - Use `MapSet` to deduplicate
@@ -237,6 +241,23 @@ end)
   - Use pattern matching for instruction dispatch
   - Tail recursion for interpreter loop
   - Memoization for dependent evaluations (circuit wires)
+  - **Self-modifying code:** When instructions can change (like `tgl` in 2016 Day 23), store as mutable map
+  - **Optimization patterns:** Detect common loops (e.g., multiplication via nested inc/dec) and replace with direct calculation
+  - **Output tracking:** For programs with output instructions, collect output in accumulator and detect patterns
+- **String scrambling with reversible operations:**
+  - Some operations are self-inverse (swap, reverse) - same in both directions
+  - For complex operations (rotate based on position), compute inverse or brute-force search all possibilities
+  - Store operations as data structures to enable bidirectional application
+- **Sliding puzzle problems:**
+  - Model as state-space search: `{empty_position, goal_position}`
+  - Moving empty to goal swaps them
+  - BFS for shortest path; don't rely on heuristics without validation
+  - Identify immovable obstacles (walls) based on properties (e.g., capacity threshold)
+- **TSP variants (Traveling Salesman):**
+  - Build distance matrix between all points using BFS/Dijkstra
+  - For small sets (≤8 locations), generate all permutations
+  - Path distance = sum of consecutive pair distances
+  - Part 2 often adds "return to start" constraint
 - **Modular arithmetic edge cases:**
   - When dealing with circular/wrap-around logic (like dial positions 0-99)
   - Pay special attention to operations starting from position 0

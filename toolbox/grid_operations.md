@@ -322,6 +322,102 @@ def print_3d_slice(grid, z_value) do
 end
 ```
 
+## Grid Rotation Operations
+
+**Problem:** Rotate rows or columns in a grid (like LCD screen operations).
+
+**When to Use:**
+- Display/screen simulation problems (2016 Day 8)
+- Image transformation
+- Circular shift operations on grid rows/columns
+
+```elixir
+# Rotate a row right by n positions
+defp rotate_row(grid, row, shift, width) do
+  # Collect all values in the row
+  old_values = for x <- 0..(width - 1), do: {x, grid[{x, row}]}
+  
+  # Place each value at its new position
+  Enum.reduce(old_values, grid, fn {x, val}, acc ->
+    new_x = rem(x + shift, width)
+    Map.put(acc, {new_x, row}, val)
+  end)
+end
+
+# Rotate a column down by n positions
+defp rotate_column(grid, col, shift, height) do
+  # Collect all values in the column
+  old_values = for y <- 0..(height - 1), do: {y, grid[{col, y}]}
+  
+  # Place each value at its new position
+  Enum.reduce(old_values, grid, fn {y, val}, acc ->
+    new_y = rem(y + shift, height)
+    Map.put(acc, {col, new_y}, val)
+  end)
+end
+
+# Alternative: Using Enum.zip to rotate
+defp rotate_row_zip(grid, row, shift, width) do
+  indices = 0..(width - 1) |> Enum.to_list()
+  shifted_indices = Enum.drop(indices, -shift) ++ Enum.take(indices, -shift)
+  
+  Enum.zip(indices, shifted_indices)
+  |> Enum.reduce(grid, fn {old_x, new_x}, acc ->
+    Map.put(acc, {new_x, row}, grid[{old_x, row}])
+  end)
+end
+```
+
+**Pattern:** Collect old values → calculate new positions → update map
+
+**Performance:** O(n) where n is row/column length. Use `rem` for wrap-around.
+
+## Matrix Transpose for Column Processing
+
+**Problem:** Process data by columns instead of rows.
+
+**When to Use:**
+- Finding patterns in columns (2016 Day 6)
+- Vertical analysis of grid data
+- Rotating grid 90 degrees
+
+```elixir
+# Transpose rows to columns for processing
+defp parse_columns(input) do
+  input
+  |> String.trim()
+  |> String.split("\n", trim: true)
+  |> Enum.map(&String.graphemes/1)
+  |> Enum.zip()  # Zip rows into columns
+  |> Enum.map(&Tuple.to_list/1)
+end
+
+# Example: Find most common character per column
+defp decode_by_columns(input) do
+  input
+  |> parse_columns()
+  |> Enum.map(fn column ->
+    column
+    |> Enum.frequencies()
+    |> Enum.max_by(fn {_char, count} -> count end)
+    |> elem(0)
+  end)
+  |> Enum.join()
+end
+
+# 90-degree rotation using transpose + reverse
+defp rotate_90_clockwise(grid) do
+  grid
+  |> Enum.sort()  # Sort by coordinates
+  |> Enum.group_by(fn {{x, _y}, _} -> x end)  # Group by column
+  |> Enum.sort()
+  |> Enum.map(fn {_, col} -> Enum.reverse(col) end)
+  # ... transform back to grid map
+end
+```
+
+**Key Insight:** `Enum.zip/1` transposes list of lists elegantly.
+
 ## Key Points
 - **Map with Tuple Keys**: `%{{x, y} => value}` is idiomatic Elixir
 - **Sparse Grids**: Use MapSet when most cells are empty/default

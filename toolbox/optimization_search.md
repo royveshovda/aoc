@@ -3,6 +3,69 @@
 ## Overview
 Strategies for finding optimal solutions in large search spaces, including pruning, greedy algorithms, and state space exploration.
 
+## 0. Sliding Puzzle State Space Search
+
+**Problem:** Move data through a grid like a sliding puzzle to reach a goal configuration (2016 Day 22).
+
+**When to Use:**
+- Grid-based puzzles with one empty space
+- Moving objects through constrained spaces
+- Pathfinding where obstacles move with you
+
+```elixir
+# State: {empty_position, goal_data_position}
+defp solve_sliding_puzzle(grid, initial_empty, initial_goal) do
+  initial_state = {initial_empty, initial_goal}
+  queue = :queue.from_list([{initial_state, 0}])
+  visited = MapSet.new([initial_state])
+  
+  bfs_solve(queue, visited, grid, walls)
+end
+
+defp bfs_solve(queue, visited, grid, walls) do
+  case :queue.out(queue) do
+    {{:value, {{empty_pos, goal_pos}, steps}}, queue} ->
+      # Check if goal reached target
+      if goal_pos == target_position do
+        steps
+      else
+        # Try moving empty to adjacent positions
+        neighbors = get_neighbors(empty_pos)
+                   |> Enum.filter(&valid_position?(&1, grid))
+                   |> Enum.reject(&wall?(&1, walls))
+        
+        # Generate new states
+        new_states = Enum.map(neighbors, fn new_empty ->
+          # If empty moves to goal position, they swap
+          new_goal = if new_empty == goal_pos, do: empty_pos, else: goal_pos
+          {new_empty, new_goal}
+        end)
+        
+        # Filter and enqueue unvisited states
+        unvisited = Enum.reject(new_states, &MapSet.member?(visited, &1))
+        new_queue = Enum.reduce(unvisited, queue, fn state, q ->
+          :queue.in({state, steps + 1}, q)
+        end)
+        new_visited = Enum.reduce(unvisited, visited, &MapSet.put(&2, &1))
+        
+        bfs_solve(new_queue, new_visited, grid, walls)
+      end
+    {:empty, _} -> nil
+  end
+end
+```
+
+**Key Features:**
+- State captures both empty position and goal data position
+- Moving empty to goal position swaps them
+- Identify immovable walls (e.g., nodes with very large capacity)
+- BFS guarantees shortest path
+- Can optimize with A* heuristic (Manhattan distance to target)
+
+**Common Mistake:**
+- Don't use heuristic formulas without validating against actual constraints
+- Wall positions may not be regular - use actual state search
+
 ## 1. Branch and Bound with Pruning
 
 **Problem:** Find optimal solution while exploring state space, pruning suboptimal branches.
@@ -46,6 +109,60 @@ defp search(queue, best) do
   end
 end
 ```
+
+**Key Features:**
+- Track best solution found so far
+- Prune branches that can't improve on best
+- Priority: try most promising paths first
+
+## 3. State Normalization for BFS
+
+**Problem:** Reduce state space by recognizing equivalent states (2016 Day 11).
+
+**Pattern:** RTG Elevator Puzzle - moving paired items where specific element identity doesn't matter.
+
+```elixir
+# Instead of tracking which specific element is on which floor,
+# track the pattern of generator-chip pairs
+defp normalize(state) do
+  # Group items by element
+  pairs =
+    state.floors
+    |> Enum.flat_map(fn {floor, items} ->
+      items |> Enum.map(fn item ->
+        element = extract_element(item)
+        type = extract_type(item)  # :gen or :chip
+        {element, type, floor}
+      end)
+    end)
+    |> Enum.group_by(fn {element, _, _} -> element end)
+    |> Enum.map(fn {_element, items} ->
+      # For each element, record where its gen and chip are
+      gen_floor = find_floor(items, :gen)
+      chip_floor = find_floor(items, :chip)
+      {gen_floor, chip_floor}
+    end)
+    |> Enum.sort()  # Sort to make equivalent states identical
+  
+  {state.elevator, pairs}
+end
+```
+
+**Key Insight:** States are equivalent if:
+- Elevator is on same floor
+- Pattern of paired items is same (e.g., `{0,1}, {0,2}` = `{0,1}, {0,2}` regardless of which element is which)
+
+**Example:**
+- State A: Polonium-gen floor 0, Polonium-chip floor 1, Thulium-gen floor 0, Thulium-chip floor 2
+- State B: Thulium-gen floor 0, Thulium-chip floor 1, Polonium-gen floor 0, Polonium-chip floor 2
+- Normalized: Both become `{{0,1}, {0,2}}` - equivalent!
+
+**Massive Optimization:** Reduces state space from exponential in number of elements to exponential in number of pairs. For 10 items (5 pairs), this can reduce states by factor of 10! = 3,628,800.
+
+**When to Use:**
+- Puzzle/game states with symmetry
+- Problems where specific identities don't matter, only patterns
+- States with interchangeable components
 
 **Key Features:**
 - Maintain "best so far" bound
