@@ -340,6 +340,29 @@ defp dfs(current, visited, goal) do
     end)
   end
 end
+
+# Iterative state modification until convergence
+defp iterate_until_stable(state, count) do
+  # Find items matching some condition
+  items = find_removable_items(state)
+  
+  if Enum.empty?(items) do
+    count
+  else
+    # Modify state by removing/changing items
+    new_state = Enum.reduce(items, state, &modify_state/2)
+    iterate_until_stable(new_state, count + length(items))
+  end
+end
+
+# 8-neighbor adjacency check (for grids)
+defp get_8_neighbors({x, y}) do
+  [
+    {x - 1, y - 1}, {x, y - 1}, {x + 1, y - 1},
+    {x - 1, y},                 {x + 1, y},
+    {x - 1, y + 1}, {x, y + 1}, {x + 1, y + 1}
+  ]
+end
 ```
 
 ## Troubleshooting
