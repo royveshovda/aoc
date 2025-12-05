@@ -243,6 +243,78 @@ defp dijkstra_path_loop(queue, costs, goal, grid) do
 end
 ```
 
+## Multi-Robot State Search (2019 Day 18)
+
+For problems with multiple agents sharing state (like keys/doors):
+
+```elixir
+# State: {list_of_positions, collected_items}
+# Pre-compute graph of distances between important points
+
+def search(starts, all_keys, graph, keys) do
+  heap = Heap.new(fn {d1, _, _}, {d2, _, _} -> d1 < d2 end)
+  heap = Heap.push(heap, {0, starts, MapSet.new()})
+  
+  search_loop(heap, all_keys, graph, keys, %{{starts, MapSet.new()} => 0})
+end
+
+defp search_loop(heap, all_keys, graph, keys, visited) do
+  case Heap.root(heap) do
+    nil -> :no_solution
+    {dist, positions, collected} ->
+      heap = Heap.pop(heap)
+      
+      if MapSet.equal?(collected, all_keys) do
+        dist
+      else
+        state = {positions, collected}
+        
+        if Map.get(visited, state, :infinity) < dist do
+          search_loop(heap, all_keys, graph, keys, visited)
+        else
+          # Try moving each robot to each reachable target
+          {new_heap, new_visited} =
+            positions
+            |> Enum.with_index()
+            |> Enum.reduce({heap, visited}, fn {pos, idx}, {h, v} ->
+              reachable = get_reachable(graph, pos, collected, keys)
+              
+              Enum.reduce(reachable, {h, v}, fn {dest, d}, {h2, v2} ->
+                new_dist = dist + d
+                new_key = Map.get(keys, dest)
+                new_collected = MapSet.put(collected, new_key)
+                new_positions = List.replace_at(positions, idx, dest)
+                new_state = {new_positions, new_collected}
+                
+                if new_dist < Map.get(v2, new_state, :infinity) do
+                  {Heap.push(h2, {new_dist, new_positions, new_collected}),
+                   Map.put(v2, new_state, new_dist)}
+                else
+                  {h2, v2}
+                end
+              end)
+            end)
+          
+          search_loop(new_heap, all_keys, graph, keys, new_visited)
+        end
+      end
+  end
+end
+
+# Pre-compute distances with BFS, tracking required items (doors)
+defp build_graph(grid, points) do
+  points
+  |> Enum.map(fn point -> {point, bfs_from(grid, point, points)} end)
+  |> Map.new()
+end
+```
+
+**Key Optimizations:**
+- Pre-compute distances between all important points (not grid cells)
+- Track door requirements during BFS to filter reachable destinations
+- State = `{positions, collected}` - robots share collected items
+- Use `List.replace_at/3` to update single robot position
+
 ## Key Points
 - **Dijkstra**: Guarantees shortest path in weighted graphs (non-negative weights)
 - **A***: Faster than Dijkstra when good heuristic available
@@ -266,3 +338,5 @@ end
 - Consider bidirectional search for long paths
 - Precompute heuristic values if possible
 - For grid-based problems, can optimize with corridor detection (2024 Day 16)
+- **Graph reduction**: Pre-compute distances between important points only (Day 18)
+- **Multi-agent state**: Include all agent positions in state tuple

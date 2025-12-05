@@ -369,3 +369,433 @@ end
 - [Dynamic Programming](dynamic_programming.md) - Memoization techniques
 - [Simulation](simulation.md) - State management patterns
 - [Mathematical Algorithms](mathematical_algorithms.md) - Bitwise operations
+
+---
+
+## 8. Intcode VM (2019)
+
+The 2019 Advent of Code is "The Year of Intcode" - a virtual machine that gets incrementally built and reused throughout the month. Many problems after Day 9 assume you have a working Intcode interpreter.
+
+### Opcodes Reference
+
+| Opcode | Name | Parameters | Description |
+|--------|------|------------|-------------|
+| 1 | ADD | 3 | p3 = p1 + p2 |
+| 2 | MUL | 3 | p3 = p1 × p2 |
+| 3 | INPUT | 1 | p1 = input |
+| 4 | OUTPUT | 1 | output p1 |
+| 5 | JNZ | 2 | if p1 ≠ 0, ip = p2 |
+| 6 | JZ | 2 | if p1 = 0, ip = p2 |
+| 7 | LT | 3 | p3 = p1 < p2 ? 1 : 0 |
+| 8 | EQ | 3 | p3 = p1 = p2 ? 1 : 0 |
+| 9 | REL | 1 | relative_base += p1 |
+| 99 | HALT | 0 | stop |
+
+### Parameter Modes
+
+| Mode | Name | Meaning |
+|------|------|---------|
+| 0 | Position | Value at address |
+| 1 | Immediate | Value directly |
+| 2 | Relative | Value at (relative_base + value) |
+
+### Complete Intcode Implementation (Day 9+)
+
+```elixir
+defmodule Intcode do
+  @moduledoc """
+  Complete Intcode VM supporting all opcodes and parameter modes.
+  """
+
+  def parse(input) do
+    input
+    |> String.trim()
+    |> String.split(",")
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.with_index()
+    |> Map.new(fn {v, i} -> {i, v} end)
+  end
+
+  def run(mem, inputs), do: run(mem, 0, 0, inputs, [])
+
+  defp run(mem, ip, rb, inputs, outputs) do
+    instruction = Map.get(mem, ip, 0)
+    opcode = rem(instruction, 100)
+
+    case opcode do
+      1 -> # ADD
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        run(Map.put(mem, c, a + b), ip + 4, rb, inputs, outputs)
+
+      2 -> # MUL
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        run(Map.put(mem, c, a * b), ip + 4, rb, inputs, outputs)
+
+      3 -> # INPUT
+        [input | rest] = inputs
+        addr = get_addr(mem, ip, rb, 1)
+        run(Map.put(mem, addr, input), ip + 2, rb, rest, outputs)
+
+      4 -> # OUTPUT
+        val = get_param(mem, ip, rb, 1)
+        run(mem, ip + 2, rb, inputs, outputs ++ [val])
+
+      5 -> # JUMP-IF-TRUE
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        new_ip = if a != 0, do: b, else: ip + 3
+        run(mem, new_ip, rb, inputs, outputs)
+
+      6 -> # JUMP-IF-FALSE
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        new_ip = if a == 0, do: b, else: ip + 3
+        run(mem, new_ip, rb, inputs, outputs)
+
+      7 -> # LESS-THAN
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        val = if a < b, do: 1, else: 0
+        run(Map.put(mem, c, val), ip + 4, rb, inputs, outputs)
+
+      8 -> # EQUALS
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        val = if a == b, do: 1, else: 0
+        run(Map.put(mem, c, val), ip + 4, rb, inputs, outputs)
+
+      9 -> # ADJUST RELATIVE BASE
+        val = get_param(mem, ip, rb, 1)
+        run(mem, ip + 2, rb + val, inputs, outputs)
+
+      99 -> # HALT
+        {mem, outputs}
+    end
+  end
+
+  defp get_mode(mem, ip, offset) do
+    instruction = Map.get(mem, ip, 0)
+    div(instruction, round(:math.pow(10, offset + 1))) |> rem(10)
+  end
+
+  defp get_param(mem, ip, rb, offset) do
+    mode = get_mode(mem, ip, offset)
+    param = Map.get(mem, ip + offset, 0)
+
+    case mode do
+      0 -> Map.get(mem, param, 0)         # position mode
+      1 -> param                           # immediate mode
+      2 -> Map.get(mem, rb + param, 0)    # relative mode
+    end
+  end
+
+  defp get_addr(mem, ip, rb, offset) do
+    mode = get_mode(mem, ip, offset)
+    param = Map.get(mem, ip + offset, 0)
+
+    case mode do
+      0 -> param          # position mode
+      2 -> rb + param     # relative mode
+      # Note: Mode 1 (immediate) never valid for write addresses
+    end
+  end
+end
+```
+
+### Suspendable/Resumable VM (Day 7, 11, 13, 15+)
+
+For problems requiring feedback loops or interactive I/O:
+
+```elixir
+defmodule SuspendableIntcode do
+  @moduledoc """
+  Intcode VM that can suspend on I/O and resume later.
+  Essential for Day 7 (amplifiers), Day 11 (robot), Day 13 (arcade), Day 15 (maze).
+  """
+
+  def new(mem), do: %{mem: mem, ip: 0, rb: 0, halted: false}
+
+  # Run until output is produced, then suspend
+  def run_until_output(vm, inputs) do
+    run_until_output_impl(vm.mem, vm.ip, vm.rb, inputs)
+  end
+
+  defp run_until_output_impl(mem, ip, rb, inputs) do
+    instruction = Map.get(mem, ip, 0)
+    opcode = rem(instruction, 100)
+
+    case opcode do
+      1 -> # ADD
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        run_until_output_impl(Map.put(mem, c, a + b), ip + 4, rb, inputs)
+
+      2 -> # MUL
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        run_until_output_impl(Map.put(mem, c, a * b), ip + 4, rb, inputs)
+
+      3 -> # INPUT
+        case inputs do
+          [] -> {:need_input, %{mem: mem, ip: ip, rb: rb, halted: false}}
+          [input | rest] ->
+            addr = get_addr(mem, ip, rb, 1)
+            run_until_output_impl(Map.put(mem, addr, input), ip + 2, rb, rest)
+        end
+
+      4 -> # OUTPUT - suspend and return value
+        output = get_param(mem, ip, rb, 1)
+        {:output, output, %{mem: mem, ip: ip + 2, rb: rb, halted: false}}
+
+      5 -> # JUMP-IF-TRUE
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        new_ip = if a != 0, do: b, else: ip + 3
+        run_until_output_impl(mem, new_ip, rb, inputs)
+
+      6 -> # JUMP-IF-FALSE
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        new_ip = if a == 0, do: b, else: ip + 3
+        run_until_output_impl(mem, new_ip, rb, inputs)
+
+      7 -> # LESS-THAN
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        val = if a < b, do: 1, else: 0
+        run_until_output_impl(Map.put(mem, c, val), ip + 4, rb, inputs)
+
+      8 -> # EQUALS
+        {a, b} = {get_param(mem, ip, rb, 1), get_param(mem, ip, rb, 2)}
+        c = get_addr(mem, ip, rb, 3)
+        val = if a == b, do: 1, else: 0
+        run_until_output_impl(Map.put(mem, c, val), ip + 4, rb, inputs)
+
+      9 -> # ADJUST RELATIVE BASE
+        val = get_param(mem, ip, rb, 1)
+        run_until_output_impl(mem, ip + 2, rb + val, inputs)
+
+      99 -> # HALT
+        {:halt, %{mem: mem, ip: ip, rb: rb, halted: true}}
+    end
+  end
+
+  # Helper functions (same as above)
+  defp get_mode(mem, ip, offset) do
+    instruction = Map.get(mem, ip, 0)
+    div(instruction, round(:math.pow(10, offset + 1))) |> rem(10)
+  end
+
+  defp get_param(mem, ip, rb, offset) do
+    mode = get_mode(mem, ip, offset)
+    param = Map.get(mem, ip + offset, 0)
+    case mode do
+      0 -> Map.get(mem, param, 0)
+      1 -> param
+      2 -> Map.get(mem, rb + param, 0)
+    end
+  end
+
+  defp get_addr(mem, ip, rb, offset) do
+    mode = get_mode(mem, ip, offset)
+    param = Map.get(mem, ip + offset, 0)
+    case mode do
+      0 -> param
+      2 -> rb + param
+    end
+  end
+end
+```
+
+### Usage Patterns
+
+**Feedback Loop (Day 7 Part 2):**
+```elixir
+defp run_feedback_loop(mem, phases) do
+  # Initialize 5 amplifiers
+  amps = Enum.map(phases, fn phase ->
+    %{vm: SuspendableIntcode.new(mem), inputs: [phase]}
+  end)
+  
+  feedback_loop(amps, 0, 0)
+end
+
+defp feedback_loop(amps, current_amp, signal) do
+  amp = Enum.at(amps, current_amp)
+  inputs = amp.inputs ++ [signal]
+  
+  case SuspendableIntcode.run_until_output(amp.vm, inputs) do
+    {:output, output, new_vm} ->
+      updated_amps = List.replace_at(amps, current_amp, %{vm: new_vm, inputs: []})
+      next_amp = rem(current_amp + 1, 5)
+      feedback_loop(updated_amps, next_amp, output)
+    
+    {:halt, _} when current_amp == 4 ->
+      signal  # Final output from amp E
+    
+    {:halt, _} ->
+      # This amp halted, continue to next
+      next_amp = rem(current_amp + 1, 5)
+      feedback_loop(amps, next_amp, signal)
+  end
+end
+```
+
+**Interactive Exploration (Day 15):**
+```elixir
+defp explore(vm, pos, grid, oxygen_pos) do
+  # Try all 4 directions
+  Enum.reduce([1, 2, 3, 4], {grid, vm, oxygen_pos}, fn dir, {g, v, oxy} ->
+    new_pos = move(pos, dir)
+    
+    if Map.has_key?(g, new_pos) do
+      {g, v, oxy}  # Already explored
+    else
+      case step(v, dir) do
+        {new_vm, 0} ->  # Hit wall
+          {Map.put(g, new_pos, :wall), new_vm, oxy}
+        
+        {new_vm, 1} ->  # Moved to open space
+          g2 = Map.put(g, new_pos, :open)
+          {g3, v3, oxy2} = explore(new_vm, new_pos, g2, oxy)
+          {v4, _} = step(v3, reverse(dir))  # Backtrack
+          {g3, v4, oxy2}
+        
+        {new_vm, 2} ->  # Found oxygen system
+          g2 = Map.put(g, new_pos, :open)
+          {g3, v3, _} = explore(new_vm, new_pos, g2, new_pos)
+          {v4, _} = step(v3, reverse(dir))
+          {g3, v4, new_pos}
+      end
+    end
+  end)
+end
+
+defp step(vm, direction) do
+  case SuspendableIntcode.run_until_output(vm, [direction]) do
+    {:output, status, new_vm} -> {new_vm, status}
+  end
+end
+```
+
+**ASCII I/O with Grid Building (Day 17):**
+```elixir
+def solve(input) do
+  mem = parse(input)
+  {_mem, outputs} = run_intcode(mem, [])
+  
+  # Convert ASCII outputs to grid
+  grid = build_grid(outputs)
+  
+  # Find intersections or other features
+  process_grid(grid)
+end
+
+defp build_grid(outputs) do
+  outputs
+  |> Enum.map(&<<&1::utf8>>)  # Convert ASCII codes to characters
+  |> Enum.join()
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.with_index()
+  |> Enum.flat_map(fn {row, y} ->
+    row
+    |> String.graphemes()
+    |> Enum.with_index()
+    |> Enum.map(fn {char, x} -> {{x, y}, char} end)
+  end)
+  |> Map.new()
+end
+```
+
+**Path Compression for Functions (Day 17 Part 2):**
+```elixir
+# Compress path into main routine + functions A, B, C
+# Each function max 20 chars, main calls A/B/C
+defp compress_path(path) do
+  segments = String.split(path, ",")
+  
+  for a_len <- 2..10,
+      a_start = Enum.take(segments, a_len),
+      a_str = Enum.join(a_start, ","),
+      String.length(a_str) <= 20,
+      remaining_after_a = remove_prefix_occurrences(segments, a_start),
+      remaining_after_a != nil,
+      b_len <- 2..10,
+      b_start = Enum.take(remaining_after_a, b_len),
+      b_str = Enum.join(b_start, ","),
+      String.length(b_str) <= 20,
+      remaining_after_b = remove_all_occurrences(remaining_after_a, a_start, b_start),
+      remaining_after_b != nil,
+      c_len <- 2..10,
+      c_start = Enum.take(remaining_after_b, c_len),
+      c_str = Enum.join(c_start, ","),
+      String.length(c_str) <= 20,
+      main = build_main(segments, a_start, b_start, c_start),
+      main != nil,
+      String.length(main) <= 20 do
+    {main, a_str, b_str, c_str}
+  end
+  |> List.first()
+end
+```
+
+### Key Implementation Tips
+
+1. **Memory as Map:** Store as `%{index => value}` for sparse access
+2. **Default to 0:** `Map.get(mem, addr, 0)` for uninitialized memory
+3. **Arbitrarily large integers:** Native in Elixir, no special handling
+4. **Separate read vs write:** Parameters for writes use `get_addr`, reads use `get_param`
+5. **Mode 1 never for writes:** Write destinations are addresses, not values
+6. **Relative base:** Only modified by opcode 9, persists across execution
+7. **ASCII I/O:** Convert outputs with `<<code::utf8>>`, inputs with `String.to_charlist/1`
+8. **Wake robot:** Set `mem[0] = 2` to enable interactive mode (Day 17)
+
+### Network of VMs (Day 23)
+
+For simulating multiple communicating Intcode computers:
+
+```elixir
+defp run_network(vms, queues) do
+  # Step each VM once, collecting outputs
+  {vms, queues, packets} = 
+    Enum.reduce(0..49, {vms, queues, []}, fn i, {vs, qs, pkts} ->
+      vm = Map.get(vs, i)
+      queue = Map.get(qs, i, [])
+      
+      # Provide input: -1 if queue empty (non-blocking)
+      input = if queue == [], do: [-1], else: queue
+      
+      {new_vm, outputs} = step_vm(vm, input)
+      
+      # Parse outputs as packets: [dest, x, y, ...]
+      new_packets = parse_packets(outputs)
+      
+      {Map.put(vs, i, new_vm), Map.put(qs, i, []), pkts ++ new_packets}
+    end)
+  
+  # Route packets to queues
+  queues = Enum.reduce(packets, queues, fn {dest, x, y}, qs ->
+    if dest == 255 do
+      # NAT packet - handle specially
+      Map.put(qs, :nat, {x, y})
+    else
+      Map.update(qs, dest, [x, y], &(&1 ++ [x, y]))
+    end
+  end)
+  
+  # Check idle state for NAT
+  if all_idle?(queues) and Map.has_key?(queues, :nat) do
+    {x, y} = queues[:nat]
+    queues = Map.put(queues, 0, [x, y])
+    # Track Y values for detecting repeats
+  end
+  
+  run_network(vms, queues)
+end
+```
+
+**Key Patterns:**
+- Non-blocking input: return -1 when queue is empty
+- Each VM outputs 3 values per packet: `[destination, X, Y]`
+- NAT monitors address 255, sends to 0 when idle
+- Idle detection: all queues empty AND all VMs waiting for input
+

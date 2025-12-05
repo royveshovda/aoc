@@ -12,6 +12,7 @@ Cycle detection finds repeating patterns in sequences. Critical for optimization
 ## Used In
 - 2023 Day 14 (Parabolic Reflector - grid tilting cycles)
 - 2022 Day 17 (Pyroclastic Flow - falling blocks pattern)
+- 2019 Day 12 (N-Body Problem - axis independence)
 - 2018 Day 1 (Frequency - first repeat detection)
 - 2018 Day 12 (Plant Growth - detect stable offset pattern)
 - 2017 Day 6 (Memory Reallocation - detect when redistribution repeats)
@@ -437,6 +438,71 @@ end
 - After enough iterations, randomness settles into deterministic growth
 
 **Verification**: Track 5-10 consecutive identical offsets to ensure pattern is truly stable (not just temporary).
+
+## Axis Independence (2019 Day 12 - N-Body Problem)
+
+When a multi-dimensional simulation has independent axes, find cycles for each axis separately and use LCM:
+
+```elixir
+def find_system_cycle(moons) do
+  # Key insight: x, y, z axes are completely independent!
+  # Find cycle for each axis separately
+  cycle_x = find_axis_cycle(moons, 0)  # x-axis
+  cycle_y = find_axis_cycle(moons, 1)  # y-axis
+  cycle_z = find_axis_cycle(moons, 2)  # z-axis
+  
+  # Total system cycle = LCM of individual axis cycles
+  lcm(lcm(cycle_x, cycle_y), cycle_z)
+end
+
+defp find_axis_cycle(moons, axis) do
+  initial_state = axis_state(moons, axis)
+  find_axis_cycle_loop(moons, axis, initial_state, 0)
+end
+
+defp find_axis_cycle_loop(moons, axis, initial_state, step) do
+  new_moons =
+    moons
+    |> apply_gravity()
+    |> apply_velocity()
+
+  new_step = step + 1
+
+  if axis_state(new_moons, axis) == initial_state do
+    new_step
+  else
+    find_axis_cycle_loop(new_moons, axis, initial_state, new_step)
+  end
+end
+
+# Extract state for just one axis (positions and velocities)
+defp axis_state(moons, axis) do
+  Enum.map(moons, fn {pos, vel} ->
+    {elem(pos, axis), elem(vel, axis)}
+  end)
+end
+
+defp gcd(a, 0), do: a
+defp gcd(a, b), do: gcd(b, rem(a, b))
+
+defp lcm(a, b), do: div(a * b, gcd(a, b))
+```
+
+**Why This Works**:
+- In N-body gravity simulation, each coordinate axis operates independently
+- Gravity only affects velocity in that axis based on positions in that axis
+- Three separate 1D simulations instead of one 3D simulation
+- Each axis cycles much faster than the full system would
+
+**Performance Gain**:
+- Full system: potentially astronomically large cycle
+- Per-axis: typically cycles of ~100,000 to ~500,000 each
+- LCM of three manageable numbers instead of tracking entire 3D state
+
+**When to Use**:
+- Multi-dimensional simulations where dimensions don't interact
+- Problems where forces/transformations are axis-aligned
+- State that can be decomposed into independent components
 
 ## Choosing Algorithm
 - **Hash Table (Cache)**: Simplest, works for any cycle

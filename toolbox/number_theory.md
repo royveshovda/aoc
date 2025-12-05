@@ -411,6 +411,81 @@ end
 4. **Modular arithmetic** prevents integer overflow in sequences
 5. **Memoization** crucial for factorial/binomial computations
 
+## 7. Linear Function Composition Under Modular Arithmetic (2019 Day 22)
+
+**Problem:** Apply huge number of shuffle operations to a deck of cards. Track where a specific card ends up (or where a position came from).
+
+**Key Insight:** Each shuffle operation is a linear function `f(x) = a*x + b mod N`:
+- **Deal into new stack:** `f(x) = -x - 1 mod N` = `-1*x + (N-1)`
+- **Cut n cards:** `f(x) = x - n mod N` = `1*x + (-n)`
+- **Deal with increment n:** `f(x) = n*x mod N` = `n*x + 0`
+
+**Composing Linear Functions:**
+```elixir
+# f(x) = a*x + b, g(x) = c*x + d
+# g(f(x)) = c*(a*x + b) + d = (c*a)*x + (c*b + d)
+defp compose({a1, b1}, {a2, b2}, n) do
+  a = rem(a1 * a2, n)
+  b = rem(a2 * b1 + b2, n)
+  {a, b}
+end
+
+# Apply function k times using binary exponentiation
+defp compose_times({a, b}, k, n) do
+  if k == 0 do
+    {1, 0}  # Identity function
+  else if rem(k, 2) == 0 do
+    half = compose_times({a, b}, div(k, 2), n)
+    compose(half, half, n)
+  else
+    half = compose_times({a, b}, k - 1, n)
+    compose(half, {a, b}, n)
+  end
+end
+
+# Apply f(x) = a*x + b
+defp apply_func({a, b}, x, n), do: rem(rem(a * x, n) + b + n, n)
+
+# Inverse of f(x) = a*x + b is f^(-1)(y) = (y - b) * a^(-1) mod n
+defp invert_func({a, b}, n) do
+  a_inv = mod_inverse(a, n)
+  {a_inv, rem(-b * a_inv + n * n, n)}
+end
+
+defp mod_inverse(a, n) do
+  mod_exp(a, n - 2, n)  # Fermat's little theorem (n must be prime)
+end
+
+defp mod_exp(base, 0, _n), do: 1
+defp mod_exp(base, exp, n) do
+  if rem(exp, 2) == 0 do
+    half = mod_exp(base, div(exp, 2), n)
+    rem(half * half, n)
+  else
+    rem(base * mod_exp(base, exp - 1, n), n)
+  end
+end
+```
+
+**Usage:**
+```elixir
+# Part 1: Where does card 2019 end up after one shuffle?
+func = parse_shuffles(instructions, deck_size)  # Returns {a, b}
+apply_func(func, 2019, deck_size)
+
+# Part 2: After 101741582076661 shuffles, what card is at position 2020?
+func = parse_shuffles(instructions, deck_size)
+repeated = compose_times(func, 101741582076661, deck_size)
+inv = invert_func(repeated, deck_size)
+apply_func(inv, 2020, deck_size)
+```
+
+**Key Points:**
+- Part 1: Forward direction - where does position X go?
+- Part 2: Inverse direction - what position maps TO position Y?
+- Deck size must be prime for modular inverse via Fermat's theorem
+- Handle negative numbers properly with `rem(x + n, n)`
+
 ## Common Pitfalls
 
 - **Integer overflow** in factorial/binomial (though Elixir handles arbitrary precision)
@@ -418,6 +493,7 @@ end
 - **Off-by-one** in triangular number formulas
 - **Modular arithmetic** - remember to take mod at each step, not just at end
 - **Divisibility checks** - use `rem(a, b) == 0` not `div(a, b) * b == a`
+- **Negative modulo** - Elixir's `rem/2` preserves sign; use `rem(x + n, n)` for positive result
 
 ## Related Patterns
 - [Mathematical Algorithms](mathematical_algorithms.md) - GCD/LCM applications

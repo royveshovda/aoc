@@ -8,6 +8,9 @@ Many AoC problems have mathematical solutions that are more efficient than simul
 - 2024 Day 13 (Cramer's rule for linear systems)
 - 2023 Days 6, 8, 11, 18, 21 (Various mathematical optimizations)
 - 2022 Day 11 (Modular arithmetic)
+- 2019 Day 10 (GCD for line of sight angles)
+- 2019 Day 12 (LCM for cycle synchronization)
+- 2019 Day 14 (Dependency resolution with binary search)
 
 ## Greatest Common Divisor (GCD)
 
@@ -40,6 +43,57 @@ def find_sync_point(cycles) do
   |> lcm_list()
 end
 ```
+
+## Line of Sight with GCD Normalization (2019 Day 10)
+
+For grid-based line of sight problems, normalize direction vectors using GCD:
+
+```elixir
+# Count how many points are visible from a position (no blocking)
+defp count_visible(pos, all_points) do
+  all_points
+  |> Enum.reject(&(&1 == pos))
+  |> Enum.map(&normalized_direction(pos, &1))
+  |> Enum.uniq()
+  |> length()
+end
+
+# Calculate unique angle identifier (normalized direction)
+defp normalized_direction({x1, y1}, {x2, y2}) do
+  dx = x2 - x1
+  dy = y2 - y1
+  g = gcd(abs(dx), abs(dy))
+  {div(dx, g), div(dy, g)}
+end
+
+defp gcd(a, 0), do: a
+defp gcd(a, b), do: gcd(b, rem(a, b))
+```
+
+**Why This Works**:
+- Points on same line from origin have same normalized direction
+- `(2, 4)` and `(3, 6)` both normalize to `(1, 2)` - same line of sight
+- Same direction = only closest point is visible (blocks the rest)
+
+**Clockwise Angle from Up (for laser rotation):**
+```elixir
+# Calculate angle for clockwise ordering starting from up (north)
+# Returns angle in range [0, 2*pi) where 0 is straight up
+defp clockwise_angle({x1, y1}, {x2, y2}) do
+  dx = x2 - x1
+  dy = y2 - y1
+  # atan2(dx, -dy) gives angle from up, clockwise
+  angle = :math.atan2(dx, -dy)
+  # Normalize to [0, 2*pi)
+  if angle < 0, do: angle + 2 * :math.pi(), else: angle
+end
+```
+
+**Applications**:
+- Asteroid visibility (2019 Day 10)
+- Guard sightlines
+- Tower defense coverage
+- Any grid-based line-of-sight calculation
 
 ## Solving Linear Systems (Cramer's Rule) - 2024 Day 13
 
@@ -342,6 +396,99 @@ defp extended_gcd(a, b) do
   {g, y1, x1 - div(a, b) * y1}
 end
 ```
+
+## Chemical Reaction Dependency Resolution (2019 Day 14)
+
+Work backwards from target, tracking needs and surplus:
+
+```elixir
+def ore_needed(reactions, fuel_amount) do
+  # Work backwards from FUEL, tracking what we need and what we have leftover
+  needs = %{"FUEL" => fuel_amount}
+  surplus = %{}
+  
+  calculate_ore(reactions, needs, surplus)
+end
+
+defp calculate_ore(reactions, needs, surplus) do
+  # Find a chemical we need that's not ORE
+  case Enum.find(needs, fn {chem, amt} -> chem != "ORE" and amt > 0 end) do
+    nil ->
+      # Only ORE left (or nothing)
+      Map.get(needs, "ORE", 0)
+
+    {chemical, amount_needed} ->
+      # Use surplus first
+      available = Map.get(surplus, chemical, 0)
+      {use_from_surplus, still_needed} =
+        if available >= amount_needed do
+          {amount_needed, 0}
+        else
+          {available, amount_needed - available}
+        end
+
+      surplus = Map.update(surplus, chemical, 0, &(&1 - use_from_surplus))
+      needs = Map.delete(needs, chemical)
+
+      if still_needed > 0 do
+        # Need to produce more of this chemical
+        {output_amount, inputs} = Map.fetch!(reactions, chemical)
+
+        # How many times do we need to run the reaction? (round up!)
+        times = div(still_needed + output_amount - 1, output_amount)
+        produced = times * output_amount
+        leftover = produced - still_needed
+
+        # Add leftover to surplus
+        surplus = Map.update(surplus, chemical, leftover, &(&1 + leftover))
+
+        # Add inputs to needs
+        needs =
+          Enum.reduce(inputs, needs, fn {input_amt, input_chem}, acc ->
+            Map.update(acc, input_chem, input_amt * times, &(&1 + input_amt * times))
+          end)
+
+        calculate_ore(reactions, needs, surplus)
+      else
+        calculate_ore(reactions, needs, surplus)
+      end
+  end
+end
+
+# Part 2: Binary search for max FUEL given fixed ORE
+def max_fuel_from_ore(reactions, ore_available) do
+  ore_for_one = ore_needed(reactions, 1)
+  
+  # Lower bound: at least (available / ore_for_one) FUEL
+  # Upper bound: could be higher due to leftover efficiency
+  min_fuel = div(ore_available, ore_for_one)
+  max_fuel = min_fuel * 2
+  
+  binary_search(reactions, ore_available, min_fuel, max_fuel)
+end
+
+defp binary_search(reactions, ore_available, low, high) when low >= high - 1 do
+  if ore_needed(reactions, high) <= ore_available, do: high, else: low
+end
+
+defp binary_search(reactions, ore_available, low, high) do
+  mid = div(low + high, 2)
+  ore = ore_needed(reactions, mid)
+  
+  if ore <= ore_available do
+    binary_search(reactions, ore_available, mid, high)
+  else
+    binary_search(reactions, ore_available, low, mid)
+  end
+end
+```
+
+**Key Pattern**: 
+- Work backwards from target to raw materials
+- Track surplus from overproduction (reactions have fixed output amounts)
+- Use surplus before running new reactions
+- Round up reaction counts: `ceil(needed / output_amount)`
+- Part 2 typically uses binary search over the Part 1 function
 
 ## Key Points
 - **Choose Math Over Simulation**: If problem has pattern, find formula

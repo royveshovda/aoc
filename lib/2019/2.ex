@@ -4,6 +4,7 @@ aoc 2019, 2 do
   def p1(input) do
     instructions =
       input
+      |> String.trim()
       |> String.split(",")
       |> Enum.map(&String.to_integer/1)
       |> Enum.with_index()
@@ -40,6 +41,7 @@ aoc 2019, 2 do
   def p2(input) do
     instructions =
       input
+      |> String.trim()
       |> String.split(",")
       |> Enum.map(&String.to_integer/1)
       |> Enum.with_index()

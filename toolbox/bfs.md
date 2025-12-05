@@ -15,6 +15,7 @@ BFS is a graph traversal algorithm that explores nodes level by level. It's opti
 - 2022 Day 12 (Hill Climbing - shortest path with constraints)
 - 2022 Day 18 (Boiling Boulders - 3D flood fill)
 - 2022 Day 24 (Blizzard Basin - time-varying obstacles)
+- 2019 Day 15 (Oxygen System - maze exploration + fill time)
 
 ## Basic Template
 
@@ -157,3 +158,45 @@ end
 - **Bidirectional BFS**: Search from both start and goal
 - **0-1 BFS**: For graphs with edge weights 0 or 1 (use deque)
 - **Level-order BFS**: Process entire level before moving to next
+- **Fill Time BFS**: Find max distance from a starting point (see below)
+
+## Fill Time / Flood Fill (2019 Day 15)
+
+Find how long it takes for something to spread to fill an entire area:
+
+```elixir
+# BFS to find time for oxygen to fill entire area from a starting point
+defp fill_time(grid, start_pos) do
+  queue = :queue.from_list([{start_pos, 0}])
+  visited = MapSet.new([start_pos])
+  fill_loop(queue, visited, grid, 0)
+end
+
+defp fill_loop(queue, visited, grid, max_time) do
+  case :queue.out(queue) do
+    {:empty, _} ->
+      max_time  # Return the maximum time reached
+
+    {{:value, {pos, time}}, queue} ->
+      neighbors = get_open_neighbors(pos, grid, visited)
+      new_visited = Enum.reduce(neighbors, visited, &MapSet.put(&2, &1))
+      new_queue = Enum.reduce(neighbors, queue, fn n, q -> 
+        :queue.in({n, time + 1}, q) 
+      end)
+      # Track the maximum time step we've reached
+      new_max = if neighbors != [], do: time + 1, else: max_time
+      fill_loop(new_queue, new_visited, grid, max(max_time, new_max))
+  end
+end
+
+defp get_open_neighbors({x, y}, grid, visited) do
+  [{x, y - 1}, {x, y + 1}, {x - 1, y}, {x + 1, y}]
+  |> Enum.filter(fn pos ->
+    Map.get(grid, pos) == :open and not MapSet.member?(visited, pos)
+  end)
+end
+```
+
+**Key Difference from Shortest Path**:
+- Shortest path returns distance when goal is reached
+- Fill time returns maximum distance when queue is empty (all reachable cells visited)

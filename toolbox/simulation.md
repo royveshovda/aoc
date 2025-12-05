@@ -703,3 +703,128 @@ end
 - Incorrect boundary detection in horizontal spreading
 
 6. **Ordered simulation**: Sort entities by position, process one-by-one
+
+## Recursive/Nested Grid Simulation (2019 Day 24)
+
+**Problem:** Game of Life where center tile is a portal to an inner level, edges connect to outer level.
+
+**State:** Store as `MapSet` of `{x, y, level}` tuples.
+
+```elixir
+defp step_recursive(grid) do
+  # Determine range of levels to check
+  levels = grid |> Enum.map(fn {_x, _y, level} -> level end)
+  {min_level, max_level} = Enum.min_max(levels)
+  
+  # Check all cells in all relevant levels (±1 from existing)
+  for level <- (min_level - 1)..(max_level + 1),
+      x <- 0..4,
+      y <- 0..4,
+      {x, y} != {2, 2},  # Center is portal, never has bugs
+      should_have_bug?(grid, x, y, level),
+      into: MapSet.new() do
+    {x, y, level}
+  end
+end
+
+defp get_recursive_neighbors(x, y, level) do
+  [{0, -1}, {0, 1}, {-1, 0}, {1, 0}]
+  |> Enum.flat_map(fn {dx, dy} ->
+    nx = x + dx
+    ny = y + dy
+    cond do
+      # Going to center → inner level edge
+      {nx, ny} == {2, 2} -> inner_edge_cells(dx, dy, level + 1)
+      # Going off grid → outer level center-adjacent
+      nx < 0 -> [{1, 2, level - 1}]
+      nx > 4 -> [{3, 2, level - 1}]
+      ny < 0 -> [{2, 1, level - 1}]
+      ny > 4 -> [{2, 3, level - 1}]
+      # Normal neighbor
+      true -> [{nx, ny, level}]
+    end
+  end)
+end
+
+# When entering center from direction (dx, dy), get 5 edge cells
+defp inner_edge_cells(dx, dy, inner_level) do
+  cond do
+    dx == 1 -> for y <- 0..4, do: {0, y, inner_level}   # From left → left edge
+    dx == -1 -> for y <- 0..4, do: {4, y, inner_level}  # From right → right edge
+    dy == 1 -> for x <- 0..4, do: {x, 0, inner_level}   # From above → top edge
+    dy == -1 -> for x <- 0..4, do: {x, 4, inner_level}  # From below → bottom edge
+  end
+end
+```
+
+**Key Points:**
+- Level 0 = starting level, positive = inner, negative = outer
+- Center tile (2,2) is portal - never contains bugs
+- Edge cells have 5 recursive neighbors (whole edge of inner level)
+- Off-grid neighbors map to specific cells of outer level
+- Check levels ±1 from existing bug range each step
+
+## Text Adventure / Interactive Exploration (2019 Day 25)
+
+**Problem:** Explore a map via text commands, collect items, solve puzzle.
+
+```elixir
+defp explore_dfs(vm, output, visited, rooms, items) do
+  room = parse_room(output)
+  
+  if room.name == nil or MapSet.member?(visited, room.name) do
+    {vm, rooms, items, visited}
+  else
+    visited = MapSet.put(visited, room.name)
+    
+    # Collect safe items
+    {vm, new_items} = collect_safe_items(vm, room.items)
+    items = items ++ new_items
+    
+    # Add room to map
+    rooms = Map.put(rooms, room.name, %{doors: room.doors, paths: %{}})
+    
+    # DFS explore each direction
+    {vm, rooms, items, visited} = 
+      Enum.reduce(room.doors, {vm, rooms, items, visited}, fn dir, acc ->
+        {v, new_output} = run_vm(v, dir <> "\n")
+        
+        if not blocked?(new_output) do
+          # Record path, explore, backtrack
+          {explored_vm, rs, its, vis} = explore_dfs(v, new_output, acc...)
+          {back_vm, _} = run_vm(explored_vm, opposite(dir) <> "\n")
+          {back_vm, rs, its, vis}
+        else
+          acc
+        end
+      end)
+    
+    {vm, rooms, items, visited}
+  end
+end
+
+# Try all 2^n item combinations for weight puzzle
+defp find_correct_weight(vm, items, direction) do
+  vm = drop_all_items(vm, items)
+  
+  0..(trunc(:math.pow(2, length(items))) - 1)
+  |> Enum.find_value(fn mask ->
+    items_to_take = items
+    |> Enum.with_index()
+    |> Enum.filter(fn {_, i} -> Bitwise.band(mask, Bitwise.bsl(1, i)) != 0 end)
+    |> Enum.map(&elem(&1, 0))
+    
+    vm = take_items(vm, items_to_take)
+    {_, output} = run_vm(vm, direction <> "\n")
+    
+    if success?(output), do: extract_answer(output)
+  end)
+end
+```
+
+**Key Patterns:**
+- DFS exploration with backtracking
+- Track visited rooms to avoid loops
+- Build map of room connections during exploration
+- Collect safe items (avoid traps like "molten lava", "infinite loop")
+- Try all 2^n combinations for weight/combination puzzles
