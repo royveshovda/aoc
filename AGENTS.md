@@ -237,6 +237,11 @@ end)
 - Consider memoization (via `memoize` library) for recursive solutions
 - When checking if a string is composed of repeating patterns, try all divisors of the string length
 - For maximization problems with selections, consider greedy algorithms over brute force combinations
+- **Interval/Range merging (2025 Day 5):**
+  - Sort ranges by start value
+  - Iterate and merge overlapping or adjacent ranges (where next start ≤ current end + 1)
+  - Useful for counting total unique values across overlapping ranges
+  - See [Mathematical Algorithms - Range Operations](toolbox/mathematical_algorithms.md)
 - **Keypad/Grid navigation with boundary checking:**
   - Use `Map.has_key?(grid, new_pos)` to check if move is valid
   - Only update position if new position exists in map

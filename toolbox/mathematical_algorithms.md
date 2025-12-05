@@ -4,6 +4,7 @@
 Many AoC problems have mathematical solutions that are more efficient than simulation.
 
 ## Used In
+- 2025 Day 5 (Interval merging for counting fresh ingredient IDs)
 - 2024 Day 13 (Cramer's rule for linear systems)
 - 2023 Days 6, 8, 11, 18, 21 (Various mathematical optimizations)
 - 2022 Day 11 (Modular arithmetic)
@@ -272,7 +273,7 @@ def divisors(n) do
 end
 ```
 
-## Range Operations (2023 Day 5)
+## Range/Interval Operations (2023 Day 5, 2025 Day 5)
 
 ```elixir
 # Check if ranges overlap
