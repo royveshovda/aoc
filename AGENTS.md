@@ -31,8 +31,11 @@ Quick guide:
 - **Count ways** → Dynamic Programming
 - **Large iterations** → Cycle Detection or Math
 - **Grid problems** → Grid Operations + BFS/DFS
+- **Hex grids** → Cube coords `{x,y,z}` or axial `{q,r}`
 - **Assembly/VM** → [Interpreter Patterns](toolbox/interpreter_patterns.md)
-- **Modular arithmetic** → [Number Theory](toolbox/number_theory.md) (linear functions, modular inverse)
+- **Modular arithmetic** → [Number Theory](toolbox/number_theory.md) (CRT sieving, modular inverse)
+- **Circular list (millions ops)** → Array-based linked list with `:array`
+- **Grammar/parsing** → Backtracking parser returning all remainders
 - **Day-specific gotchas** → [Day Patterns](toolbox/day_specific_patterns.md)
 
 ## Quick Start

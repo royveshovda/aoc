@@ -49,6 +49,31 @@ Quick reference for patterns learned from specific AoC days. Organized by year.
 - **Recursive Game of Life (Day 24)**: Center tile is portal. Edge neighbors connect to outer level
 - **Text adventure (Day 25)**: DFS exploration, collect safe items, try all 2^n combinations at checkpoint
 
+## 2020
+
+- **Bag containment rules (Day 7)**: Parse → graph. Reverse graph for "which can contain X", recursive count for "how many inside X"
+- **Adapter chain DP (Day 10)**: Sort adapters, `ways[j] = sum(ways[i])` for valid predecessors
+- **Seating cellular automaton (Day 11)**: Part 1=adjacent, Part 2=line-of-sight (skip floor until seat)
+- **Bus schedule CRT (Day 13)**: Sieving approach - find t satisfying constraints one at a time, multiply step by modulus
+- **Bitmask with floating bits (Day 14)**: Part 2 expands X→{0,1}, generates 2^n addresses
+- **Grammar matching with recursion (Day 19)**: Parser returns all possible remainders. Handles ambiguous/recursive rules
+- **Image tile assembly (Day 20)**: Match edges (8 orientations). Corners have 2 unmatched edges. Assemble by constraint propagation
+- **Recursive card game (Day 22)**: Track seen states to prevent infinite loops. Sub-games use deck copies
+- **Circular linked list with :array (Day 23)**: `array[cup] = next_cup` for O(1) operations. Critical for 10M moves
+- **Hex grid with axial coords (Day 24)**: `{q, r}` coords, 6 directions. Game of Life on hex grid
+
+## General Gotchas
+
+- **Modular arithmetic**: Edge cases at 0 and max position
+- **TSP variants**: Distance matrix + permutations for small sets
+- **String replacement**: Generate all single replacements, deduplicate with MapSet
+- **ETS for performance**: O(1) random access, always cleanup in `try/after`
+- **Assembly interpreters**: Detect multiplication loops, replace with direct calculation
+- **Self-modifying code**: Store instructions in mutable map
+- **Parser with backtracking**: Return list of remainders, not single result. Check if any path consumes all input
+
+```
+
 ## General Gotchas
 
 - **Modular arithmetic**: Edge cases at 0 and max position

@@ -434,6 +434,58 @@ end
 
 **Key Insight**: Value `0` always stays at position 0. We only care about position 1, so we don't need to maintain the full buffer—just track when we insert at position 1.
 
+## Array-Based Linked List (2020 Day 23 - Crab Cups)
+
+**Problem:** Simulate millions of moves on a circular list where we need O(1) operations for:
+- Finding the next element
+- Removing elements
+- Inserting elements after a given element
+
+**When to Use:**
+- Circular list/ring manipulation (2020 Day 23)
+- Millions of operations needed
+- Can't afford O(n) list operations
+
+**Used In**: 2020 Day 23 (Crab Cups - 10 million moves, 1 million cups)
+
+```elixir
+# Use Erlang's :array where index = element, value = next element
+defp build_linked_list(elements, max_element) do
+  next = :array.new(max_element + 1, default: 0)
+  
+  # Link consecutive elements
+  next = elements
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.reduce(next, fn [a, b], acc -> :array.set(a, b, acc) end)
+  
+  # Link last to first (circular)
+  :array.set(List.last(elements), hd(elements), next)
+end
+
+defp play_move(next, current, max) do
+  # Pick up 3 elements after current
+  pick1 = :array.get(current, next)
+  pick2 = :array.get(pick1, next)
+  pick3 = :array.get(pick2, next)
+  after_picked = :array.get(pick3, next)
+  
+  # Find destination (current - 1, wrapping, skipping picked)
+  dest = find_destination(current, max, pick1, pick2, pick3)
+  
+  # Rewire: current -> after_picked
+  next = :array.set(current, after_picked, next)
+  
+  # Insert picked after destination
+  after_dest = :array.get(dest, next)
+  next = :array.set(dest, pick1, next)
+  next = :array.set(pick3, after_dest, next)
+  
+  {next, :array.get(current, next)}
+end
+```
+
+**Key Insight**: Use array index as element identity, array value as "next pointer". All operations become O(1) array lookups and updates.
+
 ## Turn-Based Simulation with Strict Ordering (2018 Day 13 - Mine Carts)
 
 When entities must move in specific order (top-to-bottom, left-to-right) and can collide:
