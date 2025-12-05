@@ -13,6 +13,7 @@ Cycle detection finds repeating patterns in sequences. Critical for optimization
 - 2023 Day 14 (Parabolic Reflector - grid tilting cycles)
 - 2022 Day 17 (Pyroclastic Flow - falling blocks pattern)
 - 2018 Day 1 (Frequency - first repeat detection)
+- 2018 Day 12 (Plant Growth - detect stable offset pattern)
 - 2017 Day 6 (Memory Reallocation - detect when redistribution repeats)
 - 2024 Day 11 (would benefit from cycle detection for some inputs)
 
@@ -391,14 +392,63 @@ end
 
 **Key Difference**: Permutations often cycle quickly (factorial-bounded), making cache-based detection efficient.
 
+## Offset-Based Cycle Detection (2018 Day 12)
+
+When the actual state shifts but the pattern remains constant (e.g., plants growing rightward):
+
+```elixir
+def detect_stable_offset(initial_state, rules, target) do
+  find_stable_offset(initial_state, rules, 0, 0, [])
+end
+
+defp find_stable_offset(state, rules, generation, prev_sum, offset_history) do
+  new_state = evolve(state, rules)
+  new_sum = calculate_sum(new_state)
+  offset = new_sum - prev_sum
+  
+  # Track last N offsets to ensure stability
+  new_history = [offset | offset_history] |> Enum.take(10)
+  
+  # Check if we have N consecutive generations with identical offset
+  if length(new_history) == 10 and Enum.uniq(new_history) == [offset] do
+    {generation + 1, new_sum, offset}
+  else
+    find_stable_offset(new_state, rules, generation + 1, new_sum, new_history)
+  end
+end
+
+# Use the detected pattern
+def solve_large_iteration(initial, rules, target) do
+  {stable_gen, sum_at_stable, offset} = detect_stable_offset(initial, rules, target)
+  
+  remaining_generations = target - stable_gen
+  final_sum = sum_at_stable + remaining_generations * offset
+  
+  final_sum
+end
+```
+
+**Key Insight**: When state doesn't repeat exactly but the *difference* (offset) becomes constant, you can extrapolate linearly.
+
+**When to Use**:
+- State grows/shifts in one direction
+- Pattern stabilizes to consistent growth rate
+- Sum/count increases by fixed amount each iteration
+- After enough iterations, randomness settles into deterministic growth
+
+**Verification**: Track 5-10 consecutive identical offsets to ensure pattern is truly stable (not just temporary).
+
 ## Choosing Algorithm
 - **Hash Table (Cache)**: Simplest, works for any cycle
 - **Floyd's**: No extra space, but slower
 - **Brent's**: Faster than Floyd's, still O(1) space
 - **Pattern Matching**: When cycle is in sequence of values
+- **Offset Detection**: When state shifts but pattern stabilizes
 
 ## Common Pitfalls
 - Forgetting to handle case where target < cycle start
 - Not normalizing state (equivalent states with different representations)
 - Cache key too large (slow comparisons)
 - Off-by-one errors in skip calculation
+- **Detecting stability too early** - check multiple consecutive iterations
+- Assuming offset is stable after just 1-2 matches (use 5-10 confirmations)

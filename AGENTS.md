@@ -4,6 +4,19 @@
 
 This is an Advent of Code workspace using Elixir with the `advent_of_code_utils` library for input fetching and boilerplate generation. The project uses `mise` for managing Elixir and Erlang versions.
 
+## Solution Requirements
+
+When solving Advent of Code problems, **ALWAYS** follow these requirements:
+
+### For Each Day Solved (Single or Batch):
+1. **Implement examples as doctests**: Extract examples from the puzzle description and implement them as doctests in the solution file
+2. **Verify with tests**: Run `mix test test/YYYY/DD_test.exs` to ensure all doctests pass for both parts
+3. **Document learnings**: After solving, save any reusable patterns, algorithms, or important insights to:
+   - `AGENTS.md` (for tips, common patterns, and gotchas specific to this project)
+   - `toolbox/` folder (for general algorithm implementations and comprehensive guides)
+
+These requirements apply whether solving a single day or multiple days in the same session.
+
 ## About Advent of Code
 
 Advent of Code is an Advent calendar of small programming puzzles for a variety of skill levels that can be solved in any programming language. Puzzles are released daily during December, unlocking at midnight EST (UTC-5). Each puzzle has two parts, with the second part unlocking after completing the first.
@@ -244,6 +257,12 @@ end)
   - **Self-modifying code:** When instructions can change (like `tgl` in 2016 Day 23), store as mutable map
   - **Optimization patterns:** Detect common loops (e.g., multiplication via nested inc/dec) and replace with direct calculation
   - **Output tracking:** For programs with output instructions, collect output in accumulator and detect patterns
+- **Reverse-engineering opcodes (2018 Day 16):**
+  - Build constraint sets: for each opcode number, find all possible matching operations
+  - Use intersection to narrow possibilities across multiple samples
+  - Iterative constraint satisfaction: find opcodes with single possibility, assign them, remove from other sets
+  - Continue until all mappings resolved
+  - Pattern applies to any problem where you need to determine mappings from observations
 - **String scrambling with reversible operations:**
   - Some operations are self-inverse (swap, reverse) - same in both directions
   - For complex operations (rotate based on position), compute inverse or brute-force search all possibilities
@@ -295,6 +314,122 @@ end)
   - Track used components by removing from available set
   - Base case: no matching components for current port
   - Part 2 often asks for longest instead of strongest
+- **Grid power/sum optimization (2018 Day 11):**
+  - Use summed area table for O(1) rectangle sum queries
+  - Preprocessing: O(N²), each query: O(1)
+  - Critical for finding optimal squares of variable size
+  - See [Grid Operations - Summed Area Table](toolbox/grid_operations.md)
+- **Turn-based simulation with collision (2018 Day 13):**
+  - Sort entities by position (top-to-bottom, left-to-right) each tick
+  - Process one entity at a time, checking collisions with both processed and unprocessed
+  - Each entity can carry internal state (e.g., turn counter)
+  - See [Simulation - Turn-Based with Ordering](toolbox/simulation.md)
+- **Combat simulation with movement and targeting (2018 Day 15):**
+  - Units take turns in reading order (top-to-bottom, left-to-right by starting position)
+  - Each turn: identify targets → move toward nearest → attack if in range
+  - **Critical pathfinding bug**: Remove moving unit from units map during pathfinding!
+    - Otherwise unit's current position blocks adjacent square exploration
+    - Use `units_without_self = Map.delete(units, current_pos)` for BFS
+  - **Movement algorithm**: BFS from TARGET backward, then pick adjacent cell with min distance
+  - **Reading order tiebreaking**: For equidistant targets/moves, choose first in reading order
+  - **Early termination for optimization**: In part 2, stop combat immediately when condition fails (e.g., elf dies)
+  - Combat ends when a unit finds no targets during its turn (not at round end)
+  - See [Simulation - Combat Systems](toolbox/simulation.md)
+- **Reverse-engineering opcodes (2018 Day 16):**
+  - Build constraint sets: for each opcode number, find all possible matching operations
+  - Use intersection to narrow possibilities across multiple samples
+  - Iterative constraint satisfaction: find opcodes with single possibility, assign them, remove from other sets
+  - Continue until all mappings resolved
+  - Pattern applies to any problem where you need to determine mappings from observations
+- **Water flow simulation (2018 Day 17):**
+  - Recursive flood-fill with two water states: flowing (|) and settled (~)
+  - Water flows down when possible, spreads horizontally when blocked
+  - Key insight: separate flow-down from spread-horizontally logic
+  - When spreading: find left/right extent, check if bounded on both sides
+  - If bounded: water settles (~), otherwise: water flows (|) and continues down from unbounded edges
+  - **CRITICAL: Water rises!** When water settles in a row, check the row above - if positions there are flowing and now have support, fill them too
+    - This creates cascading effect where containers fill layer by layer from bottom up
+    - Without this, you'll massively undercount (e.g., 3369 vs 41027)
+  - Important: mark flowing water at current position before recursing down from edges
+  - Count only water tiles within min_y to max_y range
+  - Part 2 counts only settled water (~), not flowing (|)
+- **Cellular automaton with cycle detection (2018 Day 18):**
+  - Classic Game of Life variant: each cell transforms based on 8-neighbor counts
+  - Simultaneous updates: use current state to compute next state for all cells
+  - Rules: open → trees (3+ tree neighbors), trees → lumber (3+ lumber neighbors), lumber → open (unless ≥1 lumber AND ≥1 tree neighbor)
+  - Part 2 requires huge iteration count (1 billion): use cycle detection
+  - Track seen states with serialized grid as key
+  - Once cycle found: `offset = rem(target - cycle_start, cycle_length)`
+  - Return state at `cycle_start + offset`
+  - See [Cycle Detection](toolbox/cycle_detection.md) for full pattern
+- **VM with instruction pointer binding (2018 Day 19):**
+  - Extends basic VM by binding instruction pointer to a register
+  - **Execution model:** Write IP to bound register before each instruction, read it back after
+  - Allows program to manipulate control flow (jumps, loops) via register operations
+  - **Part 2 pattern recognition:** Program may implement known algorithm (e.g., sum of divisors)
+  - Run limited iterations to identify target values, then apply mathematical formula
+  - Example: If program computes sum of divisors, run ~100 iterations to find target number, then use `divisors(n) |> Enum.sum()`
+  - Reuse opcode implementations from Day 16 (16 opcodes: addr, addi, mulr, muli, etc.)
+  - See [Interpreter Patterns](toolbox/interpreter_patterns.md) for VM implementation details
+- **Regex-based pathfinding (2018 Day 20):**
+  - Parse regex-like direction strings with branches: `^N(E|W)S$` means north, then (east OR west), then south
+  - **Recursive parsing with position tracking:** Each branch option starts from same positions, ends at potentially different positions
+  - Track all possible positions after each segment (list of positions)
+  - Branches `(A|B|C)` mean explore all alternatives from current positions
+  - Empty branch `(NEWS|)` means can skip those directions (stay at current positions)
+  - **Door representation:** Store doors as half-coordinates between rooms: `{(x1+x2)/2, (y1+y2)/2}`
+  - After parsing, use BFS from origin to find distances to all rooms
+  - Part 2: Count rooms beyond threshold distance
+  - See [Parsing Patterns](toolbox/parsing.md) for recursive descent parsing
+- **VM program analysis for halt conditions (2018 Day 21):**
+  - Problem: Find register 0 value that causes program to halt with fewest/most instructions
+  - Program contains equality check between register 0 and another register
+  - **Part 1:** Run VM until first time the halt check is reached, return the comparison value
+  - **Part 2:** Find last unique value before cycle repeats (longest execution before cycle)
+  - **Optimization critical:** Direct implementation of program logic is 1000x faster than VM simulation
+  - Reverse-engineer the assembly code to native Elixir for cycle detection
+  - Use MapSet to track seen values and detect when cycle begins
+  - Pattern: Programs with halt checks often generate sequence of values that eventually cycle
+- **Dijkstra with state constraints (2018 Day 22):**
+  - Cave system with region types (rocky, wet, narrow) determined by geologic index
+  - **Geologic index calculation:** Depends on depth and erosion levels of adjacent cells
+  - Compute erosion map row-by-row since each cell depends on left and above neighbors
+  - **Part 2 pathfinding:** State is `{position, tool}` not just position
+  - Three tools (torch, climbing_gear, neither) with region-specific validity
+  - Moving costs 1 minute, switching tools costs 7 minutes
+  - Dijkstra with priority queue (Heap library): pop minimum cost state, explore neighbors
+  - **Key insight:** Need to extend map beyond target for optimal paths (target + 100 works well)
+  - Rocky regions allow climbing_gear or torch; wet allows climbing_gear or neither; narrow allows torch or neither
+- **3D optimization with octree search (2018 Day 23):**
+  - Problem: Find position in range of most nanobots (3D spheres with Manhattan distance)
+  - Part 1 simple: find strongest nanobot, count how many are in its range
+  - Part 2 complex: find position in range of most nanobots, tie-break by distance to origin
+  - **Octree subdivision approach:** Start with large cube, subdivide into 8 smaller cubes
+  - Priority queue: `{-count, distance, region}` - maximize count, minimize distance
+  - For each region, count nanobots that can reach it (distance from nanobot to closest point in cube ≤ radius)
+  - Subdivide promising regions until reaching single points
+  - Use power-of-2 sizes for clean subdivision, center initial cube around origin
+  - **Distance to cube:** For each axis, if point outside cube, add distance to nearest edge; otherwise 0
+- **Combat simulation with boosts (2018 Day 24):**
+  - Two armies with multiple groups: immune system vs infection
+  - Each group: units, HP, attack damage/type, initiative, weaknesses, immunities
+  - **Combat phases:** Target selection (by effective power, then initiative) → Attack (by initiative)
+  - **Damage calculation:** Base = attacker's effective power (units × attack damage), then 2× if weak, 0× if immune
+  - **Parsing complexity:** Groups have optional modifiers in parentheses: "(weak to X, Y; immune to Z)"
+  - Use regex with capture groups, join multi-line descriptions before parsing
+  - Pattern: `~r/(\d+ units each.*?initiative \d+)/` to split concatenated group descriptions
+  - **Part 2:** Binary search for minimum boost to immune system that lets them win
+  - Boost applies to all immune system groups' attack damage
+  - Watch for stalemates: if no units killed in a round, battle is stuck (return draw)
+  - **Critical bug:** Check `Enum.all?(final_groups, &(&1.army == :immune))` not just `Enum.any?` - stalemates leave both armies with groups
+  - See [Simulation - Combat Systems](toolbox/simulation.md)
+- **4D constellation finding (2018 Day 25):**
+  - Find connected components in 4D space where points within Manhattan distance 3 are connected
+  - Manhattan distance in 4D: `abs(x1 - x2) + abs(y1 - y2) + abs(z1 - z2) + abs(w1 - w2)`
+  - Build adjacency graph: for each point, find all points within distance 3
+  - Count components using DFS/BFS with visited tracking
+  - Classic union-find or connected components problem
+  - Day 25 typically has no Part 2 - just return "Merry Christmas!"
 
 > **💡 For comprehensive algorithm patterns, see the [Toolbox](toolbox/README.md) - it contains detailed guides for all these patterns and more.**
 
@@ -326,6 +461,16 @@ end)
 - Use `Stream` for lazy evaluation when appropriate
 - Cache/memoize expensive recursive computations
 - **Sieve algorithms:** Each number marks its multiples - very efficient for divisor problems
+- **Avoid `list ++ list` for growing sequences:**
+  - List concatenation is O(n) - extremely slow for large lists
+  - Use ETS for efficient random access: O(1) insert/lookup by index
+  - Example: 2018 Day 14 timed out with lists, succeeded with ETS
+  - See [Elixir Idioms - Performance Tips](toolbox/elixir_idioms.md)
+- **Cycle detection for huge iterations:**
+  - For exactly repeating states: Use hash map to detect cycle
+  - For stable growth patterns: Track 5-10 consecutive identical offsets
+  - Don't assume pattern is stable after just 1-2 matches
+  - See [Cycle Detection - Offset Pattern](toolbox/cycle_detection.md)
 
 ### 5. Running Tests
 
@@ -350,6 +495,8 @@ mix aoc.get --no-example
 **Note:** The session cookie is required for fetching puzzle inputs and is loaded from the `.env` file via `config/config.exs`. Make sure the `AOC_TOKEN` environment variable is set in `.env`.
 
 ### 7. Working with Part 2
+
+**⚠️ CRITICAL:** Part 2 cannot be fetched until Part 1 has been correctly submitted and accepted. The website will not show Part 2 content until you've completed Part 1.
 
 After submitting Part 1, Part 2 becomes available. To fetch Part 2 content:
 
@@ -445,6 +592,32 @@ defp bfs(queue, visited, goal) do
         bfs(new_queue, new_visited, goal)
       end
     {:empty, _} -> nil
+  end
+end
+
+# BFS backward (from target) for pathfinding - useful when you need to find
+# the best first step toward a target from a starting position
+defp bfs_from_target(grid, units, target) do
+  queue = :queue.from_list([{target, 0}])
+  distances = %{target => 0}
+  
+  bfs_distances(queue, distances, grid, units)
+end
+
+defp bfs_distances(queue, distances, grid, units) do
+  case :queue.out(queue) do
+    {:empty, _} -> distances
+    {{:value, {pos, dist}}, new_queue} ->
+      adjacent = get_adjacent(pos)
+      {updated_queue, updated_distances} =
+        adjacent
+        |> Enum.filter(&is_open?(grid, units, &1))
+        |> Enum.reject(&Map.has_key?(distances, &1))
+        |> Enum.reduce({new_queue, distances}, fn p, {q, d} ->
+          {:queue.in({p, dist + 1}, q), Map.put(d, p, dist + 1)}
+        end)
+      
+      bfs_distances(updated_queue, updated_distances, grid, units)
   end
 end
 

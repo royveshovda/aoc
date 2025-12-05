@@ -415,3 +415,67 @@ data = %{name: "Alice", age: 30}
 - Use `Stream` for large datasets to avoid building intermediate lists
 - Pattern matching is often faster than conditionals
 - `Enum.chunk_every` with `:discard` avoids keeping extra data
+- **Avoid `++` on large lists**: List concatenation is O(n) for left list
+  - For frequent appends, use ETS or other data structures
+  - Example: 2018 Day 14 requires ETS for efficient random access
+- **ETS for Mutable State**: When you need fast random access and mutations
+  - Use `:ets.new(:name, [:set, :public, :named_table])`
+  - O(1) insert and lookup by key
+  - Remember to `:ets.delete(:name)` when done
+  - Example: Growing sequences where you need to access by index
+
+### ETS Pattern for Growing Sequences (2018 Day 14)
+
+When building large sequences with frequent random access:
+
+```elixir
+# Bad: O(n²) due to list concatenation
+defp build_list(list, count, target) when count >= target do
+  list
+end
+
+defp build_list(list, count, target) do
+  new_value = calculate_next(list, count)
+  build_list(list ++ [new_value], count + 1, target)  # O(n) append!
+end
+
+# Good: O(n) with ETS
+defp build_with_ets(count, target) do
+  :ets.new(:data, [:set, :public, :named_table])
+  :ets.insert(:data, {0, initial_value})
+  
+  generate_ets(1, target)
+  
+  # Extract results
+  result = for i <- 0..(target - 1) do
+    [{_, value}] = :ets.lookup(:data, i)
+    value
+  end
+  
+  :ets.delete(:data)
+  result
+end
+
+defp generate_ets(count, target) when count >= target, do: :ok
+
+defp generate_ets(count, target) do
+  # O(1) lookup by index
+  [{_, prev}] = :ets.lookup(:data, count - 1)
+  new_value = calculate_next(prev)
+  
+  # O(1) insert
+  :ets.insert(:data, {count, new_value})
+  generate_ets(count + 1, target)
+end
+```
+
+**When to Use:**
+- Building sequences of 100,000+ elements
+- Need random access by index during generation
+- Can't use simple recursion with accumulator
+- List operations are timing out
+
+**Alternatives:**
+- Use `:array` module (from Erlang) for indexed access
+- Build list in reverse, then reverse at end (if only appending)
+- Use map with integer keys: `%{0 => val, 1 => val, ...}`

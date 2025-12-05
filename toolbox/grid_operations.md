@@ -655,9 +655,95 @@ end
 
 **Pattern**: At `+` junctions, try perpendicular directions to find the continuing path.
 
+## Summed Area Table (Integral Image) - 2018 Day 11
+
+For efficiently calculating sum of any rectangle in O(1) time after O(N) preprocessing.
+
+**Problem**: Find square of any size with maximum sum in large grid (e.g., 300×300).
+
+**Naive Approach**: O(N² × M²) - for each position, calculate sum of each size square
+**Optimized**: O(N²) preprocessing + O(1) per query using summed area table
+
+```elixir
+# Build summed area table: SAT[x,y] = sum of all cells from (1,1) to (x,y)
+def build_summed_area_table(grid) do
+  # Assuming grid is Map with {x, y} => value, where x,y start at 1
+  {max_x, max_y} = get_grid_bounds(grid)
+  
+  for x <- 1..max_x, y <- 1..max_y, reduce: %{} do
+    sat ->
+      value = Map.get(grid, {x, y}, 0)
+      above = Map.get(sat, {x, y - 1}, 0)
+      left = Map.get(sat, {x - 1, y}, 0)
+      diagonal = Map.get(sat, {x - 1, y - 1}, 0)
+      
+      # Inclusion-exclusion principle
+      Map.put(sat, {x, y}, value + above + left - diagonal)
+  end
+end
+
+# Query sum of rectangle from (x1, y1) to (x2, y2) in O(1)
+def rectangle_sum(sat, x1, y1, x2, y2) do
+  total = Map.get(sat, {x2, y2}, 0)
+  above = Map.get(sat, {x2, y1 - 1}, 0)
+  left = Map.get(sat, {x1 - 1, y2}, 0)
+  diagonal = Map.get(sat, {x1 - 1, y1 - 1}, 0)
+  
+  total - above - left + diagonal
+end
+
+# Calculate sum of size×size square starting at (x, y)
+def square_sum(sat, x, y, size) do
+  rectangle_sum(sat, x, y, x + size - 1, y + size - 1)
+end
+
+# Example: Find best square of any size
+def find_best_square(grid, max_size) do
+  sat = build_summed_area_table(grid)
+  {max_x, max_y} = get_grid_bounds(grid)
+  
+  for size <- 1..max_size,
+      x <- 1..(max_x - size + 1),
+      y <- 1..(max_y - size + 1) do
+    sum = square_sum(sat, x, y, size)
+    {x, y, size, sum}
+  end
+  |> Enum.max_by(fn {_x, _y, _size, sum} -> sum end)
+end
+```
+
+**Visualization** of SAT calculation:
+```
+Grid:      SAT:
+1 2 3      1  3  6
+4 5 6      5 12 21
+7 8 9     12 27 45
+```
+
+**Formula**: `SAT[x,y] = Grid[x,y] + SAT[x-1,y] + SAT[x,y-1] - SAT[x-1,y-1]`
+
+**Rectangle Sum Formula**:
+```
+Sum = SAT[x2,y2] - SAT[x2,y1-1] - SAT[x1-1,y2] + SAT[x1-1,y1-1]
+```
+
+**When to Use**:
+- Many rectangle/square sum queries on same grid
+- Finding optimal rectangle/square by size
+- 2D range sum queries
+- Computing multiple overlapping areas
+
+**Performance**:
+- Preprocessing: O(N × M) for grid of size N×M
+- Each query: O(1)
+- Total for all queries: O(N × M) + O(Q) instead of O(N × M × Q)
+
+**Alternative Names**: Integral Image (computer vision), Prefix Sum 2D
+
 ## Common Grid Algorithms
 - **Flood Fill**: DFS/BFS to find connected regions
 - **Pathfinding**: BFS for shortest path, Dijkstra/A* for weighted
 - **Pattern Matching**: Find specific shapes or arrangements
 - **Cellular Automaton**: Update all cells based on neighbor states
 - **Ray Casting**: Shoot rays to detect intersections (2023 Day 10)
+- **Summed Area Table**: O(1) rectangle sum queries after O(N²) preprocessing
