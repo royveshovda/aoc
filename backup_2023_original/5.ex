@@ -138,17 +138,17 @@ aoc 2023, 5 do
     end
 
     # Binary search to find the correct transform for a key in a stage
-    def lookup(stage, seed), do: lookup(stage, seed, 0, tuple_size(stage) - 1)
+    def lookup(stage, seed), do: lookup(stage, seed, 0, Arrays.size(stage) - 1)
     def lookup(stage, {seed_low, seed_len}, l, r) do
       if l > r do
         {seed_low, seed_low, seed_len}
       else
         m = div(l + r, 2)
-        {src, _, stage_len} = elem(stage, m)
+        {src, _, stage_len} = stage[m]
         cond do
           src + stage_len <= seed_low -> lookup(stage, {seed_low, seed_len}, m + 1, r)
           src > seed_low -> lookup(stage, {seed_low, seed_len}, l, m - 1)
-          true -> elem(stage, m)
+          true -> stage[m]
         end
       end
     end
@@ -178,7 +178,7 @@ aoc 2023, 5 do
       |> Enum.sort(fn {s1, _, _}, {s2, _, _} -> s1 <= s2 end)
       |> fill_stage
       |> Enum.reverse
-      |> List.to_tuple()
+      |> Enum.into(Arrays.new())
       |> then(fn arr -> {arr, data} end)
     end
 

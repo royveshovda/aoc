@@ -25,7 +25,7 @@ aoc 2023, 12 do
 
   def parse(input) do
     input
-    |> String.split("\n", trim: true)
+    |> String.split("\n")
     |> Enum.map(&parse_line/1)
   end
 

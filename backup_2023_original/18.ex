@@ -75,7 +75,7 @@ aoc 2023, 18 do
 
   def parse_input_p1(input) do
     input
-    |> String.split("\n", trim: true)
+    |> String.split("\n")
     |> Enum.map(&String.split(&1, " "))
     |> Enum.map(&parse_line_p1/1)
   end
@@ -86,7 +86,7 @@ aoc 2023, 18 do
 
   def parse_input_p2(input) do
     input
-    |> String.split("\n", trim: true)
+    |> String.split("\n")
     |> Enum.map(&String.split(&1, " "))
     |> Enum.map(&parse_line_p2/1)
   end

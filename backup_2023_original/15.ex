@@ -100,7 +100,6 @@ aoc 2023, 15 do
 
   def parse(input) do
     input
-    |> String.trim()
     |> String.split(",")
   end
 end

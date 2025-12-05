@@ -48,7 +48,7 @@ aoc 2023, 9 do
 
   def parse(input) do
     input
-    |> String.split("\n", trim: true)
+    |> String.split("\n")
     |> Enum.map(fn x -> String.split(x, " ") end)
     |> Enum.map(fn l -> Enum.map(l, fn x -> String.to_integer(x) end) end)
   end

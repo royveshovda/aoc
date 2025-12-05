@@ -59,7 +59,7 @@ aoc 2023, 21 do
       #123
 
       iex> p2(input_string())
-      630129824772393
+      123
   """
   def p2(input) do
     {start, rocks, size} = input |> parse() |> add_negative_rocks()
