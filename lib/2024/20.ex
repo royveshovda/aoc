@@ -8,8 +8,7 @@ aoc 2024, 20 do
   P1: 2-step cheats saving ≥100 picoseconds.
   P2: 20-step cheats saving ≥100 picoseconds.
 
-  For each pair of track positions, if Manhattan distance ≤ cheat_len
-  and time saved ≥ 100, count it.
+  Optimized: precompute search area offsets, use path list for O(1) index access.
   """
 
   def p1(input) do
@@ -22,32 +21,43 @@ aoc 2024, 20 do
 
   defp solve(input, max_cheat, min_save) do
     {grid, start, goal} = parse(input)
-    # Get distances from start to all positions
-    dist_from_start = bfs(start, grid)
-    # Get distances from goal to all positions
-    dist_from_goal = bfs(goal, grid)
-    normal_dist = Map.get(dist_from_start, goal)
+    # Build path as list from start to goal with distances
+    path = build_path(start, goal, grid)
+    path_map = Map.new(path)
 
-    # Find all valid cheats
-    track_positions = Map.keys(dist_from_start)
+    # Precompute search area offsets
+    area = search_area(max_cheat)
 
-    track_positions
-    |> Enum.flat_map(fn pos1 ->
-      dist1 = Map.get(dist_from_start, pos1)
+    # For each position on path, check cheats using offsets
+    path
+    |> Enum.reduce(0, fn {{x, y}, time}, count ->
+      area
+      |> Enum.reduce(count, fn {{dx, dy}, cheat_dist}, acc ->
+        target = {x + dx, y + dy}
 
-      track_positions
-      |> Enum.filter(fn pos2 ->
-        manhattan(pos1, pos2) <= max_cheat
-      end)
-      |> Enum.map(fn pos2 ->
-        cheat_dist = manhattan(pos1, pos2)
-        dist2 = Map.get(dist_from_goal, pos2)
-        total = dist1 + cheat_dist + dist2
-        savings = normal_dist - total
-        {pos1, pos2, savings}
+        case Map.get(path_map, target) do
+          nil ->
+            acc
+
+          target_time ->
+            savings = target_time - time - cheat_dist
+
+            if savings >= min_save do
+              acc + 1
+            else
+              acc
+            end
+        end
       end)
     end)
-    |> Enum.count(fn {_p1, _p2, savings} -> savings >= min_save end)
+  end
+
+  defp search_area(n) do
+    for dx <- -n..n,
+        dy <- -n..n,
+        dist = abs(dx) + abs(dy),
+        dist > 0 and dist <= n,
+        do: {{dx, dy}, dist}
   end
 
   defp parse(input) do
@@ -75,31 +85,27 @@ aoc 2024, 20 do
     {grid, start, goal}
   end
 
-  defp bfs(start, grid) do
-    queue = :queue.from_list([{start, 0}])
-    do_bfs(queue, grid, %{start => 0})
+  # Build path from start to goal as list of {pos, time}
+  defp build_path(start, goal, grid) do
+    do_build_path(start, goal, grid, MapSet.new(), 0, [])
   end
 
-  defp do_bfs(queue, grid, distances) do
-    case :queue.out(queue) do
-      {:empty, _} ->
-        distances
+  defp do_build_path(pos, goal, grid, visited, time, path) do
+    path = [{pos, time} | path]
 
-      {{:value, {{x, y}, dist}}, queue} ->
-        neighbors = [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+    if pos == goal do
+      Enum.reverse(path)
+    else
+      visited = MapSet.put(visited, pos)
+      {x, y} = pos
 
-        {queue, distances} =
-          Enum.reduce(neighbors, {queue, distances}, fn next, {q, d} ->
-            if Map.has_key?(grid, next) and not Map.has_key?(d, next) do
-              {:queue.in({next, dist + 1}, q), Map.put(d, next, dist + 1)}
-            else
-              {q, d}
-            end
-          end)
+      next =
+        [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+        |> Enum.find(fn p ->
+          Map.has_key?(grid, p) and not MapSet.member?(visited, p)
+        end)
 
-        do_bfs(queue, grid, distances)
+      do_build_path(next, goal, grid, visited, time + 1, path)
     end
   end
-
-  defp manhattan({x1, y1}, {x2, y2}), do: abs(x1 - x2) + abs(y1 - y2)
 end

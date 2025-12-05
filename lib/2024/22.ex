@@ -1,11 +1,12 @@
 import AOC
-use Bitwise
+import Bitwise
 
 aoc 2024, 22 do
   @moduledoc """
   https://adventofcode.com/2024/day/22
 
   Monkey Market - PRNG simulation and finding best price sequence.
+  Optimized with parallel Task.async and on-the-fly pattern building.
   """
 
   def p1(input) do
@@ -16,10 +17,20 @@ aoc 2024, 22 do
   end
 
   def p2(input) do
-    input
-    |> parse()
-    |> Enum.map(&price_sequences/1)
-    |> merge_sequences()
+    seeds = parse(input)
+
+    # Process buyers in parallel
+    tasks = Enum.map(seeds, fn seed ->
+      Task.async(fn -> price_sequences_optimized(seed) end)
+    end)
+
+    buyer_maps = Enum.map(tasks, &Task.await/1)
+
+    # Merge all buyer maps
+    buyer_maps
+    |> Enum.reduce(%{}, fn map, acc ->
+      Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
+    end)
     |> Map.values()
     |> Enum.max()
   end
@@ -31,43 +42,39 @@ aoc 2024, 22 do
   end
 
   defp next_secret(s) do
-    s = mix_prune(s, s * 64)
-    s = mix_prune(s, div(s, 32))
-    mix_prune(s, s * 2048)
+    s = bxor(s, s * 64) |> rem(16_777_216)
+    s = bxor(s, div(s, 32)) |> rem(16_777_216)
+    bxor(s, s * 2048) |> rem(16_777_216)
   end
-
-  defp mix_prune(s, val), do: bxor(s, val) |> rem(16_777_216)
 
   defp nth_secret(s, 0), do: s
   defp nth_secret(s, n), do: nth_secret(next_secret(s), n - 1)
 
-  defp price_sequences(seed) do
-    # Generate 2001 prices (0 to 2000)
-    prices =
-      Stream.iterate(seed, &next_secret/1)
-      |> Enum.take(2001)
-      |> Enum.map(&rem(&1, 10))
-
-    # Compute changes
-    changes =
-      prices
-      |> Enum.chunk_every(2, 1, :discard)
-      |> Enum.map(fn [a, b] -> b - a end)
-
-    # Map each 4-change sequence to first price it leads to
-    changes
-    |> Enum.chunk_every(4, 1, :discard)
-    |> Enum.with_index(4)  # price index is 4 after start
-    |> Enum.reduce(%{}, fn {seq, idx}, acc ->
-      key = List.to_tuple(seq)
-      # Only keep first occurrence
-      Map.put_new(acc, key, Enum.at(prices, idx))
-    end)
+  # On-the-fly pattern building - more memory efficient
+  defp price_sequences_optimized(seed) do
+    do_price_sequences(seed, rem(seed, 10), [], %{}, 2000)
   end
 
-  defp merge_sequences(seq_maps) do
-    Enum.reduce(seq_maps, %{}, fn map, acc ->
-      Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
-    end)
+  defp do_price_sequences(_secret, _last_price, _changes, pattern_map, 0), do: pattern_map
+
+  defp do_price_sequences(secret, last_price, changes, pattern_map, steps) do
+    new_secret = next_secret(secret)
+    new_price = rem(new_secret, 10)
+    change = new_price - last_price
+
+    # Keep last 4 changes (as a list, newest first for efficiency)
+    changes = [change | Enum.take(changes, 3)]
+
+    pattern_map =
+      if length(changes) == 4 do
+        # Build pattern tuple (oldest to newest)
+        pattern = changes |> Enum.reverse() |> List.to_tuple()
+        # Only record first occurrence
+        Map.put_new(pattern_map, pattern, new_price)
+      else
+        pattern_map
+      end
+
+    do_price_sequences(new_secret, new_price, changes, pattern_map, steps - 1)
   end
 end
