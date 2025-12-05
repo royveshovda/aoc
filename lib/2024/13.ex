@@ -3,53 +3,75 @@ import AOC
 aoc 2024, 13 do
   @moduledoc """
   https://adventofcode.com/2024/day/13
+
+  Claw Contraption - solve linear system:
+  a * ax + b * bx = px
+  a * ay + b * by = py
+  Cost = 3a + b, find minimum cost or no solution.
+  Use Cramer's rule for exact integer solution.
   """
 
   def p1(input) do
     input
-    |> String.split("\n\n", trim: true)
-    |> Enum.map(&String.split(&1, "\n", trim: true))
-    |> Enum.map(fn [a, b, p] -> {parse_button(a), parse_button(b), parse_price(p)} end)
+    |> parse()
     |> Enum.map(&solve/1)
-    |> Enum.map(fn {a, b} -> 3 * a + b end)
     |> Enum.sum()
-
-  end
-
-  def solve({{x1, y1}, {x2, y2}, {prize_x, prize_y}}) do
-    a = (prize_x * y2 - prize_y * x2) / (x1 * y2 - y1 * x2)
-    b = (prize_y * x1 - prize_x * y1) / (x1 * y2 - y1 * x2)
-
-    if a == trunc(a) and b == trunc(b) do
-      {trunc(a), trunc(b)}
-    else
-      {0, 0}
-    end
-  end
-
-  def parse_button(button) do
-    [_, _, x, _, y] = String.split(button, ["+", ",", ":"], trim: true)
-    x = String.to_integer(x)
-    y = String.to_integer(y)
-    {x, y}
-  end
-
-  def parse_price(price) do
-    [_, _, target_x, _, target_y] = String.split(price, ["=", ",", ":"], trim: true)
-    target_x = String.to_integer(target_x)
-    target_y = String.to_integer(target_y)
-    {target_x, target_y}
   end
 
   def p2(input) do
-    add = 10_000_000_000_000
+    offset = 10_000_000_000_000
+
+    input
+    |> parse()
+    |> Enum.map(fn {{ax, ay}, {bx, by}, {px, py}} ->
+      {{ax, ay}, {bx, by}, {px + offset, py + offset}}
+    end)
+    |> Enum.map(&solve/1)
+    |> Enum.sum()
+  end
+
+  defp parse(input) do
     input
     |> String.split("\n\n", trim: true)
-    |> Enum.map(&String.split(&1, "\n", trim: true))
-    |> Enum.map(fn [a, b, p] -> {parse_button(a), parse_button(b), parse_price(p)} end)
-    |> Enum.map(fn {a, b, {p_x, p_y}} -> {a, b, {(p_x + add), (p_y + add)}} end)
-    |> Enum.map(&solve/1)
-    |> Enum.map(fn {a, b} -> 3 * a + b end)
-    |> Enum.sum()
+    |> Enum.map(&parse_machine/1)
+  end
+
+  defp parse_machine(block) do
+    nums =
+      Regex.scan(~r/\d+/, block)
+      |> List.flatten()
+      |> Enum.map(&String.to_integer/1)
+
+    [ax, ay, bx, by, px, py] = nums
+    {{ax, ay}, {bx, by}, {px, py}}
+  end
+
+  # Solve using Cramer's rule
+  # ax * a + bx * b = px
+  # ay * a + by * b = py
+  defp solve({{ax, ay}, {bx, by}, {px, py}}) do
+    det = ax * by - ay * bx
+
+    if det == 0 do
+      0  # No unique solution
+    else
+      # a = (px * by - py * bx) / det
+      # b = (ax * py - ay * px) / det
+      a_num = px * by - py * bx
+      b_num = ax * py - ay * px
+
+      if rem(a_num, det) == 0 and rem(b_num, det) == 0 do
+        a = div(a_num, det)
+        b = div(b_num, det)
+
+        if a >= 0 and b >= 0 do
+          3 * a + b
+        else
+          0
+        end
+      else
+        0
+      end
+    end
   end
 end

@@ -3,99 +3,83 @@ import AOC
 aoc 2024, 18 do
   @moduledoc """
   https://adventofcode.com/2024/day/18
+
+  RAM Run - grid with falling corrupted bytes.
+  P1: BFS shortest path after N bytes fall.
+  P2: Binary search to find first byte that blocks the path.
   """
 
-  def p1({input, read_length, size}) do
-    # def part1(input, max \\ 70, n \\ 1024) do
-    grid = parse(input)
-    |> Enum.take(read_length)
-    |> MapSet.new
-    grid = {grid, 0..size}
-    start = {0, 0}
-    goal = {size, size}
-    q = q_new({0, start})
-    seen = MapSet.new([start])
-    walk(q, goal, grid, seen)
+  def p1({input, num_bytes, size}) do
+    bytes = parse(input)
+    blocked = bytes |> Enum.take(num_bytes) |> MapSet.new()
+    bfs({0, 0}, {size, size}, blocked, size)
   end
 
+  def p2({input, num_bytes, size}) do
+    bytes = parse(input)
 
-  def p2({input, read_length, size}) do
-    {first, rest} = Enum.split(parse(input), read_length)
-    grid = {MapSet.new(first), 0..size}
-    start = {0, 0}
-    goal = {size, size}
-    q = q_new({0, start})
-    seen = MapSet.new([start])
-
-    pos =
-      Enum.reduce_while(rest, grid, fn next, {grid, r} ->
-        grid = {MapSet.put(grid, next), r}
-        case walk(q, goal, grid, seen) do
-          nil ->
-            {:halt, next}
-          _steps ->
-            {:cont, grid}
-        end
-      end)
-
-    {x, y} = pos
+    # Binary search for first blocking byte
+    idx = binary_search(bytes, num_bytes, length(bytes), size)
+    {x, y} = Enum.at(bytes, idx)
     "#{x},#{y}"
-  end
-
-  defp walk(q, goal, grid, seen) do
-    case q_take_smallest(q) do
-      nil ->
-        nil
-      {{steps, current}, q} ->
-        new = adjacent_squares(current)
-        |> Enum.reject(fn next ->
-          blocked?(next, grid) or MapSet.member?(seen, next)
-        end)
-        if Enum.member?(new, goal) do
-          steps + 1
-        else
-          seen = MapSet.union(seen, MapSet.new(new))
-          q = Enum.reduce(new, q, fn next, q ->
-            q_put(q, {steps + 1, next})
-          end)
-          walk(q, goal, grid, seen)
-        end
-    end
-  end
-
-  defp q_new(e) do
-    :queue.from_list([e])
-  end
-
-  defp q_put(q, e) do
-    :queue.in(e, q)
-  end
-
-  defp q_take_smallest(q) do
-    case :queue.is_empty(q) do
-      true ->
-        nil
-      false ->
-        {:queue.get(q), :queue.drop(q)}
-    end
-  end
-
-  defp blocked?({row, col}, {grid, r}) do
-    (row not in r) or (col not in r) or
-    MapSet.member?(grid, {row, col})
-  end
-
-  defp adjacent_squares({row, col}) do
-    [{row - 1, col}, {row, col - 1}, {row, col + 1}, {row + 1, col}]
   end
 
   defp parse(input) do
     input
     |> String.split("\n", trim: true)
     |> Enum.map(fn line ->
-      String.split(line, ",")
-      |> Enum.map(&String.to_integer/1)
-      |> List.to_tuple
+      [x, y] = String.split(line, ",") |> Enum.map(&String.to_integer/1)
+      {x, y}
     end)
   end
+
+  defp bfs(start, goal, blocked, size) do
+    queue = :queue.from_list([{start, 0}])
+    visited = MapSet.new([start])
+    do_bfs(queue, goal, blocked, size, visited)
+  end
+
+  defp do_bfs(queue, goal, blocked, size, visited) do
+    case :queue.out(queue) do
+      {:empty, _} ->
+        nil
+
+      {{:value, {pos, dist}}, queue} ->
+        if pos == goal do
+          dist
+        else
+          {x, y} = pos
+          neighbors = [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+
+          {queue, visited} =
+            Enum.reduce(neighbors, {queue, visited}, fn next, {q, v} ->
+              {nx, ny} = next
+
+              if nx >= 0 and nx <= size and ny >= 0 and ny <= size and
+                   not MapSet.member?(blocked, next) and not MapSet.member?(v, next) do
+                {:queue.in({next, dist + 1}, q), MapSet.put(v, next)}
+              else
+                {q, v}
+              end
+            end)
+
+          do_bfs(queue, goal, blocked, size, visited)
+        end
+    end
+  end
+
+  defp binary_search(bytes, low, high, size) when low < high do
+    mid = div(low + high, 2)
+    blocked = bytes |> Enum.take(mid + 1) |> MapSet.new()
+
+    if bfs({0, 0}, {size, size}, blocked, size) == nil do
+      # Path blocked, try fewer bytes
+      binary_search(bytes, low, mid, size)
+    else
+      # Path exists, try more bytes
+      binary_search(bytes, mid + 1, high, size)
+    end
+  end
+
+  defp binary_search(_bytes, low, _high, _size), do: low
 end

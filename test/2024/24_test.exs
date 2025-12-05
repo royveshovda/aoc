@@ -2,7 +2,7 @@ import AOC
 
 aoc_test 2024, 24, async: true do
   test "p1e" do
-    assert Y2024.D24.p1(example_string()) == 9
+    assert Y2024.D24.p1(example_string()) == 4
   end
 
   test "p1i" do

@@ -3,142 +3,121 @@ import AOC
 aoc 2024, 12 do
   @moduledoc """
   https://adventofcode.com/2024/day/12
+
+  Garden Groups - flood fill regions:
+  P1: sum of area × perimeter
+  P2: sum of area × sides (count corners = count sides)
   """
 
   def p1(input) do
-    input
-    |> Utils.Grid.input_to_map()
-    |> regions()
-    |> Enum.map(fn region -> {region, perimeter(region), area(region)} end)
-    |> Enum.map(fn {_region, perimeter, area} -> perimeter * area end)
-    |> Enum.sum()
-  end
+    grid = parse(input)
+    regions = find_regions(grid)
 
-  def area(region) do
-    MapSet.size(region)
-  end
-
-  def border_tiles(region) do
-    Enum.filter(region, fn tile ->
-      tile
-      |> neighbors()
-      |> Enum.any?(& &1 not in region)
-    end)
-  end
-
-  def perimeter(region) do
-    region
-    |> border_tiles()
-    |> Enum.map(fn tile ->
-      tile
-      |> neighbors()
-      |> Enum.count(& &1 not in region)
+    regions
+    |> Enum.map(fn region ->
+      area = MapSet.size(region)
+      perim = perimeter(region, grid)
+      area * perim
     end)
     |> Enum.sum()
-  end
-
-  defp neighbors(tile) do
-    [
-      up(tile),
-      down(tile),
-      left(tile),
-      right(tile)
-    ]
-  end
-
-  defp up({i, j}) do
-    {i - 1, j}
-  end
-
-  defp down({i, j}) do
-    {i + 1, j}
-  end
-
-  defp left({i, j}) do
-    {i, j - 1}
-  end
-
-  defp right({i, j}) do
-    {i, j + 1}
-  end
-
-  def regions(garden) do
-    garden
-    |> regions([])
-    |> Enum.map(&MapSet.new/1)
-  end
-
-  defp regions(garden, acc) when map_size(garden) == 0 do
-    acc
-  end
-
-  defp regions(garden, acc) do
-    {tile, plant} = Enum.at(garden, 0)
-    {region, garden} = dfs_region(garden, plant, tile, [])
-    regions(garden, [region | acc])
-  end
-
-  defp dfs_region(garden, plant, tile, acc) do
-    if garden[tile] == plant do
-      garden = Map.delete(garden, tile)
-      acc = [tile | acc]
-
-      for neighbor <- neighbors(tile), reduce: {acc, garden} do
-        {acc, garden} -> dfs_region(garden, plant, neighbor, acc)
-      end
-    else
-      {acc, garden}
-    end
   end
 
   def p2(input) do
-    input
-    |> Utils.Grid.input_to_map()
-    |> regions()
-    |> Enum.map(fn region -> {region, sides(region), area(region)} end)
-    |> Enum.map(fn {_region, sides, area} -> sides * area end)
+    grid = parse(input)
+    regions = find_regions(grid)
+
+    regions
+    |> Enum.map(fn region ->
+      area = MapSet.size(region)
+      sides = count_corners(region)
+      area * sides
+    end)
     |> Enum.sum()
   end
 
-  def sides(region) do
-    border_tiles =
-      region
-      |> border_tiles()
-      |> Enum.flat_map(fn tile ->
-        acc = (up(tile) in region) && [] || [{tile, :up}]
-        acc = (down(tile) in region) && acc || [{tile, :down} | acc]
-        acc = (left(tile) in region) && acc || [{tile, :left} | acc]
-        (right(tile) in region) && acc || [{tile, :right} | acc]
-      end)
-      |> MapSet.new()
-
-    count_sides(border_tiles, 0)
+  defp parse(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {row, y} ->
+      row
+      |> String.graphemes()
+      |> Enum.with_index()
+      |> Enum.map(fn {c, x} -> {{x, y}, c} end)
+    end)
+    |> Map.new()
   end
 
-  defp count_sides(border_tiles, acc) do
-    if MapSet.size(border_tiles) == 0 do
-      acc
+  defp find_regions(grid) do
+    grid
+    |> Map.keys()
+    |> Enum.reduce({[], MapSet.new()}, fn pos, {regions, visited} ->
+      if MapSet.member?(visited, pos) do
+        {regions, visited}
+      else
+        region = flood_fill(pos, grid)
+        {[region | regions], MapSet.union(visited, region)}
+      end
+    end)
+    |> elem(0)
+  end
+
+  defp flood_fill(start, grid) do
+    plant = Map.get(grid, start)
+    do_flood([start], grid, plant, MapSet.new())
+  end
+
+  defp do_flood([], _grid, _plant, region), do: region
+
+  defp do_flood([pos | rest], grid, plant, region) do
+    if MapSet.member?(region, pos) or Map.get(grid, pos) != plant do
+      do_flood(rest, grid, plant, region)
     else
-      border_tiles = remove_border(border_tiles, Enum.min(border_tiles))
-      count_sides(border_tiles, acc + 1)
+      region = MapSet.put(region, pos)
+      {x, y} = pos
+      neighbors = [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+      do_flood(neighbors ++ rest, grid, plant, region)
     end
   end
 
-  defp remove_border(border_tiles, {tile, dir} = entry) when dir in [:up, :down] do
-    if entry in border_tiles do
-      border_tiles = MapSet.delete(border_tiles, entry)
-      remove_border(border_tiles, {right(tile), dir})
-    else
-      border_tiles
-    end
+  defp perimeter(region, grid) do
+    plant = Map.get(grid, Enum.at(region, 0))
+
+    region
+    |> Enum.map(fn {x, y} ->
+      [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+      |> Enum.count(fn neighbor -> Map.get(grid, neighbor) != plant end)
+    end)
+    |> Enum.sum()
   end
 
-  defp remove_border(border_tiles, {tile, dir} = entry) when dir in [:left, :right] do
-    if entry in border_tiles do
-      border_tiles = MapSet.delete(border_tiles, entry)
-      remove_border(border_tiles, {down(tile), dir})
-    else
-      border_tiles
-    end
+  # Count corners = count sides of polygon
+  defp count_corners(region) do
+    region
+    |> Enum.map(&corners_at(&1, region))
+    |> Enum.sum()
+  end
+
+  defp corners_at({x, y}, region) do
+    # Check all 4 corner directions: NW, NE, SW, SE
+    # A corner exists if:
+    # - Outer corner: both adjacent orthogonal neighbors are outside
+    # - Inner corner: both adjacent orthogonal neighbors are inside, but diagonal is outside
+    corner_checks = [
+      {{x - 1, y}, {x, y - 1}, {x - 1, y - 1}},  # NW
+      {{x + 1, y}, {x, y - 1}, {x + 1, y - 1}},  # NE
+      {{x - 1, y}, {x, y + 1}, {x - 1, y + 1}},  # SW
+      {{x + 1, y}, {x, y + 1}, {x + 1, y + 1}}   # SE
+    ]
+
+    Enum.count(corner_checks, fn {adj1, adj2, diag} ->
+      in1 = MapSet.member?(region, adj1)
+      in2 = MapSet.member?(region, adj2)
+      in_diag = MapSet.member?(region, diag)
+
+      # Outer corner: neither adjacent is in region
+      # Inner corner: both adjacent in region, but diagonal not
+      (not in1 and not in2) or (in1 and in2 and not in_diag)
+    end)
   end
 end

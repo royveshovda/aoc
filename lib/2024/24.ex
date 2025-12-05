@@ -1,157 +1,134 @@
 import AOC
-import Bitwise
 
 aoc 2024, 24 do
   @moduledoc """
   https://adventofcode.com/2024/day/24
-  Source: https://github.com/liamcmitchell/advent-of-code/blob/4abc416e21ee88001295d4452b7a62fe25c90856/2024/24/1.exs
+
+  Crossed Wires - logic gate simulation.
+  P1: Evaluate circuit, read z-wires as binary number.
+  P2: Find 4 pairs of swapped outputs in ripple-carry adder.
   """
 
   def p1(input) do
-    input |> parse() |> calculate()
+    {values, gates} = parse(input)
+    values = evaluate(values, gates)
+
+    values
+    |> Enum.filter(fn {k, _v} -> String.starts_with?(k, "z") end)
+    |> Enum.sort_by(fn {k, _v} -> k end, :desc)
+    |> Enum.map(fn {_k, v} -> v end)
+    |> Integer.undigits(2)
   end
 
   def p2(input) do
-    map = input |> parse()
+    {_values, gates} = parse(input)
 
-    map
-    |> Map.keys()
-    |> Enum.filter(fn wire -> wire |> String.starts_with?("z") end)
-    |> Enum.sort()
-    |> Enum.reduce({[], map}, fn wire, {swapped, map} ->
-      bit = wire |> String.slice(1, 2) |> String.to_integer()
-      expected = adder(bit)
-      actual = resolve_tree(map, wire)
+    # Find the highest z bit
+    z_max =
+      gates
+      |> Enum.map(fn {_a, _op, _b, out} -> out end)
+      |> Enum.filter(&String.starts_with?(&1, "z"))
+      |> Enum.max()
 
-      if expected != actual do
-        wires =
-          map
-          |> Map.keys()
-          |> Enum.map(fn wire -> {resolve_tree(map, wire), wire} end)
-          |> Map.new()
+    # Find swapped wires by checking adder structure
+    swapped =
+      gates
+      |> Enum.flat_map(fn {a, op, b, out} -> check_gate(a, op, b, out, gates, z_max) end)
+      |> MapSet.new()
 
-        case find_swap(wires, expected, actual) do
-          {a, b} ->
-            map =
-              map
-              |> Map.put(a, Map.get(map, b))
-              |> Map.put(b, Map.get(map, a))
-
-            {[a, b | swapped], map}
-
-          nil ->
-            {swapped, map}
-        end
-      else
-        {swapped, map}
-      end
-    end)
-    |> elem(0)
-    |> Enum.sort()
-    |> Enum.join(",")
+    swapped |> Enum.sort() |> Enum.join(",")
   end
 
+  defp parse(input) do
+    [init, gates_str] = String.split(input, "\n\n", trim: true)
 
-  def parse(input) do
-    [initial, gates] = input |> String.split("\n\n")
-
-    initial =
-      initial
-      |> String.split("\n")
+    values =
+      init
+      |> String.split("\n", trim: true)
       |> Enum.map(fn line ->
-        [wire, value] = line |> String.split(": ")
-        {wire, String.to_integer(value)}
+        [name, val] = String.split(line, ": ")
+        {name, String.to_integer(val)}
       end)
+      |> Map.new()
 
     gates =
-      gates
-      |> String.split("\n")
+      gates_str
+      |> String.split("\n", trim: true)
       |> Enum.map(fn line ->
-        [in1, gate, in2, _, wire] = line |> String.split()
-        {wire, {gate, in1, in2}}
+        [lhs, out] = String.split(line, " -> ")
+        [a, op, b] = String.split(lhs, " ")
+        {a, op, b, out}
       end)
 
-    initial |> Enum.concat(gates) |> Map.new()
+    {values, gates}
   end
 
-  def resolve(_map, value) when is_integer(value), do: value
-  def resolve(map, value) when is_bitstring(value), do: resolve(map, Map.get(map, value, 0))
-  def resolve(map, {"AND", in1, in2}), do: band(resolve(map, in1), resolve(map, in2))
-  def resolve(map, {"OR", in1, in2}), do: bor(resolve(map, in1), resolve(map, in2))
-  def resolve(map, {"XOR", in1, in2}), do: bxor(resolve(map, in1), resolve(map, in2))
+  defp evaluate(values, gates) do
+    ready =
+      Enum.filter(gates, fn {a, _op, b, out} ->
+        Map.has_key?(values, a) and Map.has_key?(values, b) and not Map.has_key?(values, out)
+      end)
 
-  def resolve_tree(map, wire) do
-    case map do
-      %{^wire => {gate, a, b}} ->
-        op(gate, resolve_tree(map, a), resolve_tree(map, b))
+    if ready == [] do
+      values
+    else
+      values =
+        Enum.reduce(ready, values, fn {a, op, b, out}, vals ->
+          va = Map.get(vals, a)
+          vb = Map.get(vals, b)
 
-      _ ->
-        wire
+          result =
+            case op do
+              "AND" -> if va == 1 and vb == 1, do: 1, else: 0
+              "OR" -> if va == 1 or vb == 1, do: 1, else: 0
+              "XOR" -> if va != vb, do: 1, else: 0
+            end
+
+          Map.put(vals, out, result)
+        end)
+
+      evaluate(values, gates)
     end
   end
 
-  def adder(0), do: op("XOR", x(0), y(0))
+  # Check gate structure for ripple-carry adder violations
+  defp check_gate(a, op, b, out, gates, z_max) do
+    cond do
+      # z outputs (except last) must come from XOR
+      String.starts_with?(out, "z") and out != z_max and op != "XOR" ->
+        [out]
 
-  def adder(bit) do
-    op("XOR", op("XOR", x(bit), y(bit)), remainder(bit - 1))
+      # XOR gates must have x/y inputs or z output
+      op == "XOR" and not String.starts_with?(out, "z") and
+          not is_input_wire(a) and not is_input_wire(b) ->
+        [out]
+
+      # XOR with x/y inputs (not x00) must feed into another XOR
+      op == "XOR" and is_input_wire(a) and is_input_wire(b) and
+          not String.ends_with?(a, "00") and not feeds_into_xor(out, gates) ->
+        [out]
+
+      # AND with x/y inputs (not x00) must feed into OR
+      op == "AND" and is_input_wire(a) and is_input_wire(b) and
+          not String.ends_with?(a, "00") and not feeds_into_or(out, gates) ->
+        [out]
+
+      true ->
+        []
+    end
   end
 
-  def remainder(0), do: op("AND", x(0), y(0))
+  defp is_input_wire(w), do: String.starts_with?(w, "x") or String.starts_with?(w, "y")
 
-  def remainder(bit),
-    do:
-      op(
-        "OR",
-        op("AND", x(bit), y(bit)),
-        op(
-          "AND",
-          op("XOR", x(bit), y(bit)),
-          remainder(bit - 1)
-        )
-      )
-
-  def pad(bit), do: bit |> Integer.to_string() |> String.pad_leading(2, "0")
-  def x(bit), do: "x#{pad(bit)}"
-  def y(bit), do: "y#{pad(bit)}"
-
-  def op(gate, a, b), do: {gate, MapSet.new([a, b])}
-
-  def calculate(map) do
-    map
-    |> Enum.filter(fn {wire, _} -> wire |> String.starts_with?("z") end)
-    |> Enum.map(fn {wire, value} ->
-      bit = wire |> String.slice(1, 2) |> String.to_integer()
-      value = resolve(map, value)
-      bsl(value, bit)
+  defp feeds_into_xor(wire, gates) do
+    Enum.any?(gates, fn {a, op, b, _out} ->
+      op == "XOR" and (a == wire or b == wire)
     end)
-    |> Enum.sum()
   end
 
-  def find_swap(wires, expected, actual) do
-    case wires do
-      %{^expected => a} ->
-        {a, Map.get(wires, actual)}
-
-      _ ->
-        [e1, e2] = expected |> elem(1) |> MapSet.to_list()
-        [a1, a2] = actual |> elem(1) |> MapSet.to_list()
-
-        cond do
-          e1 == a1 ->
-            find_swap(wires, e2, a2)
-
-          e1 == a2 ->
-            find_swap(wires, e2, a1)
-
-          e2 == a1 ->
-            find_swap(wires, e1, a2)
-
-          e2 == a2 ->
-            find_swap(wires, e1, a1)
-
-          true ->
-            nil
-        end
-    end
+  defp feeds_into_or(wire, gates) do
+    Enum.any?(gates, fn {a, op, b, _out} ->
+      op == "OR" and (a == wire or b == wire)
+    end)
   end
 end

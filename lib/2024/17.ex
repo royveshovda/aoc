@@ -4,94 +4,146 @@ import Bitwise
 aoc 2024, 17 do
   @moduledoc """
   https://adventofcode.com/2024/day/17
+
+  Chronospatial Computer - 3-bit computer VM.
+  P1: Run program, return output.
+  P2: Find initial A that makes program output itself (quine).
   """
 
   def p1(input) do
-    [registers_raw, program_raw] =
-      input
-      |> String.split("\n\n", trim: true)
-
-    [reg_a, _reg_b, _reg_c] =
-      registers_raw
-      |> String.split("\n", trim: true)
-      |> Enum.map(&String.split(&1, ": ", trim: true))
-      |> Enum.map(fn [_k, v] -> String.to_integer(v) end)
-
-
-    [_, program_raw] =
-      program_raw
-      |> String.trim()
-      |> String.split(": ", trim: true)
-
-    program =
-      program_raw
-      |> String.split(",", trim: true)
-      |> Enum.map(&String.to_integer/1)
-
-
-    result = run(program, reg_a)
-    Enum.join(result, ",")
+    {a, b, c, program} = parse(input)
+    run(program, 0, a, b, c, [])
+    |> Enum.reverse()
+    |> Enum.join(",")
   end
 
   def p2(input) do
-    [_registers_raw, program_raw] =
-      input
-      |> String.split("\n\n", trim: true)
+    {_a, _b, _c, program} = parse(input)
+    # Work backwards - program outputs 3 bits at a time based on A
+    # Each iteration: output depends on low 3 bits of A, then A = A >>> 3
+    # So build A by finding each 3-bit chunk from the end
+    find_a(program, Enum.reverse(program), 0)
+  end
 
-    [_, program_raw] =
-      program_raw
-      |> String.trim()
-      |> String.split(": ", trim: true)
+  defp parse(input) do
+    lines = String.split(input, "\n", trim: true)
+
+    a =
+      Enum.at(lines, 0)
+      |> String.split(": ")
+      |> List.last()
+      |> String.to_integer()
+
+    b =
+      Enum.at(lines, 1)
+      |> String.split(": ")
+      |> List.last()
+      |> String.to_integer()
+
+    c =
+      Enum.at(lines, 2)
+      |> String.split(": ")
+      |> List.last()
+      |> String.to_integer()
 
     program =
-      program_raw
-      |> String.split(",", trim: true)
+      Enum.at(lines, 3)
+      |> String.split(": ")
+      |> List.last()
+      |> String.split(",")
       |> Enum.map(&String.to_integer/1)
 
-    target = Enum.reverse(program)
-    find_a(program, target)
+    {a, b, c, program}
   end
 
-  def run(prog, a) do
-    process(prog, a, 0, 0, 0, [])
-  end
+  defp run(program, ip, a, b, c, output) do
+    if ip >= length(program) do
+      output
+    else
+      opcode = Enum.at(program, ip)
+      operand = Enum.at(program, ip + 1)
 
-  defp process(prog, _a, _b, _c, ip, out) when ip < 0 or ip >= length(prog), do: out
-  # Process instructions with a state machine
-  defp process(prog, a, b, c, ip, out) do
-    table = [0, 1, 2, 3, a, b, c]
-    operand = Enum.at(prog, ip + 1, 0)
-    combo = Enum.at(table, operand, 0)
+      case opcode do
+        0 ->
+          # adv: A = A / 2^combo
+          val = combo(operand, a, b, c)
+          a = a >>> val
+          run(program, ip + 2, a, b, c, output)
 
-    case Enum.at(prog, ip) do
-      0 -> process(prog, a >>> combo, b, c, ip + 2, out)
-      1 -> process(prog, a, Bitwise.bxor(b, operand), c, ip + 2, out)
-      2 -> process(prog, a, rem(combo, 8), c, ip + 2, out)
-      3 -> process(prog, a, b, c, if(a == 0, do: ip + 2, else: operand), out)
-      4 -> process(prog, a, Bitwise.bxor(b, c), c, ip + 2, out)
-      5 -> process(prog, a, b, c, ip + 2, List.insert_at(out, -1, rem(combo, 8)))
-      6 -> process(prog, a, a >>> combo, c, ip + 2, out)
-      7 -> process(prog, a, b, a >>> combo, ip + 2, out)
-      _ -> out
+        1 ->
+          # bxl: B = B XOR literal
+          b = bxor(b, operand)
+          run(program, ip + 2, a, b, c, output)
+
+        2 ->
+          # bst: B = combo mod 8
+          val = combo(operand, a, b, c)
+          b = rem(val, 8)
+          run(program, ip + 2, a, b, c, output)
+
+        3 ->
+          # jnz: jump if A != 0
+          if a != 0 do
+            run(program, operand, a, b, c, output)
+          else
+            run(program, ip + 2, a, b, c, output)
+          end
+
+        4 ->
+          # bxc: B = B XOR C
+          b = bxor(b, c)
+          run(program, ip + 2, a, b, c, output)
+
+        5 ->
+          # out: output combo mod 8
+          val = combo(operand, a, b, c)
+          out = rem(val, 8)
+          run(program, ip + 2, a, b, c, [out | output])
+
+        6 ->
+          # bdv: B = A / 2^combo
+          val = combo(operand, a, b, c)
+          b = a >>> val
+          run(program, ip + 2, a, b, c, output)
+
+        7 ->
+          # cdv: C = A / 2^combo
+          val = combo(operand, a, b, c)
+          c = a >>> val
+          run(program, ip + 2, a, b, c, output)
+      end
     end
   end
 
-  # Part 2 - Recursive search for finding A
-  def find_a(prog, target) do
-    search_a(prog, target, 0, 0)
+  defp combo(op, a, b, c) do
+    case op do
+      0 -> 0
+      1 -> 1
+      2 -> 2
+      3 -> 3
+      4 -> a
+      5 -> b
+      6 -> c
+    end
   end
 
-  defp search_a(_prog, target, a, depth) when depth == length(target), do: a
+  # Find A that produces the program as output
+  # Build from the last output digit backward
+  defp find_a(_program, [], a), do: a
 
-  defp search_a(prog, target, a, depth) do
-    Enum.find_value(0..7, fn i ->
-      output = run(prog, a * 8 + i)
-      if output != [] and hd(output) == Enum.at(target, depth) do
-        result = search_a(prog, target, a * 8 + i, depth + 1)
-        if result != 0, do: result, else: nil
-      else
-        nil
+  defp find_a(program, [_target | rest], a) do
+    # Try each 3-bit value (0-7) for the next chunk
+    0..7
+    |> Enum.find_value(fn candidate ->
+      new_a = a * 8 + candidate
+      output = run(program, 0, new_a, 0, 0, []) |> Enum.reverse()
+
+      # Check if output matches the suffix we need
+      expected = Enum.drop(program, length(rest))
+
+      if output == expected do
+        find_a(program, rest, new_a)
       end
-    end) || nil
+    end)
   end
 end

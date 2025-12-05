@@ -3,91 +3,56 @@ import AOC
 aoc 2024, 19 do
   @moduledoc """
   https://adventofcode.com/2024/day/19
+
+  Linen Layout - Count possible/ways to make designs from towel patterns.
   """
 
   def p1(input) do
-    {towel_patterns, designs} = parse(input)
+    {patterns, designs} = parse(input)
+    pattern_set = MapSet.new(patterns)
+    max_len = patterns |> Enum.map(&String.length/1) |> Enum.max()
 
     designs
-    |> Enum.count(&can_form?(&1, towel_patterns))
+    |> Enum.count(fn design -> count_ways(design, pattern_set, max_len) > 0 end)
   end
 
   def p2(input) do
-    {towel_patterns, designs} = parse(input)
-    total_ways =
-      designs
-      |> Enum.map(&num_ways(&1, towel_patterns))
-      |> Enum.sum()
+    {patterns, designs} = parse(input)
+    pattern_set = MapSet.new(patterns)
+    max_len = patterns |> Enum.map(&String.length/1) |> Enum.max()
 
-    total_ways
+    designs
+    |> Enum.map(fn design -> count_ways(design, pattern_set, max_len) end)
+    |> Enum.sum()
   end
 
-  def parse(input) do
-    [patterns_line, designs_text] = String.split(input, "\n\n", parts: 2)
-    towel_patterns = String.split(patterns_line, ",") |> Enum.map(&String.trim/1)
-    designs = String.split(designs_text, "\n", trim: true)
-    {towel_patterns, designs}
+  defp parse(input) do
+    [patterns_line, designs_section] = String.split(input, "\n\n", trim: true)
+
+    patterns = patterns_line |> String.split(", ", trim: true)
+    designs = designs_section |> String.split("\n", trim: true)
+
+    {patterns, designs}
   end
 
-  def can_form?(design, patterns) do
+  defp count_ways(design, pattern_set, max_len) do
     len = String.length(design)
-    dp = Map.new()
-    dp = Map.put(dp, 0, true)
 
-    dp =
-      Enum.reduce(1..len, dp, fn i, dp ->
-        found =
-          Enum.any?(patterns, fn pattern ->
-            pattern_length = String.length(pattern)
-            if i >= pattern_length do
-              prev = Map.get(dp, i - pattern_length, false)
-              prev and pattern == String.slice(design, i - pattern_length, pattern_length)
-            else
-              false
-            end
-          end)
+    # DP array: dp[i] = ways to build first i chars
+    dp = :array.new(len + 1, default: 0)
+    dp = :array.set(0, 1, dp)  # Base: empty string has 1 way
 
-        if found do
-          Map.put(dp, i, true)
-        else
-          dp
+    dp = Enum.reduce(1..len, dp, fn i, dp ->
+      ways =
+        for plen <- 1..min(i, max_len),
+            pattern = String.slice(design, i - plen, plen),
+            MapSet.member?(pattern_set, pattern),
+            reduce: 0 do
+          acc -> acc + :array.get(i - plen, dp)
         end
-      end)
+      :array.set(i, ways, dp)
+    end)
 
-    Map.get(dp, len, false)
-  end
-
-  def num_ways(design, patterns) do
-    len = String.length(design)
-    dp = %{0 => 1}
-
-    dp =
-      Enum.reduce(1..len, dp, fn pos, dp_acc ->
-        total =
-          Enum.reduce(patterns, 0, fn pattern, acc ->
-            num_ways_sum(pattern, pos, design, acc, dp_acc)
-            # plen = String.length(pattern)
-
-            # if pos >= plen and String.slice(design, pos - plen, plen) == pattern do
-            #   acc + Map.get(dp_acc, pos - plen, 0)
-            # else
-            #   acc
-            # end
-          end)
-
-        Map.put(dp_acc, pos, total)
-      end)
-
-    Map.get(dp, len, 0)
-  end
-
-  def num_ways_sum(pattern, pos, design, acc, dp_acc) do
-    plen = String.length(pattern)
-
-    if pos >= plen and String.slice(design, pos - plen, plen) == pattern do
-      acc + Map.get(dp_acc, pos - plen, 0)
-    else
-      acc
-    end
+    :array.get(len, dp)
   end
 end

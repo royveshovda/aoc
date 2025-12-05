@@ -3,48 +3,26 @@ import AOC
 aoc 2024, 3 do
   @moduledoc """
   https://adventofcode.com/2024/day/3
+
+  Mull It Over - Extract mul(X,Y) from corrupted memory with do/don't toggles.
   """
 
   def p1(input) do
-    input
-    |> String.split("mul(")
-    |> Enum.map(fn x -> String.split(x, ")") |> hd end)
-    |> Enum.map(fn x -> String.split(x, ",") end)
-    |> Enum.filter(fn x -> Enum.count(x) == 2 && Enum.all?(x, fn c -> integer_string?(c) end) end)
-    |> Enum.map(fn [x1, x2] -> String.to_integer(x1) * String.to_integer(x2) end)
+    ~r/mul\((\d{1,3}),(\d{1,3})\)/
+    |> Regex.scan(input)
+    |> Enum.map(fn [_, a, b] -> String.to_integer(a) * String.to_integer(b) end)
     |> Enum.sum()
-
-  end
-
-  def integer_string?(str) do
-    case Integer.parse(str) do
-      {_, ""} -> true
-      _ -> false
-    end
   end
 
   def p2(input) do
-    pattern = ~r/mul\(([0-9]{1,3}),([0-9]{1,3})\)|do\(\)|don't\(\)/
-    ops =
-      Regex.scan(pattern, input)
-      |> Enum.map(fn args ->
-        case args do
-          ["do()"] -> :do
-          ["don't()"] -> :dont
-          [_, l, r] -> String.to_integer(l) * String.to_integer(r)
-        end
-      end)
-
-    ops
-    |> Enum.reduce({true, 0}, fn op, {is_on, acc} ->
-      case op do
-        :do -> {true, acc}
-        :dont -> {false, acc}
-        n when is_integer(n) and is_on -> {true, acc + n}
-        n when is_integer(n) and not(is_on) -> {false, acc}
-      end
+    ~r/mul\((\d{1,3}),(\d{1,3})\)|do\(\)|don't\(\)/
+    |> Regex.scan(input)
+    |> Enum.reduce({0, true}, fn
+      ["do()"], {sum, _} -> {sum, true}
+      ["don't()"], {sum, _} -> {sum, false}
+      [_, a, b], {sum, true} -> {sum + String.to_integer(a) * String.to_integer(b), true}
+      _, acc -> acc
     end)
-    |> elem(1)
-
+    |> elem(0)
   end
 end

@@ -3,58 +3,93 @@ import AOC
 aoc 2024, 8 do
   @moduledoc """
   https://adventofcode.com/2024/day/8
+
+  Resonant Collinearity - Find antinodes from antenna pairs.
   """
 
   def p1(input) do
-    {grid, {min_x, max_x, min_y, max_y}} = Utils.Grid.input_to_map_with_limits(input)
+    {grid, bounds} = parse(input)
 
-    antennas = Enum.filter(grid, fn {_, t} -> t != "." end)
-
-    pairs =
-      for {pos1, val1} <- antennas, {pos2, val2} <- antennas, pos1 != pos2 and val1 == val2, do: {pos1, pos2}
-
-    pairs
-    |> Enum.flat_map(&create_antinodes/1)
+    grid
+    |> group_by_freq()
+    |> Enum.flat_map(fn {_freq, positions} -> antinodes_p1(positions) end)
+    |> Enum.filter(&in_bounds?(&1, bounds))
     |> Enum.uniq()
-    |> Enum.reject(fn {x, y} -> x < min_x || x > max_x || y < min_y || y > max_y end)
-    |> Enum.count()
-  end
-
-  def create_antinodes({{x1, y1}, {x2, y2}}) do
-    dx = x2 - x1
-    dy = y2 - y1
-    [{x1 - dx, y1 - dy}, {x2 + dx, y2 + dy}]
+    |> length()
   end
 
   def p2(input) do
-    {grid, {min_x, max_x, min_y, max_y}} = Utils.Grid.input_to_map_with_limits(input)
+    {grid, bounds} = parse(input)
 
-    antennas = Enum.filter(grid, fn {_, t} -> t != "." end)
-
-    pairs =
-      for {pos1, val1} <- antennas, {pos2, val2} <- antennas, pos1 != pos2 and val1 == val2, do: {pos1, pos2}
-
-    pairs
-    |> Enum.flat_map(fn x -> create_all_antinodes(x, {{min_x, min_y}, {max_x, max_y}}) end)
+    grid
+    |> group_by_freq()
+    |> Enum.flat_map(fn {_freq, positions} -> antinodes_p2(positions, bounds) end)
     |> Enum.uniq()
-    |> Enum.count()
+    |> length()
   end
 
-  def create_all_antinodes({{x1, y1}, {x2, y2}}, {{min_x, min_y}, {max_x, max_y}}) do
+  defp parse(input) do
+    lines = String.split(input, "\n", trim: true)
+    height = length(lines)
+    width = String.length(hd(lines))
+
+    grid =
+      lines
+      |> Enum.with_index()
+      |> Enum.flat_map(fn {row, y} ->
+        row
+        |> String.graphemes()
+        |> Enum.with_index()
+        |> Enum.filter(fn {c, _} -> c != "." end)
+        |> Enum.map(fn {c, x} -> {{x, y}, c} end)
+      end)
+      |> Map.new()
+
+    {grid, {width, height}}
+  end
+
+  defp group_by_freq(grid) do
+    grid
+    |> Enum.group_by(fn {_, freq} -> freq end, fn {pos, _} -> pos end)
+  end
+
+  defp antinodes_p1(positions) do
+    for {x1, y1} <- positions,
+        {x2, y2} <- positions,
+        {x1, y1} != {x2, y2} do
+      dx = x2 - x1
+      dy = y2 - y1
+      {x2 + dx, y2 + dy}
+    end
+  end
+
+  defp antinodes_p2(positions, {width, height}) do
+    for {x1, y1} <- positions,
+        {x2, y2} <- positions,
+        {x1, y1} != {x2, y2},
+        antinode <- line_points({x1, y1}, {x2, y2}, {width, height}) do
+      antinode
+    end
+  end
+
+  defp line_points({x1, y1}, {x2, y2}, {width, height}) do
     dx = x2 - x1
     dy = y2 - y1
+    g = Integer.gcd(abs(dx), abs(dy))
+    dx = div(dx, g)
+    dy = div(dy, g)
 
-    # generate values up by starting on {x1,y1} and substracting dx,dy until we reach the bounds
-    up =
-      Stream.iterate({x1, y1}, fn {x, y} -> {x - dx, y - dy} end)
-      |> Stream.take_while(fn {x, y} -> x >= min_x and y >= min_y and x <= max_x and y <= max_y end)
-      |> Enum.to_list()
+    # Go both directions from first point
+    forward = Stream.iterate({x1, y1}, fn {x, y} -> {x + dx, y + dy} end)
+              |> Enum.take_while(&in_bounds?(&1, {width, height}))
 
-    down =
-      Stream.iterate({x2, y2}, fn {x, y} -> {x + dx, y + dy} end)
-      |> Stream.take_while(fn {x, y} -> x >= min_x and y >= min_y and x <= max_x and y <= max_y end)
-      |> Enum.to_list()
+    backward = Stream.iterate({x1 - dx, y1 - dy}, fn {x, y} -> {x - dx, y - dy} end)
+               |> Enum.take_while(&in_bounds?(&1, {width, height}))
 
-    up ++ down ++ [{x1, y1}, {x2, y2}]
+    forward ++ backward
+  end
+
+  defp in_bounds?({x, y}, {width, height}) do
+    x >= 0 and x < width and y >= 0 and y < height
   end
 end

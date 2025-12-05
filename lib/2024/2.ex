@@ -3,35 +3,43 @@ import AOC
 aoc 2024, 2 do
   @moduledoc """
   https://adventofcode.com/2024/day/2
+
+  Red-Nosed Reports - Check monotonic sequences with bounded differences.
   """
 
   def p1(input) do
     input
-    |> String.split("\n", trim: true)
-    |> Enum.map(&String.split/1)
-    |> Enum.map(fn line -> Enum.map(line, &String.to_integer/1) end)
-    |> Enum.count(fn line -> safe_line?(line) end)
-  end
-
-  def safe_line?(line) do
-    line
-    |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.map(fn [a, b] -> a - b end)
-    |> then(fn l -> Enum.all?(l, fn x -> (x < 0 && x > -4) end) || Enum.all?(l, fn x -> (x > 0 && x < 4) end) end)
+    |> parse()
+    |> Enum.count(&safe?/1)
   end
 
   def p2(input) do
     input
-    |> String.split("\n", trim: true)
-    |> Enum.map(&String.split/1)
-    |> Enum.map(fn line -> Enum.map(line, &String.to_integer/1) end)
-    |> Enum.count(fn line -> safe_line?(line) || almost_safe?(line) end)
+    |> parse()
+    |> Enum.count(&safe_with_dampener?/1)
   end
 
-  defp almost_safe?(report) do
-    report
-    |> Enum.with_index()
-    |> Enum.any?(fn {_, idx} -> report |> List.delete_at(idx) |> safe_line?()
+  defp parse(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      line |> String.split() |> Enum.map(&String.to_integer/1)
     end)
+  end
+
+  defp safe?(levels) do
+    diffs = levels |> Enum.chunk_every(2, 1, :discard) |> Enum.map(fn [a, b] -> b - a end)
+
+    all_increasing = Enum.all?(diffs, &(&1 >= 1 and &1 <= 3))
+    all_decreasing = Enum.all?(diffs, &(&1 >= -3 and &1 <= -1))
+
+    all_increasing or all_decreasing
+  end
+
+  defp safe_with_dampener?(levels) do
+    safe?(levels) or
+      Enum.any?(0..(length(levels) - 1), fn i ->
+        levels |> List.delete_at(i) |> safe?()
+      end)
   end
 end
