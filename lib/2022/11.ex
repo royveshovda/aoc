@@ -1,136 +1,133 @@
 import AOC
 
 aoc 2022, 11 do
+  @moduledoc """
+  Day 11: Monkey in the Middle
+
+  Monkeys pass items based on operations and divisibility tests.
+  Part 1: 20 rounds with worry / 3.
+  Part 2: 10000 rounds without division (use modular arithmetic).
+  """
+
+  @doc """
+  Part 1: Product of top 2 inspection counts after 20 rounds.
+  """
   def p1(input) do
-    monkies =
-      input
-      |> String.split("\n\n")
-      |> Enum.map(&parse_monkey/1)
-
-    order = Enum.map(monkies, fn m -> m.id end)
-    monkies = Map.new(monkies, fn m -> {m.id, m} end)
-
-    new_monkies = Enum.reduce(1..20, monkies, fn _, monkies -> round(monkies, order) end)
-    new_monkies |> Enum.map(fn {_, m} -> m.inspected end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
+    monkeys = parse(input)
+    run_rounds(monkeys, 20, &div(&1, 3))
   end
 
-  def round(monkies, []) do
-    monkies
-  end
-
-  def round(monkies, [next | rest]) do
-    {new_monkey, new_items} = inspect_items(monkies[next])
-
-    monkies = Map.put(monkies, next, new_monkey)
-
-    monkies =
-      Enum.reduce(new_items, monkies, fn {receiver, value}, monkies ->
-        m = monkies[receiver]
-        m = %{m | items: m.items ++ [value]}
-        Map.put(monkies, receiver, m)
-      end)
-
-    round(monkies, rest)
-  end
-
-  def inspect_items(monkey) do
-    new_items =
-      monkey.items
-      |> Enum.map(fn item ->
-        new_value = item |> monkey.operation.() |> div(3)
-        new_holder =
-          case rem(new_value, monkey.test) do
-            0 -> monkey.truthy
-            _ -> monkey.falsy
-          end
-        {new_holder, new_value}
-      end)
-
-    m = %{monkey | items: [], inspected: monkey.inspected + length(new_items)}
-    {m, new_items}
-  end
-
-  def parse_monkey(input) do
-    [id, items, operation, test, truthy, falsy] = String.split(input, "\n")
-    id = id |> String.split(" ") |> List.last() |> String.trim() |> String.trim_trailing(":") |> String.to_integer()
-    items =
-      items
-      |> String.split(":")
-      |> List.last()
-      |> String.trim()
-      |> String.split(",")
-      |> Enum.map(fn s -> s |> String.trim() |> String.to_integer() end)
-
-    operation = operation |> String.trim() |> String.trim_leading("Operation: new = old ") |> String.split(" ") |> parse_operation()
-    test = test |> String.trim() |> String.trim_leading("Test: divisible by ") |> String.to_integer()
-    truthy = truthy |> String.trim() |> String.trim_leading("If true: throw to monkey ") |> String.to_integer()
-    falsy = falsy |> String.trim() |> String.trim_leading("If false: throw to monkey ") |> String.to_integer()
-    %{id: id, items: items, test: test, truthy: truthy, falsy: falsy, operation: operation, inspected: 0}
-  end
-
-  def parse_operation(["*" , "old"]) do
-    fn x -> x * x end
-  end
-
-  def parse_operation(["*" , value]) do
-    value = String.to_integer(value)
-    fn x -> x * value end
-  end
-
-  def parse_operation(["+" , value]) do
-    value = String.to_integer(value)
-    fn x -> x + value end
-  end
-
-  def inspect_items_v2(monkey, divider) do
-    new_items =
-      monkey.items
-      |> Enum.map(fn item ->
-        new_value = item |> monkey.operation.() |> rem(divider)
-        new_holder =
-          case rem(new_value, monkey.test) do
-            0 -> monkey.truthy
-            _ -> monkey.falsy
-          end
-        {new_holder, new_value}
-      end)
-
-    m = %{monkey | items: [], inspected: monkey.inspected + length(new_items)}
-
-    {m, new_items}
-  end
-
-  def round_v2(monkies, [], _) do
-    monkies
-  end
-
-  def round_v2(monkies, [next | rest], divider) do
-    {new_monkey, new_items} = inspect_items_v2(monkies[next], divider)
-
-    monkies = Map.put(monkies, next, new_monkey)
-
-    monkies =
-      Enum.reduce(new_items, monkies, fn {receiver, value}, monkies ->
-        m = monkies[receiver]
-        m = %{m | items: m.items ++ [value]}
-        Map.put(monkies, receiver, m)
-      end)
-
-    round_v2(monkies, rest, divider)
-  end
-
+  @doc """
+  Part 2: Product of top 2 inspection counts after 10000 rounds.
+  """
   def p2(input) do
-    monkies =
-      input
-      |> String.split("\n\n")
-      |> Enum.map(&parse_monkey/1)
+    monkeys = parse(input)
+    # Use LCM of all divisors to keep numbers manageable
+    lcm = monkeys |> Enum.map(fn m -> m.test end) |> Enum.product()
+    run_rounds(monkeys, 10000, &rem(&1, lcm))
+  end
 
-    order = Enum.map(monkies, fn m -> m.id end)
-    monkies = Map.new(monkies, fn m -> {m.id, m} end)
+  defp run_rounds(monkeys, rounds, worry_reduce) do
+    monkeys_map = monkeys |> Enum.with_index() |> Map.new(fn {m, i} -> {i, m} end)
 
-    divider = Enum.map(monkies, fn {_, m} -> m.test end) |> Enum.product()
+    final_monkeys =
+      Enum.reduce(1..rounds, monkeys_map, fn _round, monkeys ->
+        do_round(monkeys, worry_reduce)
+      end)
 
-    new_monkies = Enum.reduce(1..10_000, monkies, fn _, monkies -> round_v2(monkies, order, divider) end)
-    new_monkies |> Enum.map(fn {_, m} -> m.inspected end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
+    final_monkeys
+    |> Map.values()
+    |> Enum.map(& &1.inspections)
+    |> Enum.sort(:desc)
+    |> Enum.take(2)
+    |> Enum.product()
+  end
+
+  defp do_round(monkeys, worry_reduce) do
+    Enum.reduce(0..(map_size(monkeys) - 1), monkeys, fn idx, monkeys ->
+      monkey = monkeys[idx]
+
+      Enum.reduce(monkey.items, monkeys, fn item, monkeys ->
+        new_worry = apply_op(monkey.op, item) |> worry_reduce.()
+        target = if rem(new_worry, monkey.test) == 0, do: monkey.if_true, else: monkey.if_false
+
+        monkeys
+        |> update_in([target, :items], &(&1 ++ [new_worry]))
+        |> update_in([idx, :inspections], &(&1 + 1))
+      end)
+      |> put_in([idx, :items], [])
+    end)
+  end
+
+  defp apply_op({:add, :old}, val), do: val + val
+  defp apply_op({:add, n}, val), do: val + n
+  defp apply_op({:mul, :old}, val), do: val * val
+  defp apply_op({:mul, n}, val), do: val * n
+
+  defp parse(input) do
+    input
+    |> String.split("\n\n", trim: true)
+    |> Enum.map(&parse_monkey/1)
+  end
+
+  defp parse_monkey(block) do
+    lines = String.split(block, "\n", trim: true)
+
+    items =
+      lines
+      |> Enum.at(1)
+      |> then(&Regex.scan(~r/\d+/, &1))
+      |> List.flatten()
+      |> Enum.map(&String.to_integer/1)
+
+    op = parse_operation(Enum.at(lines, 2))
+
+    test =
+      lines
+      |> Enum.at(3)
+      |> then(&Regex.run(~r/\d+/, &1))
+      |> hd()
+      |> String.to_integer()
+
+    if_true =
+      lines
+      |> Enum.at(4)
+      |> then(&Regex.run(~r/\d+/, &1))
+      |> hd()
+      |> String.to_integer()
+
+    if_false =
+      lines
+      |> Enum.at(5)
+      |> then(&Regex.run(~r/\d+/, &1))
+      |> hd()
+      |> String.to_integer()
+
+    %{
+      items: items,
+      op: op,
+      test: test,
+      if_true: if_true,
+      if_false: if_false,
+      inspections: 0
+    }
+  end
+
+  defp parse_operation(line) do
+    cond do
+      String.contains?(line, "old * old") ->
+        {:mul, :old}
+
+      String.contains?(line, "old + old") ->
+        {:add, :old}
+
+      String.contains?(line, "*") ->
+        [n] = Regex.run(~r/\* (\d+)/, line, capture: :all_but_first)
+        {:mul, String.to_integer(n)}
+
+      String.contains?(line, "+") ->
+        [n] = Regex.run(~r/\+ (\d+)/, line, capture: :all_but_first)
+        {:add, String.to_integer(n)}
+    end
   end
 end

@@ -1,8 +1,13 @@
-# Source: https://github.com/flwyd/adventofcode/blob/main/2022/day23/day23.exs
-
 import AOC
 
 aoc 2022, 23 do
+  @moduledoc """
+  Day 23: Unstable Diffusion
+
+  Elves move in grid following proposal rules.
+  Part 1: Empty ground in bounding box after 10 rounds.
+  Part 2: First round where no elf moves.
+  """
 
   @north {-1, 0}
   @south {1, 0}
@@ -12,98 +17,175 @@ aoc 2022, 23 do
   @nw {-1, -1}
   @se {1, 1}
   @sw {1, -1}
-  @stay {0, 0}
+
   @northern {@north, [@north, @ne, @nw]}
   @southern {@south, [@south, @se, @sw]}
   @western {@west, [@west, @nw, @sw]}
   @eastern {@east, [@east, @ne, @se]}
-  @stay_put {@stay, [@stay]}
-  @all_dirs [@nw, @north, @ne, @east, @se, @south, @sw, @west]
 
+  @doc """
+  Part 1: Empty ground tiles after 10 rounds.
+
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> ....#..
+      ...> ..###.#
+      ...> #...#.#
+      ...> .#...##
+      ...> #.###..
+      ...> ##.#.##
+      ...> .#..#..
+      ...> \"\"\"
+      iex> Y2022.D23.p1(example)
+      110
+  """
   def p1(input) do
-    points =
-      input
-      |> String.split("\n", trim: true)
-      |> parse_input(1, MapSet.new())
+    elves = parse(input)
+    prefs_base = [@northern, @southern, @western, @eastern]
 
-    pref_cycle = Stream.cycle([@northern, @southern, @western, @eastern])
-
-    points =
-      Enum.reduce(1..10, points, fn round, points ->
-        run_round(points, round_prefs(round, pref_cycle))
+    elves =
+      Enum.reduce(1..10, elves, fn round, acc ->
+        run_round(acc, round_prefs(round, prefs_base))
       end)
 
-    bounding_rectangle_size(points) - Enum.count(points)
+    bounding_area(elves) - MapSet.size(elves)
   end
 
-  defp run_round(points, prefs) do
-    Enum.reduce(points, %{}, fn point, acc ->
-      dir = pick_move(point, points, prefs)
-      Map.update(acc, move(point, dir), [point], fn rest -> [point | rest] end)
-    end)
-    |> Enum.map(fn
-      {dest, [_cur]} -> [dest]
-      {_, several} -> several
-    end)
-    |> List.flatten()
-    |> Enum.into(MapSet.new())
+  @doc """
+  Part 2: First round where no elf moves.
+
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> ....#..
+      ...> ..###.#
+      ...> #...#.#
+      ...> .#...##
+      ...> #.###..
+      ...> ##.#.##
+      ...> .#..#..
+      ...> \"\"\"
+      iex> Y2022.D23.p2(example)
+      20
+  """
+  def p2(input) do
+    elves = parse(input)
+    prefs_base = [@northern, @southern, @western, @eastern]
+    find_stable_round(elves, prefs_base, 1)
   end
 
-  defp round_prefs(round, pref_cycle),
-    do: Stream.drop(pref_cycle, rem(round - 1, 4)) |> Stream.take(4) |> Enum.into([])
-
-  defp bounding_rectangle(points) do
-    {top, bottom} = points |> Enum.map(&elem(&1, 0)) |> Enum.min_max()
-    {left, right} = points |> Enum.map(&elem(&1, 1)) |> Enum.min_max()
-    {top, bottom, left, right}
-  end
-
-  defp bounding_rectangle_size(points) do
-    {top, bottom, left, right} = bounding_rectangle(points)
-    (bottom - top + 1) * (right - left + 1)
-  end
-
-  defp pick_move(point, points, prefs) do
-    if Enum.all?(@all_dirs, fn dir -> empty?(move(point, dir), points) end) do
-      @stay
-    else
-      {dir, _} =
-        Enum.find(prefs, @stay_put, fn {_, dirs} ->
-          dirs |> Enum.map(&move(point, &1)) |> Enum.all?(&empty?(&1, points))
-        end)
-
-      dir
+  defp find_stable_round(elves, prefs_base, round) do
+    prefs = round_prefs(round, prefs_base)
+    case run_round_fast(elves, prefs) do
+      :stable -> round
+      next -> find_stable_round(next, prefs_base, round + 1)
     end
   end
 
-  defp empty?(point, points), do: not MapSet.member?(points, point)
-
-  defp move({row, col}, {drow, dcol}), do: {row + drow, col + dcol}
-
-  defp parse_input([], _row, acc), do: acc
-
-  defp parse_input([line | rest], row, acc) do
-    acc =
-      String.to_charlist(line)
-      |> Enum.with_index()
-      |> Enum.filter(fn {c, _i} -> c == ?# end)
+  defp parse(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.with_index(1)
+    |> Enum.flat_map(fn {line, row} ->
+      line
+      |> String.to_charlist()
+      |> Enum.with_index(1)
+      |> Enum.filter(fn {c, _} -> c == ?# end)
       |> Enum.map(fn {_, col} -> {row, col} end)
-      |> Enum.into(acc)
-
-    parse_input(rest, row + 1, acc)
+    end)
+    |> MapSet.new()
   end
 
-  def p2(input) do
-    points =
-      input
-      |> String.split("\n", trim: true)
-      |> parse_input(1, MapSet.new())
+  defp round_prefs(round, prefs) do
+    offset = rem(round - 1, 4)
+    Enum.slice(prefs, offset, 4) ++ Enum.slice(prefs, 0, offset)
+  end
 
-    pref_cycle = Stream.cycle([@northern, @southern, @western, @eastern])
+  defp run_round(elves, prefs) do
+    proposals =
+      elves
+      |> Enum.map(fn elf -> {elf, pick_move(elf, elves, prefs)} end)
+      |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
 
-    Enum.reduce_while(Stream.iterate(1, &(&1 + 1)), points, fn round, points ->
-      next = run_round(points, round_prefs(round, pref_cycle))
-      if MapSet.equal?(points, next), do: {:halt, round}, else: {:cont, next}
+    proposals
+    |> Enum.flat_map(fn
+      {dest, [_single]} -> [dest]
+      {_dest, many} -> many
     end)
+    |> MapSet.new()
+  end
+
+  # Optimized version that returns :stable if no moves happened
+  defp run_round_fast(elves, prefs) do
+    # Only consider elves with neighbors
+    {active, passive} = Enum.split_with(elves, fn elf -> has_neighbors?(elf, elves) end)
+
+    if active == [] do
+      :stable
+    else
+      proposals =
+        active
+        |> Enum.map(fn elf -> {elf, pick_active_move(elf, elves, prefs)} end)
+        |> Enum.group_by(&elem(&1, 1), &elem(&1, 0))
+
+      # Check if any elf actually moved
+      any_moved = Enum.any?(proposals, fn
+        {dest, [single]} -> dest != single
+        _ -> false
+      end)
+
+      if any_moved do
+        moved =
+          proposals
+          |> Enum.flat_map(fn
+            {dest, [_single]} -> [dest]
+            {_dest, many} -> many
+          end)
+          |> MapSet.new()
+
+        MapSet.union(moved, MapSet.new(passive))
+      else
+        :stable
+      end
+    end
+  end
+
+  defp pick_move(elf, elves, prefs) do
+    if no_neighbors?(elf, elves) do
+      elf
+    else
+      pick_active_move(elf, elves, prefs)
+    end
+  end
+
+  defp pick_active_move(elf, elves, prefs) do
+    case Enum.find(prefs, fn {_, check_dirs} ->
+           Enum.all?(check_dirs, fn dir -> not MapSet.member?(elves, move(elf, dir)) end)
+         end) do
+      {move_dir, _} -> move(elf, move_dir)
+      nil -> elf
+    end
+  end
+
+  defp has_neighbors?({row, col}, elves) do
+    MapSet.member?(elves, {row - 1, col - 1}) or
+    MapSet.member?(elves, {row - 1, col}) or
+    MapSet.member?(elves, {row - 1, col + 1}) or
+    MapSet.member?(elves, {row, col + 1}) or
+    MapSet.member?(elves, {row + 1, col + 1}) or
+    MapSet.member?(elves, {row + 1, col}) or
+    MapSet.member?(elves, {row + 1, col - 1}) or
+    MapSet.member?(elves, {row, col - 1})
+  end
+
+  defp no_neighbors?(elf, elves), do: not has_neighbors?(elf, elves)
+
+  defp move({row, col}, {dr, dc}), do: {row + dr, col + dc}
+
+  defp bounding_area(elves) do
+    {min_row, max_row} = elves |> Enum.map(&elem(&1, 0)) |> Enum.min_max()
+    {min_col, max_col} = elves |> Enum.map(&elem(&1, 1)) |> Enum.min_max()
+    (max_row - min_row + 1) * (max_col - min_col + 1)
   end
 end

@@ -1,87 +1,134 @@
 import AOC
 
 aoc 2022, 18 do
+  @moduledoc """
+  Day 18: Boiling Boulders
+
+  Calculate surface area of 3D lava droplet.
+  Part 1: Total surface area (including interior).
+  Part 2: Exterior surface area only (flood fill from outside).
+  """
+
+  @doc """
+  Part 1: Total surface area of all cubes.
+
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> 2,2,2
+      ...> 1,2,2
+      ...> 3,2,2
+      ...> 2,1,2
+      ...> 2,3,2
+      ...> 2,2,1
+      ...> 2,2,3
+      ...> 2,2,4
+      ...> 2,2,6
+      ...> 1,2,5
+      ...> 3,2,5
+      ...> 2,1,5
+      ...> 2,3,5
+      ...> \"\"\"
+      iex> Y2022.D18.p1(example)
+      64
+
+  """
   def p1(input) do
-    pieces =
-      input
-      |> String.split("\n")
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn l -> Enum.map(l, fn i -> String.to_integer(i) end) end)
-      |> Enum.map(fn [x, y, z] -> {x, y, z} end)
-      |> MapSet.new()
-
-    pieces
-    |> Enum.map(fn p -> free_sides(p, pieces) end)
+    cubes = parse(input)
+    cubes
+    |> Enum.map(fn cube -> 6 - count_neighbors(cube, cubes) end)
     |> Enum.sum()
   end
 
-  def free_sides({x, y, z}, pieces) do
-    [
-      {x - 1, y, z},
-      {x + 1, y, z},
-      {x, y - 1, z},
-      {x , y + 1, z},
-      {x, y, z - 1},
-      {x, y, z + 1}
-    ]
-    |> Enum.reject(fn p -> Enum.any?(pieces, fn v -> v == p end) end)
-    |> Enum.count()
-  end
+  @doc """
+  Part 2: External surface area only.
 
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> 2,2,2
+      ...> 1,2,2
+      ...> 3,2,2
+      ...> 2,1,2
+      ...> 2,3,2
+      ...> 2,2,1
+      ...> 2,2,3
+      ...> 2,2,4
+      ...> 2,2,6
+      ...> 1,2,5
+      ...> 3,2,5
+      ...> 2,1,5
+      ...> 2,3,5
+      ...> \"\"\"
+      iex> Y2022.D18.p2(example)
+      58
+
+  """
   def p2(input) do
-    pieces =
-      input
-      |> String.split("\n")
-      |> Enum.map(&String.split(&1, ","))
-      |> Enum.map(fn l -> Enum.map(l, fn i -> String.to_integer(i) end) end)
-      |> Enum.map(fn [x, y, z] -> {x, y, z} end)
-      |> MapSet.new()
+    cubes = parse(input)
 
-    # Set search space just outside the pieces
-    {x_min, x_max} = Enum.map(pieces, fn {x, _y, _z} -> x end) |> Enum.min_max()
-    x_min = x_min - 1
-    x_max = x_max + 1
-    {y_min, y_max} = Enum.map(pieces, fn {_x,  y , _z} -> y end) |> Enum.min_max()
-    y_min = y_min - 1
-    y_max = y_max + 1
-    {z_min, z_max} = Enum.map(pieces, fn {_x, _y, z} -> z end) |> Enum.min_max()
-    z_min = z_min - 1
-    z_max = z_max + 1
+    # Find bounding box with 1 cell padding
+    {min_x, max_x} = cubes |> Enum.map(&elem(&1, 0)) |> Enum.min_max()
+    {min_y, max_y} = cubes |> Enum.map(&elem(&1, 1)) |> Enum.min_max()
+    {min_z, max_z} = cubes |> Enum.map(&elem(&1, 2)) |> Enum.min_max()
 
-    start = {x_min, y_min, z_min}
+    bounds = {min_x - 1, max_x + 1, min_y - 1, max_y + 1, min_z - 1, max_z + 1}
 
-    outside = bfs(MapSet.new([start]), :queue.in(start, :queue.new()), pieces, x_min..x_max, y_min..y_max, z_min..z_max)
+    # Flood fill from outside to find all exterior cells
+    start = {min_x - 1, min_y - 1, min_z - 1}
+    exterior = flood_fill(start, cubes, bounds)
 
-    pieces
-    |> Enum.map(fn point -> Enum.count(next(point, &MapSet.member?(outside, &1))) end)
+    # Count faces where lava cube touches exterior
+    cubes
+    |> Enum.map(fn cube -> count_exterior_faces(cube, exterior) end)
     |> Enum.sum()
   end
 
-  def bfs(found, queue, lava, xbounds, ybounds, zbounds) do
-    case :queue.out(queue) do
-      {{:value, point}, queue} ->
-        newfound = next(point, &(not MapSet.member?(lava, &1) and not MapSet.member?(found, &1) and in_bounds(&1, xbounds, ybounds, zbounds)))
-        queue = Enum.reduce(newfound, queue, &:queue.in/2)
-        found = Enum.reduce(newfound, found, &MapSet.put(&2, &1))
-        bfs(found, queue, lava, xbounds, ybounds, zbounds)
+  defp parse(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      [x, y, z] = String.split(line, ",") |> Enum.map(&String.to_integer/1)
+      {x, y, z}
+    end)
+    |> MapSet.new()
+  end
 
-      {:empty, _queue} -> found
+  defp neighbors({x, y, z}) do
+    [{x+1, y, z}, {x-1, y, z}, {x, y+1, z}, {x, y-1, z}, {x, y, z+1}, {x, y, z-1}]
+  end
+
+  defp count_neighbors(cube, cubes) do
+    neighbors(cube) |> Enum.count(&MapSet.member?(cubes, &1))
+  end
+
+  defp in_bounds?({x, y, z}, {min_x, max_x, min_y, max_y, min_z, max_z}) do
+    x >= min_x and x <= max_x and y >= min_y and y <= max_y and z >= min_z and z <= max_z
+  end
+
+  defp flood_fill(start, cubes, bounds) do
+    do_flood_fill(:queue.from_list([start]), MapSet.new([start]), cubes, bounds)
+  end
+
+  defp do_flood_fill(queue, visited, cubes, bounds) do
+    case :queue.out(queue) do
+      {:empty, _} -> visited
+      {{:value, pos}, queue} ->
+        {queue, visited} =
+          neighbors(pos)
+          |> Enum.filter(fn n ->
+            in_bounds?(n, bounds) and
+            not MapSet.member?(visited, n) and
+            not MapSet.member?(cubes, n)
+          end)
+          |> Enum.reduce({queue, visited}, fn n, {q, v} ->
+            {:queue.in(n, q), MapSet.put(v, n)}
+          end)
+        do_flood_fill(queue, visited, cubes, bounds)
     end
   end
 
-  def next({x, y, z}, pieces) do
-    [
-      {x - 1, y, z},
-      {x + 1, y, z},
-      {x, y - 1, z},
-      {x, y + 1, z},
-      {x, y, z - 1},
-      {x, y, z + 1}
-    ]
-    |> Enum.filter(pieces)
-  end
-
-  def in_bounds({x, y, z}, xbounds, ybounds, zbounds) do
-    x in xbounds and y in ybounds and z in zbounds
+  defp count_exterior_faces(cube, exterior) do
+    neighbors(cube) |> Enum.count(&MapSet.member?(exterior, &1))
   end
 end

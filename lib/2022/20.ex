@@ -1,71 +1,94 @@
 import AOC
 
 aoc 2022, 20 do
+  @moduledoc """
+  Day 20: Grove Positioning System
+
+  Mix numbers in circular list by moving each number.
+  Part 1: Mix once, sum of 1000th, 2000th, 3000th after 0.
+  Part 2: Multiply by decryption key, mix 10 times.
+  """
+
+  @doc """
+  Part 1: Sum of grove coordinates after mixing once.
+
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> 1
+      ...> 2
+      ...> -3
+      ...> 3
+      ...> -2
+      ...> 0
+      ...> 4
+      ...> \"\"\"
+      iex> Y2022.D20.p1(example)
+      3
+  """
   def p1(input) do
-    start =
+    numbers =
       input
-      |> String.split("\n")
+      |> String.split("\n", trim: true)
       |> Enum.map(&String.to_integer/1)
       |> Enum.with_index()
-      |> Enum.map(fn {v, i} -> %{current: i, orig: i, value: v} end)
 
-    l = length(start) - 1
-
-    new_grid =
-      Enum.reduce(0..(l - 1), start, fn x, acc ->
-        move(acc, x, l)
-      end)
-      |> Enum.filter(fn x -> x.current in [1000, 2000, 3000] end)
-      #|> Enum.sort_by(& &1.current)
-      |> Enum.map(& &1.value)
-
-    new_grid
+    mixed = mix(numbers, numbers)
+    grove_coordinates(mixed)
   end
 
-  def move(list, position, length) do
-    #IO.puts("Position: #{position} -- #{length} -- List: #{inspect(list)}")
-    IO.puts("Position: #{position}")
-    current = Enum.find(list, fn x -> x.orig == position end)
+  @doc """
+  Part 2: Grove coordinates with decryption key, 10 mixes.
 
-    current_index = current.current
-    new_index = Integer.mod(current_index + current.value - 1, (length - 1)) + 1
-    #curr = (prev + number - 1) % (N - 1) + 1
-    #IO.puts("Current: #{current_index}, New: #{new_index}")
+  ## Examples
 
-    case new_index > current_index do
-      true ->
-        list
-        |> Enum.map(fn x ->
-          if x.orig != position and x.current > current_index and x.current <= new_index do
-            %{x | current: x.current - 1}
-          else
-            x
-          end
-        end)
-      false ->
-        list
-        |> Enum.map(fn x ->
-          if x.orig != position and x.current < current_index and x.current >= new_index do
-            %{x | current: x.current + 1}
-          else
-            x
-          end
-        end)
-    end
-    |> Enum.map(fn x ->
-      if x.orig == position do
-        %{x | current: new_index}
-      else
-        x
-      end
-    end)
-    #|> IO.inspect(label: "New List")
-
-  end
-
+      iex> example = \"\"\"
+      ...> 1
+      ...> 2
+      ...> -3
+      ...> 3
+      ...> -2
+      ...> 0
+      ...> 4
+      ...> \"\"\"
+      iex> Y2022.D20.p2(example)
+      1623178306
+  """
   def p2(input) do
-    input
-    |> String.split("\n")
-    |> Enum.map(&String.to_integer/1)
+    decryption_key = 811_589_153
+
+    numbers =
+      input
+      |> String.split("\n", trim: true)
+      |> Enum.map(&String.to_integer/1)
+      |> Enum.map(&(&1 * decryption_key))
+      |> Enum.with_index()
+
+    mixed = Enum.reduce(1..10, numbers, fn _, acc -> mix(numbers, acc) end)
+    grove_coordinates(mixed)
+  end
+
+  defp mix(original, current) do
+    Enum.reduce(original, current, fn {value, orig_idx} = item, acc ->
+      current_idx = Enum.find_index(acc, fn x -> x == item end)
+      list_without = List.delete_at(acc, current_idx)
+      len = length(list_without)
+
+      # Calculate new position with proper modulo for circular list
+      new_idx = Integer.mod(current_idx + value, len)
+      new_idx = if new_idx == 0 and value != 0, do: len, else: new_idx
+
+      List.insert_at(list_without, new_idx, {value, orig_idx})
+    end)
+  end
+
+  defp grove_coordinates(mixed) do
+    values = Enum.map(mixed, fn {v, _} -> v end)
+    len = length(values)
+    zero_idx = Enum.find_index(values, &(&1 == 0))
+
+    [1000, 2000, 3000]
+    |> Enum.map(fn offset -> Enum.at(values, rem(zero_idx + offset, len)) end)
+    |> Enum.sum()
   end
 end

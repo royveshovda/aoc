@@ -1,59 +1,96 @@
 import AOC
 
 aoc 2022, 12 do
+  @moduledoc """
+  Day 12: Hill Climbing Algorithm
+
+  Find shortest path up hill (can only go up 1 level, down any).
+  Part 1: From S to E.
+  Part 2: From any 'a' to E.
+  """
+
+  @doc """
+  Part 1: Shortest path from S to E.
+
+  ## Examples
+
+      iex> example = "Sabqponm\\nabcryxxl\\naccszExk\\nacctuvwj\\nabdefghi"
+      iex> p1(example)
+      31
+  """
   def p1(input) do
-    {grid, start, goal} = parse(input)
-    bfs([{start, 0}], grid, goal, MapSet.new([start]))
+    {grid, start, target} = parse(input)
+    bfs(grid, [start], target, MapSet.new([start]), 0)
   end
 
-  defp bfs([], _grid, _target, _visited), do: :not_found
+  @doc """
+  Part 2: Shortest path from any 'a' elevation to E.
 
-  defp bfs([{coord, moves} | _tail], _grid, coord, _visited), do: moves
+  ## Examples
 
-  defp bfs([{coord, moves} | tail], grid, target, visited) do
-    next =
-      valid_moves(coord, grid)
-      |> Enum.filter(&(!MapSet.member?(visited, &1)))
-      |> Enum.map(&{&1, moves + 1})
+      iex> example = "Sabqponm\\nabcryxxl\\naccszExk\\nacctuvwj\\nabdefghi"
+      iex> p2(example)
+      29
+  """
+  def p2(input) do
+    {grid, _start, target} = parse(input)
 
-    queue = tail ++ next
-    bfs(queue, grid, target, MapSet.union(visited, MapSet.new(next |> Enum.map(&elem(&1, 0)))))
-  end
+    # Find all positions with elevation 'a' (or S which equals 'a')
+    starts =
+      grid
+      |> Enum.filter(fn {_pos, h} -> h == ?a end)
+      |> Enum.map(fn {pos, _} -> pos end)
 
-  defp valid_moves({row, col}, grid) do
-    cur_height = grid[{row, col}]
-    [{-1, 0}, {1, 0}, {0, -1}, {0, 1}]
-    |> Enum.map(fn {x, y} -> {row + x, col + y} end)
-    |> Enum.filter(&Map.has_key?(grid, &1))
-    |> Enum.filter(fn coord -> grid[coord] - cur_height <= 1 end) # Only allowed to climb one. Can go down any amount.
+    bfs(grid, starts, target, MapSet.new(starts), 0)
   end
 
   defp parse(input) do
-    input
-    |> String.split("\n")
-    |> Enum.with_index(1)
-    |> Enum.reduce({%{}, 0, 0}, fn {line, row}, accout ->
-      to_charlist(line)
-      |> Enum.with_index(1)
-      |> Enum.reduce(accout, fn {char, col}, {grid, start, stop} ->
-        coord = {row, col}
+    rows = String.split(input, "\n", trim: true)
 
-        case char do
-          ?S -> {Map.put(grid, coord, ?a), coord, stop}
-          ?E -> {Map.put(grid, coord, ?z), start, coord}
-          _ -> {Map.put(grid, coord, char), start, stop}
-        end
+    {grid, start, target} =
+      rows
+      |> Enum.with_index()
+      |> Enum.reduce({%{}, nil, nil}, fn {row, y}, acc ->
+        row
+        |> String.to_charlist()
+        |> Enum.with_index()
+        |> Enum.reduce(acc, fn {char, x}, {grid, start, target} ->
+          pos = {x, y}
+          case char do
+            ?S -> {Map.put(grid, pos, ?a), pos, target}
+            ?E -> {Map.put(grid, pos, ?z), start, pos}
+            _ -> {Map.put(grid, pos, char), start, target}
+          end
+        end)
       end)
-    end)
+
+    {grid, start, target}
   end
 
-  def p2(input) do
-    {grid, _start, goal} = parse(input)
+  defp bfs(_grid, [], _target, _visited, _steps), do: nil
+  defp bfs(grid, frontier, target, visited, steps) do
+    if Enum.member?(frontier, target) do
+      steps
+    else
+      next_frontier =
+        frontier
+        |> Enum.flat_map(fn pos -> neighbors(grid, pos, visited) end)
+        |> Enum.uniq()
 
-    Map.filter(grid, fn {_, h} -> h == ?a end)
-    |> Map.keys()
-    |> Enum.map(fn coord -> bfs([{coord, 0}], grid, goal, MapSet.new([coord])) end)
-    |> Enum.reject(&(&1 == :not_found))
-    |> Enum.min()
+      new_visited = Enum.reduce(next_frontier, visited, &MapSet.put(&2, &1))
+      bfs(grid, next_frontier, target, new_visited, steps + 1)
+    end
+  end
+
+  defp neighbors(grid, {x, y}, visited) do
+    current_height = grid[{x, y}]
+
+    [{x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}]
+    |> Enum.filter(fn pos ->
+      height = Map.get(grid, pos)
+      height != nil and
+        not MapSet.member?(visited, pos) and
+        height <= current_height + 1
+    end)
   end
 end

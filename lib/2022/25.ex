@@ -1,42 +1,88 @@
 import AOC
 
 aoc 2022, 25 do
+  @moduledoc """
+  Day 25: Full of Hot Air
+
+  SNAFU number system (balanced base-5).
+  Digits: 2, 1, 0, - (=-1), = (=-2)
+  Convert sum of SNAFU numbers back to SNAFU.
+  """
+
+  @doc """
+  Part 1: Sum of all SNAFU numbers, result in SNAFU format.
+
+  ## Examples
+
+      iex> example = \"\"\"
+      ...> 1=-0-2
+      ...> 12111
+      ...> 2=0=
+      ...> 21
+      ...> 2=01
+      ...> 111
+      ...> 20012
+      ...> 112
+      ...> 1=-1=
+      ...> 1-12
+      ...> 12
+      ...> 1=
+      ...> 122
+      ...> \"\"\"
+      iex> Y2022.D25.p1(example)
+      "2=-1=0"
+  """
   def p1(input) do
     input
-    |> String.split("\n")
-    |> Enum.map(&to_decimal(String.to_charlist(&1), 0))
+    |> String.split("\n", trim: true)
+    |> Enum.map(&snafu_to_decimal/1)
     |> Enum.sum()
-    |> to_snafu([])
-    |> inspect(charlist: :infer)
+    |> decimal_to_snafu()
   end
 
-  def p2(input) do
-    input
+  @doc """
+  Part 2: Day 25 has no Part 2 - it's the final day reward.
+
+  ## Examples
+
+      iex> Y2022.D25.p2("")
+      :star
+  """
+  def p2(_input) do
+    :star
   end
 
-  def to_decimal([], acc) do
-    acc
+  @snafu_digits %{?2 => 2, ?1 => 1, ?0 => 0, ?- => -1, ?= => -2}
+
+  defp snafu_to_decimal(str) do
+    str
+    |> String.to_charlist()
+    |> Enum.reduce(0, fn char, acc ->
+      acc * 5 + @snafu_digits[char]
+    end)
   end
 
-  @conv %{?2 => 2, ?1 => 1, ?0 => 0, ?- => -1, ?= => -2}
+  defp decimal_to_snafu(0), do: "0"
 
-  def to_decimal([c | rest], acc) do
-    to_decimal(rest, acc * 5 + @conv[c])
+  defp decimal_to_snafu(num) do
+    do_decimal_to_snafu(num, [])
   end
 
-  def to_snafu(0, sofar) do
-    sofar
-  end
+  defp do_decimal_to_snafu(0, acc), do: to_string(acc)
 
-  def to_snafu(num, sofar) do
-    ones = rem(num, 5)
-    rest = div(num, 5)
-    case ones do
-      0 -> to_snafu(rest, [?0 | sofar])
-      1 -> to_snafu(rest, [?1 | sofar])
-      2 -> to_snafu(rest, [?2 | sofar])
-      3 -> to_snafu(rest + 1, [?= | sofar])
-      4 -> to_snafu(rest + 1, [?- | sofar])
-    end
+  defp do_decimal_to_snafu(num, acc) do
+    remainder = rem(num, 5)
+    quotient = div(num, 5)
+
+    {digit, carry} =
+      case remainder do
+        0 -> {?0, 0}
+        1 -> {?1, 0}
+        2 -> {?2, 0}
+        3 -> {?=, 1}
+        4 -> {?-, 1}
+      end
+
+    do_decimal_to_snafu(quotient + carry, [digit | acc])
   end
 end

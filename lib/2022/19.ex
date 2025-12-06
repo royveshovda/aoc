@@ -1,299 +1,146 @@
-# Source: https://github.com/flwyd/adventofcode/blob/main/2022/day19/day19.exs
 import AOC
 
 aoc 2022, 19 do
+  @moduledoc """
+  Day 19: Not Enough Minerals
 
-  defmodule State do
-    @moduledoc false
-    defstruct robots: %{ore: 1, clay: 0, obsidian: 0, geode: 0},
-              resources: %{ore: 0, clay: 0, obsidian: 0, geode: 0}
+  Build robots to maximize geode collection.
+  Part 1: Sum of quality levels (id * geodes in 24 min).
+  Part 2: Product of geodes from first 3 blueprints in 32 min.
 
-    def score(state), do: state.resources.geode
+  Optimization: DFS with "time-to-build" - instead of deciding each minute,
+  decide which robot to build next and skip to when we can afford it.
+  """
 
-    def build(state, type, cost) do
-      struct!(state,
-        robots: Map.update!(state.robots, type, &(&1 + 1)),
-        resources: Map.merge(state.resources, cost, fn _k, v1, v2 -> v1 - v2 end)
-      )
-    end
-
-    def can_build?(state, cost), do: Enum.all?(cost, fn {k, v} -> v <= state.resources[k] end)
-
-    def add_resources(state, res) do
-      struct!(state,
-        resources: Map.merge(state.resources, res, fn _k, v1, v2 -> v1 + v2 end)
-      )
-    end
-
-    def all_possible(state, blueprint, time) do
-      [
-        state
-        | [:geode, :obsidian, :ore, :clay]
-          |> Enum.filter(fn type -> can_build?(state, blueprint[type]) and worthwhile(state, blueprint, time, type) end)
-          |> Enum.take(2)
-          |> Enum.map(&build(state, &1, blueprint[&1]))
-      ]
-    end
-
-    def worthwhile(_, _, time, :geode), do: time > 1
-
-    def worthwhile(_, _, time, :obsidian) when time <= 2, do: false
-
-    def worthwhile(state, blueprint, time, :obsidian) do
-      expensive = blueprint.geode.obsidian
-      state.resources.obsidian + state.robots.obsidian * (time - 2) < (time - 1) * expensive
-    end
-
-    def worthwhile(_, _, time, :ore) when time <= 2, do: false
-
-    def worthwhile(state, blueprint, time, :ore) do
-      expensive = Enum.max([blueprint.geode.ore, blueprint.obsidian.ore, blueprint.clay.ore])
-      state.resources.ore + state.robots.ore * (time - 2) < (time - 1) * expensive
-    end
-
-    def worthwhile(_, _, time, :clay) when time <= 3, do: false
-
-    def worthwhile(state, blueprint, time, :clay) do
-      expensive = blueprint.obsidian.clay
-      state.resources.clay + state.robots.clay * (time - 3) < (time - 2) * expensive
-    end
-
-    def discard_unnecessary(state, bp, time) do
-      struct!(state,
-        resources: %{
-          ore:
-            min(
-              state.resources.ore,
-              Enum.max([bp.geode.ore, bp.obsidian.ore, bp.clay.ore, bp.ore.ore]) * (time - 1)
-            ),
-          clay: min(state.resources.clay, bp.obsidian.clay * (time - 1)),
-          obsidian: min(state.resources.obsidian, bp.geode.obsidian * (time - 1)),
-          geode: state.resources.geode
-        }
-      )
-    end
-
-    def sorter(a, b) do
-      [al, bl] =
-        Enum.map([a, b], fn x ->
-          [x.robots.geode, x.robots.obsidian, x.robots.clay, x.robots.ore]
-        end)
-
-      al >= bl
-    end
-  end
-
+  @doc """
+  Part 1: Sum of quality levels across all blueprints.
+  """
   def p1(input) do
-    # blueprints =
-    #   input
-    #   |> String.split("\n")
-    #   |> Enum.map(&parse_blueprint/1)
-
-    # start = %{
-    #   ore: 0,
-    #   clay: 0,
-    #   obsidian: 0,
-    #   geode: 0,
-    #   nothing: 0,
-    #   robots: %{
-    #     ore: 1,
-    #     clay: 0,
-    #     obsidian: 0,
-    #     geode: 0,
-    #     nothing: 0
-    #   }
-    # }
-
-    # #options_to_build(start, hd(blueprints))
-
-    # blueprints
-    # |> Enum.map(fn blueprint ->
-    #   Task.async(fn ->
-    #     IO.puts(:stderr, "#{inspect(self())} checking blueprint #{inspect(blueprint)}")
-    #     {blueprint.id, score(start, blueprint, 24)}
-    #   end)
-    # end)
-    # |> Task.await_many(:infinity)
-    # |> Enum.map(fn {id, score} -> id * score end)
-    # |> Enum.sum()
-
-    blueprints =
-      input
-      |> String.split("\n")
-      |> Enum.map(&parse_line/1)
-
-    Enum.map(blueprints, fn bp ->
-      Task.async(fn ->
-        IO.puts(:stderr, "#{inspect(self())} checking blueprint #{inspect(bp)}")
-        {bp.id, best_score(%State{}, bp, 24)}
-      end)
-    end)
-    |> Task.await_many(:infinity)
-    |> Enum.map(fn {id, score} -> id * score end)
+    input
+    |> parse()
+    |> Enum.map(fn bp -> bp.id * max_geodes(bp, 24) end)
     |> Enum.sum()
   end
 
-  def collect(state) do
-    state
-    |> Map.put(:ore, state.ore + state.robots.ore)
-    |> Map.put(:clay, state.clay + state.robots.clay)
-    |> Map.put(:obsidian, state.obsidian + state.robots.obsidian)
-    |> Map.put(:geode, state.geode + state.robots.geode)
-  end
-
-  def options_to_build(state, blueprint) do
-    ore = blueprint.ore |> Enum.all?(fn {resource, count} -> state[resource] >= count end)
-    clay = blueprint.clay |> Enum.all?(fn {resource, count} -> state[resource] >= count end)
-    obsidian = blueprint.obsidian |> Enum.all?(fn {resource, count} -> state[resource] >= count end)
-    geode = blueprint.geode |> Enum.all?(fn {resource, count} -> state[resource] >= count end)
-
-    %{
-      ore: ore,
-      clay: clay,
-      obsidian: obsidian,
-      geode: geode
-    }
-    |> Map.to_list
-    |> Enum.filter(fn {_, found} -> found end)
-    |> Enum.map(fn {type, _} -> type end)
-    |> List.insert_at(0, :nothing)
-  end
-
-  def score(state, _, 0) do
-    state.geode
-  end
-
-  def score(state, blueprint, remaining_time) do
-    options = options_to_build(state, blueprint)
-
-    options
-    |> Enum.map(fn option ->
-      state
-      |> build(blueprint, option)
-      |> collect()
-      |> score(blueprint, remaining_time - 1)
-    end)
-    |> Enum.max()
-  end
-
-  def build(state, blueprint, option) do
-    Enum.reduce(blueprint[option], state, fn {resource, count}, state ->
-      Map.put(state, resource, state[resource] - count)
-    end)
-  end
-
+  @doc """
+  Part 2: Product of geodes from first 3 blueprints in 32 min.
+  """
   def p2(input) do
-    blueprints =
-      input
-      |> String.split("\n")
-      |> Enum.take(3)
-      |> Enum.map(&parse_line/1)
-
-    Enum.map(blueprints, fn bp ->
-      Task.async(fn ->
-        IO.puts(:stderr, "#{inspect(self())} checking blueprint #{inspect(bp)}")
-        best_score(%State{}, bp, 32)
-      end)
-    end)
-    |> Task.await_many(:infinity)
+    input
+    |> parse()
+    |> Enum.take(3)
+    |> Enum.map(fn bp -> max_geodes(bp, 32) end)
     |> Enum.product()
   end
 
+  defp parse(input) do
+    input
+    |> String.split("\n", trim: true)
+    |> Enum.map(fn line ->
+      [id, ore_ore, clay_ore, obs_ore, obs_clay, geo_ore, geo_obs] =
+        Regex.scan(~r/\d+/, line) |> List.flatten() |> Enum.map(&String.to_integer/1)
 
-  def parse_blueprint(blueprint) do
-    [id, rest] = String.split(blueprint, ":")
-    id = id |> String.trim_leading("Blueprint ") |> String.to_integer()
-
-    [ore, clay, obsidian, geode] = String.split(rest, ".", trim: true)
-    ore = ore |> String.trim_leading(" Each ore robot costs ") |> parse_cost() |> Map.new()
-    clay = clay |> String.trim_leading(" Each clay robot costs ") |> parse_cost()
-    obsidian = obsidian |> String.trim_leading(" Each obsidian robot costs ") |> parse_cost()
-    geode = geode |> String.trim_leading(" Each geode robot costs ") |> parse_cost()
-
-    %{
-      id: id,
-      ore: ore,
-      clay: clay,
-      obsidian: obsidian,
-      geode: geode,
-      nothing: []
-    }
-  end
-
-  def parse_cost(cost) do
-    cost
-    |> String.split(" and ")
-    |> Enum.map(&String.split(&1, " ", trim: true))
-    |> Enum.map(fn [count, resource] ->
-      {String.to_atom(resource), String.to_integer(count)}
+      # Store as tuples for faster access: {ore_cost, clay_cost, obsidian_cost}
+      %{
+        id: id,
+        ore: {ore_ore, 0, 0},
+        clay: {clay_ore, 0, 0},
+        obsidian: {obs_ore, obs_clay, 0},
+        geode: {geo_ore, 0, geo_obs},
+        max_ore: Enum.max([ore_ore, clay_ore, obs_ore, geo_ore]),
+        max_clay: obs_clay,
+        max_obs: geo_obs
+      }
     end)
   end
 
-
-
-  defp best_score(state, bp, time) do
-    cache = :ets.new(String.to_atom("cache_#{bp.id}"), [:set])
-    stats = :ets.new(String.to_atom("stats_#{bp.id}"), [:set])
-    :ets.update_counter(stats, :hits, 0, {:hits, 0})
-    :ets.update_counter(stats, :misses, 0, {:misses, 0})
-    {best, path} = best_score(state, bp, time, cache, stats)
-    IO.puts(:stderr, "Blueprint #{bp.id} got #{best} #{inspect(self())}")
-
-    [hits, misses] =
-      Enum.map([:hits, :misses], fn key -> Keyword.fetch!(:ets.lookup(stats, key), key) end)
-
-    IO.puts(:stderr, "Cache hits: #{hits} misses: #{misses} #{inspect(self())}")
-    :ets.delete(cache)
-    :ets.delete(stats)
-    for {state, i} <- Enum.with_index(path, 1), do: IO.puts(:stderr, "Step #{i}: #{inspect(state)}")
-    best
+  defp max_geodes(bp, time_limit) do
+    # State: {time, ore, clay, obsidian, geodes, ore_robots, clay_robots, obs_robots, geo_robots}
+    initial = {time_limit, 0, 0, 0, 0, 1, 0, 0, 0}
+    dfs(initial, bp, 0)
   end
 
-  defp best_score(state, _bp, 0, _cache, _stats), do: {State.score(state), []}
+  # DFS with pruning - decide which robot to build NEXT and skip to that time
+  defp dfs({time, _ore, _clay, _obs, geo, _ore_r, _clay_r, _obs_r, geo_r} = state, bp, best) do
+    # If no time left, return geodes collected
+    if time <= 0 do
+      max(best, geo)
+    else
+      # Upper bound: current geodes + geodes from existing robots + theoretical max new robots
+      # If we built a geode robot every remaining minute
+      upper_bound = geo + geo_r * time + div(time * (time - 1), 2)
 
-  defp best_score(state, bp, time, cache, stats) do
-    cache_key = {State.discard_unnecessary(state, bp, time), time}
+      if upper_bound <= best do
+        best
+      else
+        # Try building each robot type (decide what to build NEXT, skip to when we can afford it)
+        best = try_build_robot(state, bp, :geode, best)
+        best = try_build_robot(state, bp, :obsidian, best)
+        best = try_build_robot(state, bp, :clay, best)
+        best = try_build_robot(state, bp, :ore, best)
 
-    case :ets.lookup(cache, cache_key) do
-      [{_, cached}] ->
-        hits = :ets.update_counter(stats, :hits, 1, {:hits, 0})
-
-        if rem(hits, 10_000_000) == 0,
-          do: IO.puts(:stderr, "#{hits} cache hits time #{time} #{inspect(self())}")
-
-        cached
-
-      [] ->
-        to_add = state.robots
-        misses = :ets.update_counter(stats, :misses, 1, {:misses, 0})
-
-        if rem(misses, 10_000_000) == 0,
-          do: IO.puts(:stderr, "#{misses} cache misses time #{time} #{inspect(self())}")
-
-        State.all_possible(state, bp, time)
-        |> Enum.map(&State.add_resources(&1, to_add))
-        |> Enum.map(fn x ->
-          {best, path} = best_score(x, bp, time - 1, cache, stats)
-          {best, [x | path]}
-        end)
-        |> Enum.max_by(fn {score, _} -> score end)
-        |> tap(fn best -> :ets.insert(cache, {cache_key, best}) end)
+        # Also consider: don't build anything else, just collect with current robots
+        final_geo = geo + geo_r * time
+        max(best, final_geo)
+      end
     end
   end
 
-  @pattern ~r/Blueprint (\d+): Each ore robot costs (\d+) ore. Each clay robot costs (\d+) ore. Each obsidian robot costs (\d+) ore and (\d+) clay. Each geode robot costs (\d+) ore and (\d+) obsidian./
-  defp parse_line(line) do
-    [id, ore_cost, clay_cost, obsidian_ore, obsidian_clay, geode_ore, geode_obsidian] =
-      Regex.run(@pattern, line)
-      |> Enum.drop(1)
-      |> Enum.map(&String.to_integer/1)
+  defp try_build_robot({time, ore, clay, obs, geo, ore_r, clay_r, obs_r, geo_r}, bp, robot_type, best) do
+    {ore_cost, clay_cost, obs_cost} = Map.get(bp, robot_type)
 
-    %{
-      id: id,
-      ore: %{ore: ore_cost},
-      clay: %{ore: clay_cost},
-      obsidian: %{ore: obsidian_ore, clay: obsidian_clay},
-      geode: %{ore: geode_ore, obsidian: geode_obsidian}
-    }
+    # Check if we should even try building this robot
+    should_build = case robot_type do
+      :geode -> true  # Always want more geode robots
+      :obsidian -> obs_r < bp.max_obs  # Don't build more than we can use
+      :clay -> clay_r < bp.max_clay
+      :ore -> ore_r < bp.max_ore
+    end
+
+    # Check if we CAN ever build this (have the right robot types)
+    can_ever_build = case robot_type do
+      :geode -> obs_r > 0  # Need obsidian robots
+      :obsidian -> clay_r > 0  # Need clay robots
+      :clay -> true
+      :ore -> true
+    end
+
+    if not should_build or not can_ever_build do
+      best
+    else
+      # Calculate time needed to afford this robot
+      wait_time = time_to_afford(ore, clay, obs, ore_r, clay_r, obs_r, ore_cost, clay_cost, obs_cost)
+
+      if wait_time >= time do
+        # Can't build in time
+        best
+      else
+        # Fast-forward: collect resources for wait_time, then build
+        new_time = time - wait_time - 1
+        new_ore = ore + ore_r * (wait_time + 1) - ore_cost
+        new_clay = clay + clay_r * (wait_time + 1) - clay_cost
+        new_obs = obs + obs_r * (wait_time + 1) - obs_cost
+        new_geo = geo + geo_r * (wait_time + 1)
+
+        {new_ore_r, new_clay_r, new_obs_r, new_geo_r} = case robot_type do
+          :ore -> {ore_r + 1, clay_r, obs_r, geo_r}
+          :clay -> {ore_r, clay_r + 1, obs_r, geo_r}
+          :obsidian -> {ore_r, clay_r, obs_r + 1, geo_r}
+          :geode -> {ore_r, clay_r, obs_r, geo_r + 1}
+        end
+
+        new_state = {new_time, new_ore, new_clay, new_obs, new_geo, new_ore_r, new_clay_r, new_obs_r, new_geo_r}
+        dfs(new_state, bp, best)
+      end
+    end
+  end
+
+  # Calculate how many minutes until we can afford {ore_cost, clay_cost, obs_cost}
+  defp time_to_afford(ore, clay, obs, ore_r, clay_r, obs_r, ore_cost, clay_cost, obs_cost) do
+    ore_wait = if ore >= ore_cost, do: 0, else: div(ore_cost - ore + ore_r - 1, max(ore_r, 1))
+    clay_wait = if clay >= clay_cost or clay_cost == 0, do: 0, else: div(clay_cost - clay + clay_r - 1, max(clay_r, 1))
+    obs_wait = if obs >= obs_cost or obs_cost == 0, do: 0, else: div(obs_cost - obs + obs_r - 1, max(obs_r, 1))
+
+    Enum.max([ore_wait, clay_wait, obs_wait])
   end
 end
