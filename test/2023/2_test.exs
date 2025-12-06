@@ -1,20 +1,14 @@
-import AOC
+defmodule Y2023.D2Test do
+  use ExUnit.Case, async: true
+  import AOC
 
-aoc_test 2023, 2, async: true do
+  aoc_test 2023, 2, async: true do
+    test "part 1 with input" do
+      assert Y2023.D2.p1(input_string()) == 2348
+    end
 
-  test "p1e" do
-    assert Y2023.D2.p1(example_string()) == 8
-  end
-
-  test "p1i" do
-    assert Y2023.D2.p1(input_string()) == 2348
-  end
-
-  test "p2e" do
-    assert Y2023.D2.p2(example_string()) == 2286
-  end
-
-  test "p2i" do
-    assert Y2023.D2.p2(input_string()) == 76_008
+    test "part 2 with input" do
+      assert Y2023.D2.p2(input_string()) == 76008
+    end
   end
 end

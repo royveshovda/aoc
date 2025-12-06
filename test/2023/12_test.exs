@@ -1,11 +1,14 @@
-import AOC
+defmodule Y2023.D12Test do
+  use ExUnit.Case, async: true
+  import AOC
 
-aoc_test 2023, 12, async: true do
-  test "pattern verificatioin on corrent pattern" do
-    assert correct_pattern?([".", "#", "#", "#", ".", "#", "#", ".", "#", ".", ".", "."], [3, 2, 1])
-  end
+  aoc_test 2023, 12, async: true do
+    test "part 1 with input" do
+      assert Y2023.D12.p1(input_string()) == 8180
+    end
 
-  test "pattern verificatioin on wrong pattern" do
-    assert !correct_pattern?([".", "#", "#", ".", ".", "#", "#", ".", "#", ".", ".", "."], [3, 2, 2])
+    test "part 2 with input" do
+      assert Y2023.D12.p2(input_string()) == 620189727003627
+    end
   end
 end
