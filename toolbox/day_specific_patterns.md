@@ -2,6 +2,10 @@
 
 Quick reference for patterns learned from specific AoC days. Organized by year.
 
+## 2025
+
+- **Columnar parsing (Day 6)**: Problems arranged vertically, separated by space columns. Transpose rows→columns, group by all-space separators. Part 2 twist: each column = digit, read numbers top-to-bottom, problems read right-to-left
+
 ## 2016
 
 - **Keypad/Grid navigation**: Use `Map.has_key?(grid, new_pos)` for boundary checking on irregular grids

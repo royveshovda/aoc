@@ -436,6 +436,46 @@ end
 - **NimbleParsec**: For complex grammars
 - **Code.eval_string**: Quick for Elixir-compatible structures (use with caution)
 
+## Column-Based Parsing (2025 Day 6)
+
+**Problem:** Data arranged in vertical columns, separated by columns of spaces.
+
+```elixir
+# Parse vertical problems separated by all-space columns
+def parse_columnar(input) do
+  lines = String.split(input, "\n", trim: true)
+
+  # Convert each line to charlists, pad to same length
+  char_lines = Enum.map(lines, &String.to_charlist/1)
+  max_len = char_lines |> Enum.map(&length/1) |> Enum.max()
+  
+  padded = Enum.map(char_lines, fn line ->
+    line ++ List.duplicate(?\s, max_len - length(line))
+  end)
+
+  # Transpose to get columns
+  columns = Enum.zip_with(padded, fn chars -> chars end)
+
+  # Group columns by space-separator columns
+  group_by_separator(columns, [], [])
+end
+
+defp group_by_separator([], [], acc), do: Enum.reverse(acc)
+defp group_by_separator([], current, acc), do: Enum.reverse([Enum.reverse(current) | acc])
+defp group_by_separator([col | rest], current, acc) do
+  if Enum.all?(col, &(&1 == ?\s)) do
+    if current == [], do: group_by_separator(rest, [], acc),
+    else: group_by_separator(rest, [], [Enum.reverse(current) | acc])
+  else
+    group_by_separator(rest, [col | current], acc)
+  end
+end
+```
+
+**Used In:** 2025 Day 6 - parsing math problems arranged vertically
+
+**Key Insight:** Transpose rows→columns first, then group by separator columns. Each group can be transposed back for row-wise processing, or processed column-by-column.
+
 ## Common Patterns Summary
 1. Lines of integers: `String.split("\n") |> Enum.map(&String.to_integer/1)`
 2. Space-separated: `String.split(" ")`

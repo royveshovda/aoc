@@ -1,7 +1,7 @@
 # AoC Algorithm Toolbox - Index
 
 ## Overview
-This toolbox contains reusable algorithms, patterns, and code snippets extracted from Advent of Code solutions (2018-2025). Each file includes explanations, code examples, and references to specific problems where the pattern was used.
+This toolbox contains reusable algorithms, patterns, and code snippets extracted from Advent of Code solutions (2015-2025). Each file includes explanations, code examples, and references to specific problems where the pattern was used.
 
 ## Core Algorithms
 
@@ -42,6 +42,7 @@ This toolbox contains reusable algorithms, patterns, and code snippets extracted
 
 - **[Parsing Patterns](parsing.md)** - Input processing strategies
   - Every problem requires parsing! Common patterns for all input types
+  - 2025 Day 6: Column-based parsing with transposition
 
 - **[String Algorithms](string_algorithms.md)** - Substring search, replacement, transformations, validation
   - 2015 Days: 5, 8, 10, 11, 19
