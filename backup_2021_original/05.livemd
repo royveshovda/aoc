@@ -1,0 +1,186 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 5: Hydrothermal Venture
+
+## Intro
+
+[https://adventofcode.com/2021/day/5](https://adventofcode.com/2021/day/5)
+
+## Input
+
+```elixir
+defmodule MM do
+  def get_min_and_max_values(lines) do
+    x_min =
+      lines
+      |> Enum.map(fn {{x1, _y1}, {x2, _y2}} -> min(x1, x2) end)
+      |> Enum.min()
+
+    x_max =
+      lines
+      |> Enum.map(fn {{x1, _y1}, {x2, _y2}} -> max(x1, x2) end)
+      |> Enum.max()
+
+    y_min =
+      lines
+      |> Enum.map(fn {{_x1, y1}, {_x2, y2}} -> min(y1, y2) end)
+      |> Enum.min()
+
+    y_max =
+      lines
+      |> Enum.map(fn {{_x1, y1}, {_x2, y2}} -> max(y1, y2) end)
+      |> Enum.max()
+
+    [x_min, x_max, y_min, y_max]
+  end
+end
+```
+
+```output
+{:module, MM, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:get_min_and_max_values, 1}}
+```
+
+```elixir
+input_test =
+  """
+  0,9 -> 5,9
+  8,0 -> 0,8
+  9,4 -> 3,4
+  2,2 -> 2,1
+  7,0 -> 7,4
+  6,4 -> 2,0
+  0,9 -> 2,9
+  3,4 -> 1,4
+  0,0 -> 8,8
+  5,5 -> 8,2
+  """
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn l ->
+    [x1, y1, x2, y2] = String.split(l, [" -> ", ","])
+
+    {{String.to_integer(x1), String.to_integer(y1)},
+     {String.to_integer(x2), String.to_integer(y2)}}
+  end)
+
+[x_min_test, x_max_test, y_min_test, y_max_test] = MM.get_min_and_max_values(input_test)
+```
+
+```output
+[0, 9, 0, 9]
+```
+
+```elixir
+input =
+  File.read!("input05.txt")
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn l ->
+    [x1, y1, x2, y2] = String.split(l, [" -> ", ","])
+
+    {{String.to_integer(x1), String.to_integer(y1)},
+     {String.to_integer(x2), String.to_integer(y2)}}
+  end)
+
+[x_min, x_max, y_min, y_max] = MM.get_min_and_max_values(input)
+```
+
+```output
+[11, 989, 10, 989]
+```
+
+## Part 1
+
+```elixir
+defmodule Matrix do
+  def expand_line({{x1, y}, {x2, y}}) do
+    for x <- x1..x2 do
+      {x, y}
+    end
+  end
+
+  def expand_line({{x, y1}, {x, y2}}) do
+    for y <- y1..y2 do
+      {x, y}
+    end
+  end
+
+  def expand_line({{x1, y1}, {x2, y2}}) do
+    x_min = min(x1, x2)
+    x_max = max(x1, x2)
+
+    y_step = if y1 > y2, do: -1, else: 1
+    x_step = if x1 > x2, do: -1, else: 1
+
+    steps = x_max - x_min
+
+    for s <- 0..steps do
+      {x1 + s * x_step, y1 + s * y_step}
+    end
+  end
+end
+
+i =
+  input_test
+  |> Enum.filter(fn {{x1, y1}, {x2, y2}} -> x1 == x2 or y1 == y2 end)
+  |> Enum.map(fn line -> Matrix.expand_line(line) end)
+  |> List.flatten()
+  |> Enum.group_by(fn {x, y} -> {x, y} end, fn _ -> 1 end)
+  |> Enum.map(fn {k, v} -> {k, Enum.sum(v)} end)
+  |> Enum.filter(fn {_k, v} -> v > 1 end)
+  |> Enum.count()
+```
+
+```output
+5
+```
+
+```elixir
+i =
+  input
+  |> Enum.filter(fn {{x1, y1}, {x2, y2}} -> x1 == x2 or y1 == y2 end)
+  |> Enum.map(fn line -> Matrix.expand_line(line) end)
+  |> List.flatten()
+  |> Enum.group_by(fn {x, y} -> {x, y} end, fn _ -> 1 end)
+  |> Enum.map(fn {k, v} -> {k, Enum.sum(v)} end)
+  |> Enum.filter(fn {_k, v} -> v > 1 end)
+  |> Enum.count()
+```
+
+```output
+6267
+```
+
+Correct: 6267
+
+## Part 2
+
+```elixir
+i =
+  input_test
+  |> Enum.map(fn line -> Matrix.expand_line(line) end)
+  |> List.flatten()
+  |> Enum.group_by(fn {x, y} -> {x, y} end, fn _ -> 1 end)
+  |> Enum.map(fn {k, v} -> {k, Enum.sum(v)} end)
+  |> Enum.filter(fn {_k, v} -> v > 1 end)
+  |> Enum.count()
+```
+
+```output
+12
+```
+
+```elixir
+i =
+  input
+  |> Enum.map(fn line -> Matrix.expand_line(line) end)
+  |> List.flatten()
+  |> Enum.group_by(fn {x, y} -> {x, y} end, fn _ -> 1 end)
+  |> Enum.map(fn {k, v} -> {k, Enum.sum(v)} end)
+  |> Enum.filter(fn {_k, v} -> v > 1 end)
+  |> Enum.count()
+```
+
+```output
+20196
+```
+
+Correct: 20196

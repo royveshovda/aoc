@@ -1,0 +1,170 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 6: Lanternfish
+
+## Intro
+
+[https://adventofcode.com/2021/day/6](https://adventofcode.com/2021/day/6)
+
+## Input
+
+```elixir
+input_test =
+  """
+  3,4,3,1,2
+  """
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[3, 4, 3, 1, 2]
+```
+
+```elixir
+input =
+  File.read!("input06.txt")
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[3, 5, 4, 1, 2, 1, 5, 5, 1, 1, 1, 1, 4, 1, 4, 5, 4, 5, 1, 3, 1, 1, 1, 4, 1, 1, 3, 1, 1, 5, 3, 1, 1,
+ 3, 1, 3, 1, 1, 1, 4, 1, 2, 5, 3, 1, 4, 2, 3, 1, 1, ...]
+```
+
+## Part 1
+
+```elixir
+defmodule LF do
+  def day_for_fish(0), do: [6, 8]
+  def day_for_fish(d), do: d - 1
+
+  def day_for_school(l) do
+    l |> Enum.map(&day_for_fish/1) |> List.flatten()
+  end
+
+  def run_school(school, 0) do
+    Enum.count(school)
+  end
+
+  def run_school(school, days) do
+    # IO.puts("Day: " <> Integer.to_string(days) <> " -- Lenght: " <> Integer.to_string(length(school)))
+    new_school = day_for_school(school)
+    run_school(new_school, days - 1)
+  end
+end
+```
+
+```output
+{:module, LF, <<70, 79, 82, 49, 0, 0, 8, ...>>, {:run_school, 2}}
+```
+
+```elixir
+LF.run_school(input_test, 80)
+```
+
+```output
+5934
+```
+
+```elixir
+LF.run_school(input, 80)
+```
+
+```output
+374927
+```
+
+Correct: 374927
+
+## Part 2
+
+```elixir
+i = input_test
+
+%{
+  0 => i |> Enum.filter(fn x -> x == 0 end) |> Enum.count(),
+  1 => i |> Enum.filter(fn x -> x == 1 end) |> Enum.count(),
+  2 => i |> Enum.filter(fn x -> x == 2 end) |> Enum.count(),
+  3 => i |> Enum.filter(fn x -> x == 3 end) |> Enum.count(),
+  4 => i |> Enum.filter(fn x -> x == 4 end) |> Enum.count(),
+  5 => i |> Enum.filter(fn x -> x == 5 end) |> Enum.count(),
+  6 => i |> Enum.filter(fn x -> x == 6 end) |> Enum.count(),
+  7 => i |> Enum.filter(fn x -> x == 7 end) |> Enum.count(),
+  8 => i |> Enum.filter(fn x -> x == 8 end) |> Enum.count()
+}
+```
+
+```output
+%{0 => 0, 1 => 1, 2 => 1, 3 => 2, 4 => 1, 5 => 0, 6 => 0, 7 => 0, 8 => 0}
+```
+
+```elixir
+defmodule LF2 do
+  def group(school) do
+    %{
+      0 => school |> Enum.filter(fn x -> x == 0 end) |> Enum.count(),
+      1 => school |> Enum.filter(fn x -> x == 1 end) |> Enum.count(),
+      2 => school |> Enum.filter(fn x -> x == 2 end) |> Enum.count(),
+      3 => school |> Enum.filter(fn x -> x == 3 end) |> Enum.count(),
+      4 => school |> Enum.filter(fn x -> x == 4 end) |> Enum.count(),
+      5 => school |> Enum.filter(fn x -> x == 5 end) |> Enum.count(),
+      6 => school |> Enum.filter(fn x -> x == 6 end) |> Enum.count(),
+      7 => school |> Enum.filter(fn x -> x == 7 end) |> Enum.count(),
+      8 => school |> Enum.filter(fn x -> x == 8 end) |> Enum.count()
+    }
+  end
+
+  def sum(%{0 => v0, 1 => v1, 2 => v2, 3 => v3, 4 => v4, 5 => v5, 6 => v6, 7 => v7, 8 => v8}) do
+    v0 + v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8
+  end
+
+  def day_for_school(%{
+        0 => v0,
+        1 => v1,
+        2 => v2,
+        3 => v3,
+        4 => v4,
+        5 => v5,
+        6 => v6,
+        7 => v7,
+        8 => v8
+      }) do
+    %{0 => v1, 1 => v2, 2 => v3, 3 => v4, 4 => v5, 5 => v6, 6 => v7 + v0, 7 => v8, 8 => v0}
+  end
+
+  def run_school(school, 0) do
+    sum(school)
+  end
+
+  def run_school(school, days) do
+    new_school = day_for_school(school)
+    run_school(new_school, days - 1)
+  end
+end
+```
+
+```output
+{:module, LF2, <<70, 79, 82, 49, 0, 0, 14, ...>>, {:run_school, 2}}
+```
+
+```elixir
+LF2.group(input_test)
+|> LF2.run_school(256)
+```
+
+```output
+26984457539
+```
+
+```elixir
+LF2.group(input)
+|> LF2.run_school(256)
+```
+
+```output
+1687617803407
+```
+
+Correct: 1687617803407

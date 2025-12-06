@@ -1,0 +1,243 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 11: Dumbo Octopus
+
+## Intro
+
+[https://adventofcode.com/2021/day/11](https://adventofcode.com/2021/day/11)
+
+## Input
+
+```elixir
+input_test =
+  """
+  5483143223
+  2745854711
+  5264556173
+  6141336146
+  6357385478
+  4167524645
+  2176841721
+  6882881134
+  4846848554
+  5283751526
+  """
+  |> String.split("\n", trim: true)
+```
+
+```output
+["5483143223", "2745854711", "5264556173", "6141336146", "6357385478", "4167524645", "2176841721",
+ "6882881134", "4846848554", "5283751526"]
+```
+
+```elixir
+input =
+  """
+  8624818384
+  3725473343
+  6618341827
+  4573826616
+  8357322142
+  6846358317
+  7286886112
+  8138685117
+  6161124267
+  3848415383
+  """
+  |> String.split("\n", trim: true)
+```
+
+```output
+["8624818384", "3725473343", "6618341827", "4573826616", "8357322142", "6846358317", "7286886112",
+ "8138685117", "6161124267", "3848415383"]
+```
+
+## Part 1
+
+```elixir
+defmodule Flash do
+  def step(grid, run_grid) do
+    increased_grid = Enum.map(grid, fn {pos, value} -> {pos, value + 1} end) |> Map.new()
+
+    {g, flashed} =
+      Enum.reduce(run_grid, {increased_grid, MapSet.new()}, fn pos, {gr, flashed} ->
+        if gr[pos] in flashed or gr[pos] <= 9 do
+          {gr, flashed}
+        else
+          flash([pos], gr, flashed, run_grid)
+        end
+      end)
+
+    # IO.inspect(MapSet.size(flashed))
+    {g, MapSet.size(flashed)}
+  end
+
+  def flash([], grid, flashed, _run_grid) do
+    {grid, flashed}
+  end
+
+  def flash([pos | rest_to_check], grid, flashed, run_grid) do
+    if grid[pos] < 9 do
+      if pos not in flashed do
+        flash(rest_to_check, %{grid | pos => grid[pos] + 1}, flashed, run_grid)
+      else
+        flash(rest_to_check, grid, flashed, run_grid)
+      end
+    else
+      flashed = MapSet.put(flashed, pos)
+      {x, y} = pos
+
+      to_check =
+        [
+          {x - 1, y - 1},
+          {x, y - 1},
+          {x + 1, y - 1},
+          {x - 1, y},
+          {x + 1, y},
+          {x - 1, y + 1},
+          {x, y + 1},
+          {x + 1, y + 1}
+        ]
+        |> Enum.filter(fn p -> p in run_grid end)
+        |> Enum.filter(fn p -> p not in flashed end)
+
+      flash(rest_to_check ++ to_check, %{grid | pos => 0}, flashed, run_grid)
+    end
+  end
+
+  def print_grid(gr) do
+    {{xmax, _y}, _v} = gr |> Enum.max_by(fn {{x, _y}, _v} -> x end)
+    {{_x, ymax}, _v} = gr |> Enum.max_by(fn {{_x, y}, _v} -> y end)
+
+    for x <- 0..xmax do
+      for y <- 0..ymax do
+        gr[{x, y}]
+      end
+    end
+  end
+end
+```
+
+```output
+{:module, Flash, <<70, 79, 82, 49, 0, 0, 19, ...>>, {:print_grid, 1}}
+```
+
+```elixir
+grid =
+  for {line, row} <- Enum.with_index(input_test),
+      {number, col} <- Enum.with_index(String.to_charlist(line)),
+      into: %{} do
+    {{row, col}, number - ?0}
+  end
+
+run_grid = Enum.map(grid, fn {pos, _value} -> pos end)
+
+number_of_steps = 100
+
+{g, number_of_flashes} =
+  Enum.reduce(1..number_of_steps, {grid, 0}, fn _i, {gr, sum} ->
+    {g2, nf} = Flash.step(gr, run_grid)
+    {g2, sum + nf}
+  end)
+
+number_of_flashes
+# Flash.print_grid(g)
+```
+
+```output
+1656
+```
+
+Correct (100 steps): 1656
+
+```elixir
+grid =
+  for {line, row} <- Enum.with_index(input),
+      {number, col} <- Enum.with_index(String.to_charlist(line)),
+      into: %{} do
+    {{row, col}, number - ?0}
+  end
+
+run_grid = Enum.map(grid, fn {pos, _value} -> pos end)
+
+number_of_steps = 100
+
+{g, number_of_flashes} =
+  Enum.reduce(1..number_of_steps, {grid, 0}, fn _i, {gr, sum} ->
+    {g2, nf} = Flash.step(gr, run_grid)
+    {g2, sum + nf}
+  end)
+
+number_of_flashes
+```
+
+```output
+1667
+```
+
+Correct: 1667
+
+## Part 2
+
+```elixir
+defmodule Flash2 do
+  def all_flashed?(grid) do
+    Enum.all?(grid, fn {_pos, val} -> val == 0 end)
+  end
+
+  def find_first_all_flash(grid, run_grid) do
+    find_first_all_flash(grid, run_grid, 0)
+  end
+
+  defp find_first_all_flash(grid, run_grid, step_count) do
+    if all_flashed?(grid) == true do
+      step_count
+    else
+      {next_grid, _nf} = Flash.step(grid, run_grid)
+      find_first_all_flash(next_grid, run_grid, step_count + 1)
+    end
+  end
+end
+```
+
+```output
+{:module, Flash2, <<70, 79, 82, 49, 0, 0, 8, ...>>, {:find_first_all_flash, 3}}
+```
+
+```elixir
+grid =
+  for {line, row} <- Enum.with_index(input_test),
+      {number, col} <- Enum.with_index(String.to_charlist(line)),
+      into: %{} do
+    {{row, col}, number - ?0}
+  end
+
+run_grid = Enum.map(grid, fn {pos, _value} -> pos end)
+
+Flash2.find_first_all_flash(grid, run_grid)
+```
+
+```output
+195
+```
+
+Correct: 195
+
+```elixir
+grid =
+  for {line, row} <- Enum.with_index(input),
+      {number, col} <- Enum.with_index(String.to_charlist(line)),
+      into: %{} do
+    {{row, col}, number - ?0}
+  end
+
+run_grid = Enum.map(grid, fn {pos, _value} -> pos end)
+
+Flash2.find_first_all_flash(grid, run_grid)
+```
+
+```output
+488
+```
+
+Correct: 488

@@ -1,0 +1,110 @@
+# Day 2: Dive!
+
+## Intro
+
+[https://adventofcode.com/2021/day/2](https://adventofcode.com/2021/day/2)
+
+## Read Input - Common for part 1 and 2
+
+```elixir
+input_test =
+  """
+  forward 5
+  down 5
+  forward 8
+  up 3
+  down 8
+  forward 2
+  """
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, " ") end)
+  |> Enum.map(fn [op, d] -> {op, String.to_integer(d)} end)
+```
+
+```elixir
+input =
+  File.read!("input02.txt")
+  |> String.split("\n", trim: true)
+  |> Enum.map(fn x -> String.split(x, " ") end)
+  |> Enum.map(fn [op, d] -> {op, String.to_integer(d)} end)
+```
+
+## Part 1 - Testing
+
+Chose to solve this as a map/reduce problem, and accumulate the different values in the reducer
+
+```elixir
+{depth, forward} =
+  Enum.reduce(input_test, {0, 0}, fn {operation, distance}, {depth, forward} ->
+    case operation do
+      "down" -> {depth + distance, forward}
+      "up" -> {depth - distance, forward}
+      "forward" -> {depth, forward + distance}
+    end
+  end)
+
+IO.puts("Depth: " <> to_string(depth))
+IO.puts("Forward: " <> to_string(forward))
+solution = depth * forward
+```
+
+Expected solution should be 150
+
+## Part 1 - Running
+
+```elixir
+{depth, forward} =
+  Enum.reduce(input, {0, 0}, fn {operation, distance}, {depth, forward} ->
+    case operation do
+      "down" -> {depth + distance, forward}
+      "up" -> {depth - distance, forward}
+      "forward" -> {depth, forward + distance}
+    end
+  end)
+
+IO.puts("Depth: " <> to_string(depth))
+IO.puts("Forward: " <> to_string(forward))
+solution = depth * forward
+```
+
+Correct answer: 2120749
+
+## Part 2 - testing
+
+```elixir
+{depth, forward, aim} =
+  Enum.reduce(input_test, {0, 0, 0}, fn {operation, unit}, {depth, forward, aim} ->
+    case operation do
+      "down" -> {depth, forward, aim + unit}
+      "up" -> {depth, forward, aim - unit}
+      "forward" -> {depth + aim * unit, forward + unit, aim}
+    end
+  end)
+
+IO.puts("Depth: " <> to_string(depth))
+IO.puts("Forward: " <> to_string(forward))
+IO.puts("Aim: " <> to_string(aim))
+solution = depth * forward
+```
+
+Correct answer: 900
+
+## Part 2 - running
+
+```elixir
+{depth, forward, aim} =
+  Enum.reduce(input, {0, 0, 0}, fn {operation, unit}, {depth, forward, aim} ->
+    case operation do
+      "down" -> {depth, forward, aim + unit}
+      "up" -> {depth, forward, aim - unit}
+      "forward" -> {depth + aim * unit, forward + unit, aim}
+    end
+  end)
+
+IO.puts("Depth: " <> to_string(depth))
+IO.puts("Forward: " <> to_string(forward))
+IO.puts("Aim: " <> to_string(aim))
+solution = depth * forward
+```
+
+Correct answer: 2138382217

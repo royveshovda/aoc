@@ -1,0 +1,453 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 8: Seven Segment Search
+
+## Intro
+
+[https://adventofcode.com/2021/day/8](https://adventofcode.com/2021/day/8)
+
+## Input
+
+```elixir
+input_test =
+  """
+  be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+  edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
+  fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
+  fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
+  aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
+  fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
+  dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
+  bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
+  egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
+  gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
+  """
+  |> String.split(["\n"], trim: true)
+  |> Enum.map(fn l -> String.split(l, "|", trim: true) end)
+  |> Enum.map(fn [l, v] ->
+    [String.split(l, " ", trim: true), String.split(v, " ", trim: true)]
+  end)
+
+# |> Enum.map(fn [l,v] -> [Enum.map(l, fn ls -> String.graphemes(ls) end),
+#                        Enum.map(v, fn vs -> String.graphemes(vs) end)] end)
+```
+
+```output
+[
+  [
+    ["be", "cfbegad", "cbdgef", "fgaecd", "cgeb", "fdcge", "agebfd", "fecdb", "fabcd", "edb"],
+    ["fdgacbe", "cefdb", "cefbgd", "gcbe"]
+  ],
+  [
+    ["edbfga", "begcd", "cbg", "gc", "gcadebf", "fbgde", "acbgfd", "abcde", "gfcbed", "gfec"],
+    ["fcgedb", "cgb", "dgebacf", "gc"]
+  ],
+  [
+    ["fgaebd", "cg", "bdaec", "gdafb", "agbcfd", "gdcbef", "bgcad", "gfac", "gcb", "cdgabef"],
+    ["cg", "cg", "fdcagb", "cbg"]
+  ],
+  [
+    ["fbegcd", "cbd", "adcefb", "dageb", "afcb", "bc", "aefdc", "ecdab", "fgdeca", "fcdbega"],
+    ["efabcd", "cedba", "gadfec", "cb"]
+  ],
+  [
+    ["aecbfdg", "fbg", "gf", "bafeg", "dbefa", "fcge", "gcbea", "fcaegb", "dgceab", "fcbdga"],
+    ["gecf", "egdcabf", "bgf", "bfgea"]
+  ],
+  [
+    ["fgeab", "ca", "afcebg", "bdacfeg", "cfaedg", "gcfdb", "baec", "bfadeg", "bafgc", "acf"],
+    ["gebdcfa", "ecba", "ca", "fadegcb"]
+  ],
+  [
+    ["dbcfg", "fgd", "bdegcaf", "fgec", "aegbdf", "ecdfab", "fbedc", "dacgb", "gdcebf", "gf"],
+    ["cefg", "dcbef", "fcge", "gbcadfe"]
+  ],
+  [
+    ["bdfegc", "cbegaf", "gecbf", "dfcage", "bdacg", "ed", "bedf", "ced", "adcbefg", "gebcd"],
+    ["ed", "bcgafe", "cdgba", "cbgef"]
+  ],
+  [
+    ["egadfb", "cdbfeg", "cegd", "fecab", "cgb", "gbdefca", "cg", "fgcdab", "egfdb", "bfceg"],
+    ["gbdfcae", "bgc", "cg", "cgb"]
+  ],
+  [
+    ["gcafb", "gcf", "dcaebfg", "ecagb", "gf", "abcdeg", "gaef", "cafbge", "fdbac", "fegbdc"],
+    ["fgae", "cfgab", "fg", "bagce"]
+  ]
+]
+```
+
+```elixir
+input =
+  File.read!("input08.txt")
+  |> String.split(["\n"], trim: true)
+  |> Enum.map(fn l -> String.split(l, "|", trim: true) end)
+  |> Enum.map(fn [l, v] ->
+    [String.split(l, " ", trim: true), String.split(v, " ", trim: true)]
+  end)
+```
+
+```output
+[
+  [
+    ["fdgcea", "dgefa", "efabdg", "fdgcba", "dab", "baefc", "begd", "ebdfa", "db", "bafgdce"],
+    ["gfbcda", "cgfadb", "badcefg", "eacfgd"]
+  ],
+  [
+    ["eagfdb", "bafdec", "fdg", "edgca", "gf", "cdbafeg", "egfcdb", "bgaf", "aedfg", "defba"],
+    ["gfd", "edagcbf", "cdfebg", "gfedab"]
+  ],
+  [
+    ["faecdgb", "edgf", "decag", "cgf", "agdcbf", "aefcb", "gf", "dgebca", "fdaceg", "cefga"],
+    ["fcg", "fcbae", "fg", "aecgd"]
+  ],
+  [
+    ["abcgdfe", "gebfd", "eacbdf", "gc", "gbc", "cabdfg", "dcfab", "gdcfb", "gacd", "acfegb"],
+    ["fabdc", "cg", "bdfeg", "gbc"]
+  ],
+  [
+    ["bgcda", "cagdf", "geafdc", "fbcdge", "fedag", "fc", "egcabdf", "gfc", "gfedba", "acfe"],
+    ["cdegaf", "dbfgea", "adefbg", "afedcbg"]
+  ],
+  [
+    ["degfbc", "cdeg", "dcfbae", "debfc", "gbadecf", "begfca", "egb", "eg", "dbfge", "adgfb"],
+    ["egfdbc", "ecgfbd", "dbcagef", "cafbed"]
+  ],
+  [
+    ["gefacb", "cdg", "decgba", "badgfc", "edga", "eabcg", "dfacgeb", "dg", "efcbd", "dgbec"],
+    ["dg", "cgabe", "decfb", "dg"]
+  ],
+  [
+    ["bafdeg", "facdgbe", "dgba", "gcafbe", "bd", "bde", "gdbfe", "cegfd", "agefb", "ebcfda"],
+    ["gbafec", "bfgea", "fgecab", "cefdba"]
+  ],
+  [
+    ["bfcgea", "cadfb", "dfcg", "afbdcg", "cg", "ebgda", "bcgad", "acg", "edbcgaf", "ebfcda"],
+    ["acgfeb", "dgbca", "cegbfa", "cadbf"]
+  ],
+  [
+    ["bfeadcg", "gdcea", "bcagfe", "becdaf", "fcgbe", "bcd", "bd", "cbfdeg", "fdgb", "dbegc"],
+    ["dcb", "acged", "edbcfa", "dbgecaf"]
+  ],
+  [
+    ["bedafgc", "bagfce", "cadgf", "dbfcag", "dbca", "fbdga", "fgaced", "agb", "ab", "ebdfg"],
+    ["agb", "ba", "gdbaf", "fcbgea"]
+  ],
+  [
+    ["abcgf", "agdec", "agbcfd", "cfd", "df", "aefcbg", "decfba", "gafcd", "fbgd", "dbafegc"],
+    ["fcbag", "cegad", "gdace", "cdf"]
+  ],
+  [
+    ["cgb", "ecafdb", "bfdac", "cg", "cgfbd", "cbfega", "edbfg", "fbeagdc", "adcg", "dgcfba"],
+    ["gbfed", "fecagb", "fdbcga", "afcbd"]
+  ],
+  [
+    ["agcb", "cfaebdg", "bc", "bfedcg", "dcb", "degcab", "beadc", "dgeca", "ebfad", "fdgcea"],
+    ["acbg", "abcg", "gcba", "bc"]
+  ],
+  [
+    ["cgbf", "dafgce", "fadgbe", "bdecfg", "gdfbe", "cedab", "cg", "gce", "adfgcbe", "egdbc"],
+    ["cg", "cg", "ecfadg", "ecgdabf"]
+  ],
+  [
+    ["cd", "fecagd", "fbgca", "cdebfg", "cgfdb", "gdebf", "cbed", "gdcbfea", "gdefba", "dfc"],
+    ["cfd", "edcb", "bfdage", "edcb"]
+  ],
+  [
+    ["agbedc", "dcagbf", "af", "bcdaf", "bdagc", "gfbcae", "fgda", "bfa", "cbedf", "gcedabf"],
+    ["af", "gabecd", "dgfcaeb", "afb"]
+  ],
+  [
+    ["dgebfa", "adg", "gbed", "debfa", "dg", "adfgecb", "fcgea", "acdbef", "cafbgd", "gfade"],
+    ["adgef", "gd", "cgfbdae", "dgfacb"]
+  ],
+  [
+    ["fbc", "bcfgd", "fgdeba", "bdegacf", "bagfcd", "cbag", "afdgb", "bcdeaf", "fcgde", "cb"],
+    ["agfcdbe", "fcb", "cbf", "bc"]
+  ],
+  [
+    ["cgabd", "bgafc", "fcaedb", "bda", "bgecfad", "bfceag", "bd", "dagec", "fdbg", "dafgbc"],
+    ["cdgbefa", "bfacge", "ebcfga", "gfcab"]
+  ],
+  [
+    ["fba", "dabcge", "beacfg", "bdfc", "bagfd", "dcagb", "fgaed", "bf", "fbdagc", "dbcefag"],
+    ["gacbd", "dgeaf", "cfdb", "fab"]
+  ],
+  [
+    ["cebgd", "ade", "cbda", "cgfea", "dfabeg", "eadcg", "agdbec", "bgdecf", "ad", "deacbgf"],
+    ["ecadgfb", "dabgef", "beagdf", "ecgbd"]
+  ],
+  [
+    ["aedgc", "deafbc", "fgaedcb", "cdgfbe", "acfg", "edgfc", "ca", "cda", "dcgefa", "adbeg"],
+    ["acgf", "edcga", "cabgdfe", "gacf"]
+  ],
+  [
+    ["bcagde", "eg", "bfcea", "abgcd", "gdfcbe", "bge", "dabgcf", "bfegcad", "gceba", "aedg"],
+    ["acdgfb", "fbdgec", "agbec", "dbcefg"]
+  ],
+  [
+    ["ebacd", "decgb", "ebfac", "cbgdea", "adgb", "efabdcg", "bfdgec", "eda", "cfdaeg", "da"],
+    ["egdcb", "bgcdef", "da", "da"]
+  ],
+  [
+    ["cfgebd", "afebd", "cb", "cebda", "dgcae", "afgdcbe", "dgafeb", "bfca", "ceb", "bdcefa"],
+    ["bec", "gaced", "afedb", "eadgc"]
+  ],
+  [
+    ["bdcfea", "ge", "acfbg", "efagb", "bdaef", "badgefc", "gadbef", "eag", "gfde", "bdcgae"],
+    ["bcdaef", "bcefad", "efcadb", "gae"]
+  ],
+  [
+    ["befagd", "fd", "cbefa", "dcbega", "egacfbd", "efabd", "edcafg", "dgbf", "gedba", "fed"],
+    ["fde", "abedf", "def", "aedfb"]
+  ],
+  [
+    ["bcd", "abgcfde", "dbaf", "abecdg", "db", "dcbef", "abegcf", "efacb", "fabedc", "dgecf"],
+    ["ebcfd", "bfda", "dcb", "egcafbd"]
+  ],
+  [
+    ["fdbea", "caefbd", "gcdafe", "ecafd", "efb", "cedb", "be", "geabdcf", "gfbad", "fcaegb"],
+    ["baefgc", "defcab", "eb", "cadef"]
+  ],
+  [
+    ["dagec", "fadge", "dc", "cdg", "egacb", "adecfg", "bfgdeca", "fadegb", "dcabgf", "cdfe"],
+    ["fcde", "agcde", "efcd", "cgd"]
+  ],
+  [
+    ["dceabg", "fbaedc", "aegfdcb", "fc", "cfa", "cefgad", "bfadg", "bdcfa", "cbef", "eadbc"],
+    ["fc", "dcabf", "cebf", "afdbc"]
+  ],
+  [
+    ["defabcg", "febdg", "bdfega", "adfg", "fabcge", "edfba", "abedfc", "bdcge", "fg", "gfb"],
+    ["fgb", "fg", "fbdaec", "daefb"]
+  ],
+  [
+    ["fd", "gfbaec", "cdf", "fgced", "eacfg", "gfdebca", "fgda", "bdfeac", "cegdb", "cfadge"],
+    ["dfc", "gcfedba", "dfecg", "agfd"]
+  ],
+  [
+    ["ec", "bfeacg", "bdfca", "acdfe", "fagdbc", "eca", "febacdg", "ebcd", "eadgf", "cabedf"],
+    ["dfcae", "fecabgd", "eac", "aedfgcb"]
+  ],
+  [
+    ["edg", "dfceb", "egdcafb", "gcef", "dbcga", "cdafeb", "cgebd", "gdfbec", "eg", "gfdabe"],
+    ["fcdbeg", "ge", "bfaecd", "ebfcd"]
+  ],
+  [
+    ["ecg", "bcadfg", "egfac", "fgdca", "fgeab", "cfdage", "bceadg", "fced", "cgdebfa", "ce"],
+    ["egfba", "cfgae", "dcfe", "ec"]
+  ],
+  [
+    ["cdeg", "ec", "eac", "efdac", "dgcaf", "bagfec", "dbfeacg", "aegdfc", "bfdgca", "dfabe"],
+    ["efbad", "egdc", "afcbdg", "ce"]
+  ],
+  [
+    ["gbecda", "cbe", "egfcba", "abcdg", "agfcebd", "ecda", "bfedg", "adgcbf", "ce", "bdceg"],
+    ["ceagbd", "gdabc", "aced", "adec"]
+  ],
+  [
+    ["ecbagfd", "egfbd", "gafe", "gcadb", "bdgae", "gfbdea", "gefcbd", "bea", "ae", ...],
+    ["gdacfeb", "abedg", "fbgdec", "cbedagf"]
+  ],
+  [
+    ["bagfe", "fdeagc", "agfebd", "fbcea", "dfbca", "gcfbae", "cae", "bgce", ...],
+    ["acdfeg", "ebagf", "ce", "efcgba"]
+  ],
+  [
+    ["bf", "dagcebf", "fdegc", "ebcfda", "geadcb", "bfc", "acbfgd", ...],
+    ["acfbde", "dbacge", "cadgb", "gfab"]
+  ],
+  [
+    ["cagbf", "bcde", "bdefag", "gcfde", "cdbefg", "deafgc", ...],
+    ["fagdec", "becd", "dfb", "fgbca"]
+  ],
+  [["dbc", "db", "dgacbe", "bgced", "abde", ...], ["dgcfae", "dcb", "daeb", "bd"]],
+  [["bgdfca", "bag", "bacefd", "cbged", ...], ["bfdagc", "acdgb", "bacdg", ...]],
+  [["eafbcdg", "ebcafg", "bdge", ...], ["bcedgfa", "fgbcda", ...]],
+  [["fc", "gbced", ...], ["gfcbade", ...]],
+  [["ebc", ...], [...]],
+  [[...], ...],
+  [...],
+  ...
+]
+```
+
+## Part 1
+
+```elixir
+input_test
+|> Enum.map(fn [_l, v] -> v end)
+|> List.flatten()
+|> Enum.filter(fn s ->
+  String.length(s) == 2 or String.length(s) == 3 or String.length(s) == 4 or String.length(s) == 7
+end)
+|> Enum.count()
+```
+
+```output
+26
+```
+
+```elixir
+input
+|> Enum.map(fn [_l, v] -> v end)
+|> List.flatten()
+|> Enum.filter(fn s ->
+  String.length(s) == 2 or String.length(s) == 3 or String.length(s) == 4 or String.length(s) == 7
+end)
+|> Enum.count()
+```
+
+```output
+390
+```
+
+Correct: 390
+
+## Part 2
+
+```elixir
+i = ["be", "cfbegad", "cbdgef", "fgaecd", "cgeb", "fdcge", "agebfd", "fecdb", "fabcd", "edb"]
+```
+
+```output
+["be", "cfbegad", "cbdgef", "fgaecd", "cgeb", "fdcge", "agebfd", "fecdb", "fabcd", "edb"]
+```
+
+```elixir
+defmodule Solver do
+  def find_digit_patterns(in_data) do
+    [d1] = Enum.filter(in_data, fn x -> String.length(x) == 2 end)
+    [d4] = Enum.filter(in_data, fn x -> String.length(x) == 4 end)
+    [d7] = Enum.filter(in_data, fn x -> String.length(x) == 3 end)
+    [d8] = Enum.filter(in_data, fn x -> String.length(x) == 7 end)
+    l5 = Enum.filter(in_data, fn x -> String.length(x) == 5 end)
+    l6 = Enum.filter(in_data, fn x -> String.length(x) == 6 end)
+
+    d1 = String.graphemes(d1) |> Enum.sort()
+    d4 = String.graphemes(d4) |> Enum.sort()
+    d7 = String.graphemes(d7) |> Enum.sort()
+    d8 = String.graphemes(d8) |> Enum.sort()
+    [a] = for i <- d7, i not in d1, do: i
+    bd = for i <- d4, i not in d1, do: i
+
+    [b] = Enum.filter(bd, fn x -> Enum.all?(l6, fn l -> x in String.graphemes(l) end) end)
+
+    [d] = Enum.filter(bd, fn x -> x not in [b] end)
+
+    [td5] =
+      Enum.map(l5, fn x -> String.graphemes(x) |> List.delete(a) |> List.delete(b) end)
+      |> Enum.filter(fn l -> Enum.count(l) == 3 end)
+
+    td5 = Enum.sort(td5)
+    fg = td5 |> List.delete(a) |> List.delete(b) |> List.delete(d)
+
+    [f] = Enum.filter(fg, fn x -> x in d1 end)
+    [g] = Enum.filter(fg, fn x -> x not in d1 end)
+
+    [c] = d1 |> List.delete(f)
+
+    [e] =
+      d8
+      |> List.delete(a)
+      |> List.delete(b)
+      |> List.delete(c)
+      |> List.delete(d)
+      |> List.delete(f)
+      |> List.delete(g)
+
+    d0 = [a, b, c, e, f, g] |> Enum.sort()
+    d2 = [a, c, d, e, g] |> Enum.sort()
+    d3 = [a, c, d, f, g] |> Enum.sort()
+    d5 = [a, b, d, f, g] |> Enum.sort()
+    d6 = [a, b, d, e, f, g] |> Enum.sort()
+    d9 = [a, b, c, d, f, g] |> Enum.sort()
+
+    ds0 = List.to_string(d0)
+    ds1 = List.to_string(d1)
+    ds2 = List.to_string(d2)
+    ds3 = List.to_string(d3)
+    ds4 = List.to_string(d4)
+    ds5 = List.to_string(d5)
+    ds6 = List.to_string(d6)
+    ds7 = List.to_string(d7)
+    ds8 = List.to_string(d8)
+    ds9 = List.to_string(d9)
+
+    [ds0, ds1, ds2, ds3, ds4, ds5, ds6, ds7, ds8, ds9]
+  end
+
+  def match(pattern, [ds0, ds1, ds2, ds3, ds4, ds5, ds6, ds7, ds8, ds9]) do
+    Enum.map(pattern, fn s ->
+      cond do
+        s == ds0 ->
+          "0"
+
+        s == ds1 ->
+          "1"
+
+        s == ds2 ->
+          "2"
+
+        s == ds3 ->
+          "3"
+
+        s == ds4 ->
+          "4"
+
+        s == ds5 ->
+          "5"
+
+        s == ds6 ->
+          "6"
+
+        s == ds7 ->
+          "7"
+
+        s == ds8 ->
+          "8"
+
+        s == ds9 ->
+          "9"
+          # true -> "x"
+      end
+    end)
+  end
+end
+```
+
+```output
+{:module, Solver, <<70, 79, 82, 49, 0, 0, 27, ...>>, {:match, 2}}
+```
+
+```elixir
+input_test
+|> Enum.map(fn [l, v] ->
+  digits = Solver.find_digit_patterns(l)
+  pattern = Enum.map(v, fn s -> s |> String.graphemes() |> Enum.sort() |> List.to_string() end)
+  Solver.match(pattern, digits)
+end)
+|> Enum.map(fn x -> List.to_string(x) |> String.to_integer() end)
+|> Enum.sum()
+```
+
+```output
+61229
+```
+
+```elixir
+input
+|> Enum.map(fn [l, v] ->
+  digits = Solver.find_digit_patterns(l)
+  pattern = Enum.map(v, fn s -> s |> String.graphemes() |> Enum.sort() |> List.to_string() end)
+  Solver.match(pattern, digits)
+end)
+|> Enum.map(fn x -> List.to_string(x) |> String.to_integer() end)
+|> Enum.sum()
+```
+
+```output
+1011785
+```
+
+Correct: 1011785

@@ -1,0 +1,280 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 14: Extended Polymerization
+
+## Intro
+
+[https://adventofcode.com/2021/day/14](https://adventofcode.com/2021/day/14)
+
+## Input
+
+```elixir
+defmodule I do
+  def prepare(s) do
+    [start, templates] = String.split(s, "\n\n", trim: true)
+    start = String.graphemes(start)
+
+    templates =
+      String.split(templates, "\n", trim: true)
+      |> Enum.map(fn l ->
+        [i, r] = String.split(l, " -> ", trim: true)
+        [i1, i2] = String.graphemes(i)
+        {{i1, i2}, r}
+      end)
+      |> Map.new()
+
+    #   |> Enum.map(fn l ->
+    #       [i, r] = String.split(l, " -> ")
+    #       {i,r} end)
+
+    {start, templates}
+  end
+end
+
+{start_test, templates_test} =
+  """
+  NNCB
+
+  CH -> B
+  HH -> N
+  CB -> H
+  NH -> C
+  HB -> C
+  HC -> B
+  HN -> C
+  NN -> C
+  BH -> H
+  NC -> B
+  NB -> B
+  BN -> B
+  BB -> N
+  BC -> B
+  CC -> N
+  CN -> C
+  """
+  |> I.prepare()
+
+{start, templates} =
+  File.read!("input14.txt")
+  |> I.prepare()
+```
+
+```output
+{["O", "N", "S", "V", "V", "H", "N", "C", "F", "V", "B", "H", "K", "V", "P", "C", "H", "C", "P",
+  "V"],
+ %{
+   {"C", "S"} => "C",
+   {"P", "O"} => "F",
+   {"N", "S"} => "V",
+   {"B", "V"} => "K",
+   {"C", "V"} => "O",
+   {"B", "C"} => "S",
+   {"O", "B"} => "O",
+   {"H", "S"} => "H",
+   {"F", "N"} => "N",
+   {"O", "F"} => "K",
+   {"H", "H"} => "N",
+   {"P", "H"} => "F",
+   {"K", "N"} => "O",
+   {"B", "O"} => "C",
+   {"O", "H"} => "K",
+   {"S", "P"} => "C",
+   {"B", "B"} => "K",
+   {"O", "S"} => "P",
+   {"V", "B"} => "V",
+   {"V", "P"} => "P",
+   {"P", "N"} => "O",
+   {"K", "B"} => "F",
+   {"V", "O"} => "C",
+   {"N", "P"} => "O",
+   {"K", "C"} => "S",
+   {"B", "F"} => "P",
+   {"S", "B"} => "V",
+   {"N", "O"} => "H",
+   {"F", "H"} => "H",
+   {"O", "C"} => "O",
+   {"K", "O"} => "V",
+   {"C", "N"} => "N",
+   {"C", "P"} => "S",
+   {"K", "F"} => "B",
+   {"S", "O"} => "O",
+   {"K", "P"} => "O",
+   {"V", "K"} => "F",
+   {"H", "N"} => "O",
+   {"F", "V"} => "F",
+   {"P", "B"} => "F",
+   {"F", "C"} => "C",
+   {"N", "B"} => "F",
+   {"O", "K"} => "O",
+   {"F", "O"} => "C",
+   {"O", "O"} => "F",
+   {"H", "C"} => "S",
+   {"F", ...} => "K",
+   {...} => "H",
+   ...
+ }}
+```
+
+## Part 1
+
+```elixir
+defmodule P1 do
+  def extend(sentence, templ) do
+    Enum.chunk_every(sentence, 2, 1)
+    |> Enum.map(fn pair ->
+      if length(pair) == 2 do
+        [p1, p2] = pair
+        v = templ[{p1, p2}]
+        [p1, v]
+      else
+        pair
+      end
+    end)
+    |> List.flatten()
+  end
+
+  def extend_multiple(sentence, templ, times) do
+    Enum.reduce(1..times, sentence, fn i, s ->
+      extend(s, templ)
+    end)
+  end
+end
+```
+
+```output
+warning: variable "i" is unused (if the variable is not meant to be used, prefix it with an underscore)
+  14.livemd#cell:17: P1.extend_multiple/3
+
+```
+
+```output
+{:module, P1, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:extend_multiple, 3}}
+```
+
+```elixir
+items =
+  P1.extend_multiple(start_test, templates_test, 10)
+  |> Enum.group_by(fn x -> x end)
+  |> Enum.map(fn {k, v} -> {k, Enum.count(v)} end)
+
+min = items |> Enum.min_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+max = items |> Enum.max_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+
+max - min == 1588
+```
+
+```output
+true
+```
+
+```elixir
+items =
+  P1.extend_multiple(start, templates, 10)
+  |> Enum.group_by(fn x -> x end)
+  |> Enum.map(fn {k, v} -> {k, Enum.count(v)} end)
+
+min = items |> Enum.min_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+max = items |> Enum.max_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+
+max - min
+```
+
+```output
+3259
+```
+
+Correct: 3259
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def build_elements(templ) do
+    Enum.reduce(templ, MapSet.new(), fn {{e1, e2}, e3}, map ->
+      map |> MapSet.put(e1) |> MapSet.put(e2) |> MapSet.put(e3)
+    end)
+    |> MapSet.to_list()
+    |> Enum.map(fn e -> {e, 0} end)
+    |> Map.new()
+  end
+
+  def build_pairs(templ) do
+    Enum.map(templ, fn {v1, _v2} -> {v1, 0} end) |> Map.new()
+  end
+
+  def build_start(start_d, templates_d) do
+    pairs = build_pairs(templates_d)
+    elements = build_elements(templates_d)
+
+    elements = Enum.reduce(start_d, elements, fn e, el -> %{el | e => el[e] + 1} end)
+
+    pairs =
+      Enum.chunk_every(start_d, 2, 1, :discard)
+      |> Enum.reduce(pairs, fn [v1, v2], p -> %{p | {v1, v2} => p[{v1, v2}] + 1} end)
+
+    {elements, pairs}
+  end
+
+  def step(elements, pairs, templ) do
+    Enum.reduce(pairs, {elements, pairs}, fn {{v1, v2} = pair, pair_count}, {elems, ps} ->
+      e = templ[pair]
+      elems = %{elems | e => elems[e] + pair_count}
+      ps = %{ps | pair => ps[pair] - pair_count}
+
+      p1 = {v1, e}
+      p2 = {e, v2}
+
+      ps = %{ps | p1 => ps[p1] + pair_count}
+      ps = %{ps | p2 => ps[p2] + pair_count}
+
+      {elems, ps}
+    end)
+  end
+end
+```
+
+```output
+{:module, P2, <<70, 79, 82, 49, 0, 0, 16, ...>>, {:step, 3}}
+```
+
+```elixir
+{elements, pairs} = P2.build_start(start_test, templates_test)
+
+times = 40
+
+{e, p} =
+  Enum.reduce(1..times, {elements, pairs}, fn _i, {elems, ps} ->
+    P2.step(elems, ps, templates_test)
+  end)
+
+min = e |> Enum.min_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+max = e |> Enum.max_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+
+max - min
+```
+
+```output
+2188189693529
+```
+
+```elixir
+{elements, pairs} = P2.build_start(start, templates)
+
+times = 40
+
+{e, p} =
+  Enum.reduce(1..times, {elements, pairs}, fn _i, {elems, ps} ->
+    P2.step(elems, ps, templates)
+  end)
+
+min = e |> Enum.min_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+max = e |> Enum.max_by(fn {_k, v} -> v end) |> then(fn {_k, v} -> v end)
+
+max - min
+```
+
+```output
+3459174981021
+```
+
+Correct: 3459174981021

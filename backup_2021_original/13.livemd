@@ -1,0 +1,279 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 13: Transparent Origami
+
+## Intro
+
+[https://adventofcode.com/2021/day/13](https://adventofcode.com/2021/day/13)
+
+## Input
+
+```elixir
+defmodule Input do
+  def prepare(i) do
+    [dots, folds] = String.split(i, "\n\n", trim: true)
+
+    dots =
+      dots
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn s ->
+        [x, y] = String.split(s, ",")
+        {String.to_integer(x), String.to_integer(y)}
+      end)
+      |> MapSet.new()
+
+    folds =
+      folds
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn s -> String.trim_leading(s, "fold along ") end)
+      |> Enum.map(fn s -> String.split(s, "=") end)
+      |> Enum.map(fn [axis, line] -> %{"axis" => axis, "at" => String.to_integer(line)} end)
+
+    {dots, folds}
+  end
+end
+```
+
+```output
+{:module, Input, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:prepare, 1}}
+```
+
+```elixir
+{dots_test, folds_test} =
+  """
+  6,10
+  0,14
+  9,10
+  0,3
+  10,4
+  4,11
+  6,0
+  6,12
+  4,1
+  0,13
+  10,12
+  3,4
+  3,0
+  8,4
+  1,10
+  2,14
+  8,10
+  9,0
+
+  fold along y=7
+  fold along x=5
+  """
+  |> Input.prepare()
+```
+
+```output
+{#MapSet<[
+   {0, 3},
+   {0, 13},
+   {0, 14},
+   {1, 10},
+   {2, 14},
+   {3, 0},
+   {3, 4},
+   {4, 1},
+   {4, 11},
+   {6, 0},
+   {6, 10},
+   {6, 12},
+   {8, 4},
+   {8, 10},
+   {9, 0},
+   {9, 10},
+   {10, 4},
+   {10, 12}
+ ]>, [%{"at" => 7, "axis" => "y"}, %{"at" => 5, "axis" => "x"}]}
+```
+
+```elixir
+{dots, folds} =
+  File.read!("input13.txt")
+  |> Input.prepare()
+```
+
+```output
+{#MapSet<[
+   {950, 833},
+   {904, 861},
+   {1078, 245},
+   {169, 73},
+   {264, 740},
+   {1019, 880},
+   {1260, 267},
+   {805, 772},
+   {907, 812},
+   {711, 523},
+   {691, 432},
+   {341, 676},
+   {947, 686},
+   {447, 658},
+   {131, 780},
+   {1288, 313},
+   {705, 724},
+   {880, 472},
+   {490, 305},
+   {663, 12},
+   {283, 591},
+   {887, 143},
+   {457, 515},
+   {251, 707},
+   {1223, 788},
+   {239, 778},
+   {264, 154},
+   {1191, 322},
+   {883, 894},
+   {1121, 709},
+   {1232, 413},
+   {333, 194},
+   {209, 312},
+   {557, 887},
+   {545, 219},
+   {1193, 669},
+   {1129, 84},
+   {1235, 564},
+   {104, 159},
+   {895, 113},
+   {33, 239},
+   {442, 670},
+   {525, 379},
+   {693, 807},
+   {1131, 870},
+   {1275, 238},
+   {1275, 443},
+   {855, ...},
+   {...},
+   ...
+ ]>,
+ [
+   %{"at" => 655, "axis" => "x"},
+   %{"at" => 447, "axis" => "y"},
+   %{"at" => 327, "axis" => "x"},
+   %{"at" => 223, "axis" => "y"},
+   %{"at" => 163, "axis" => "x"},
+   %{"at" => 111, "axis" => "y"},
+   %{"at" => 81, "axis" => "x"},
+   %{"at" => 55, "axis" => "y"},
+   %{"at" => 40, "axis" => "x"},
+   %{"at" => 27, "axis" => "y"},
+   %{"at" => 13, "axis" => "y"},
+   %{"at" => 6, "axis" => "y"}
+ ]}
+```
+
+## Part 1
+
+```elixir
+defmodule F do
+  def fold(dots, %{"axis" => axis, "at" => line}) do
+    dots
+    |> Enum.reduce(MapSet.new(), fn {x, y}, ds ->
+      if axis == "x" do
+        # IO.puts("X")
+        cond do
+          x < line -> MapSet.put(ds, {x, y})
+          x == line -> ds
+          x > line -> MapSet.put(ds, {line * 2 - x, y})
+        end
+      else
+        # IO.puts("Y")
+        cond do
+          y < line -> MapSet.put(ds, {x, y})
+          y == line -> ds
+          y > line -> MapSet.put(ds, {x, line * 2 - y})
+        end
+      end
+    end)
+  end
+end
+
+f0 = Enum.at(folds_test, 0)
+f = folds_test
+d = dots_test
+
+Enum.reduce(f, d, fn fold, map -> F.fold(map, fold) end) |> MapSet.size()
+# F.fold(d, f0) |> MapSet.size()
+```
+
+```output
+16
+```
+
+```elixir
+f0 = Enum.at(folds_test, 0)
+f = folds_test
+d = dots_test
+
+# Enum.reduce(f, d, fn fold, map -> F.fold(map, fold) end) |> MapSet.size()
+F.fold(d, f0) |> MapSet.size()
+```
+
+```output
+17
+```
+
+```elixir
+f0 = Enum.at(folds, 0)
+d = dots
+
+# Enum.reduce(f, d, fn fold, map -> F.fold(map, fold) end) |> MapSet.size()
+F.fold(d, f0) |> MapSet.size()
+```
+
+```output
+770
+```
+
+Correct: 770
+
+## Part 2
+
+```elixir
+defmodule F2 do
+  def print(dots) do
+    xmax = dots |> Enum.max_by(fn {x, _y} -> x end) |> then(fn {x, _y} -> x end)
+    ymax = dots |> Enum.max_by(fn {_x, y} -> y end) |> then(fn {_x, y} -> y end)
+
+    m =
+      for y <- 0..ymax do
+        r =
+          for x <- 0..xmax do
+            if {x, y} in dots do
+              "#"
+            else
+              "."
+            end
+          end
+
+        List.to_string(r)
+      end
+
+    Enum.map(m, fn r -> IO.puts(r) end)
+    m
+  end
+end
+
+d = dots
+f = folds
+Enum.reduce(f, d, fn fold, map -> F.fold(map, fold) end) |> F2.print()
+```
+
+```output
+####.###..#..#.####.#....###..###..###.
+#....#..#.#..#.#....#....#..#.#..#.#..#
+###..#..#.#..#.###..#....#..#.###..#..#
+#....###..#..#.#....#....###..#..#.###.
+#....#....#..#.#....#....#....#..#.#.#.
+####.#.....##..####.####.#....###..#..#
+```
+
+```output
+["####.###..#..#.####.#....###..###..###.", "#....#..#.#..#.#....#....#..#.#..#.#..#",
+ "###..#..#.#..#.###..#....#..#.###..#..#", "#....###..#..#.#....#....###..#..#.###.",
+ "#....#....#..#.#....#....#....#..#.#.#.", "####.#.....##..####.####.#....###..#..#"]
+```
+
+Correct: EPUELPBR

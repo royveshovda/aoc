@@ -1,0 +1,280 @@
+# Day 16: Packet Decoder
+
+## Intro
+
+[https://adventofcode.com/2021/day/16](https://adventofcode.com/2021/day/16)
+
+## Input
+
+```elixir
+input_test = "D2FE28"
+# input_test = "8A004A801A8002F478"
+```
+
+```elixir
+input = File.read!("input16.txt")
+```
+
+## Part 1
+
+```elixir
+defmodule P1 do
+  def parse(hex) do
+    bits = prepare(hex)
+    parse_bits(bits)
+  end
+
+  defp parse_bits(bits) do
+    if length(bits) == 0 or Enum.all?(bits, fn x -> x == "0" end) do
+      {{nil, nil, nil}, []}
+    else
+      {version, rest} = Enum.split(bits, 3)
+      version = version |> List.to_string() |> String.to_integer(2)
+      {type, content} = Enum.split(rest, 3)
+      type = type |> List.to_string() |> String.to_integer(2)
+      parse_type(version, type, content)
+    end
+  end
+
+  defp prepare(string) do
+    map = get_map()
+
+    string
+    |> String.graphemes()
+    |> Enum.map(fn x -> map[x] end)
+    |> List.to_string()
+    |> String.graphemes()
+  end
+
+  defp get_map() do
+    %{
+      "0" => "0000",
+      "1" => "0001",
+      "2" => "0010",
+      "3" => "0011",
+      "4" => "0100",
+      "5" => "0101",
+      "6" => "0110",
+      "7" => "0111",
+      "8" => "1000",
+      "9" => "1001",
+      "A" => "1010",
+      "B" => "1011",
+      "C" => "1100",
+      "D" => "1101",
+      "E" => "1110",
+      "F" => "1111"
+    }
+  end
+
+  defp parse_type(version, 4, data) do
+    {value, rest} = parse_literal_value(data, [])
+    {{version, 4, value}, rest}
+  end
+
+  defp parse_type(version, type, data) do
+    {length_type, content} = Enum.split(data, 1)
+    parse_operator(version, type, length_type, content)
+  end
+
+  defp parse_operator(version, type, ["0"], content) do
+    {l, payload} = Enum.split(content, 15)
+    l = l |> List.to_string() |> String.to_integer(2)
+
+    {content, rest} = Enum.split(payload, l)
+
+    parsed =
+      Enum.reduce_while(1..l, {content, []}, fn _i, {c, acc} ->
+        if length(c) == 0 or Enum.all?(c, fn x -> x == "0" end) do
+          {:halt, acc}
+        else
+          {r, rem} = parse_bits(c)
+          {:cont, {rem, acc ++ [r]}}
+        end
+      end)
+
+    {{version, type, parsed}, rest}
+  end
+
+  defp parse_operator(version, type, ["1"], content) do
+    {l, payload} = Enum.split(content, 11)
+    l = l |> List.to_string() |> String.to_integer(2)
+
+    {subs, rest} =
+      Enum.reduce(1..l, {[], payload}, fn _i, {subs, remaining} ->
+        {sub, rem} = parse_bits(remaining)
+        {subs ++ [sub], rem}
+      end)
+
+    {{version, type, subs}, rest}
+  end
+
+  def parse_literal_value(data, acc) do
+    {block, rest} = Enum.split(data, 5)
+    parse_literal_value(block, rest, acc)
+  end
+
+  defp parse_literal_value(["0" | val], rest, acc) do
+    v = (acc ++ val) |> List.to_string() |> String.to_integer(2)
+    {v, rest}
+  end
+
+  defp parse_literal_value(["1" | val], rest, acc) do
+    parse_literal_value(rest, acc ++ val)
+  end
+
+  def sum_versions({version, 4, _value}), do: version
+
+  def sum_versions({version, _type, subs}) do
+    version + (Enum.map(subs, fn s -> sum_versions(s) end) |> Enum.sum())
+  end
+end
+
+# P1.parse("D2FE28")
+# P1.parse("EE00D40C823060")
+{r, _rest} = P1.parse(input)
+P1.sum_versions(r)
+
+# P1.parse("8A004A801A8002F478")
+```
+
+Correct: 897
+
+## Part 2
+
+```elixir
+defmodule P2 do
+  def calculate({_version, 4, value}) do
+    value
+  end
+
+  def calculate({_version, 0, values}) do
+    Enum.map(values, fn e -> calculate(e) end) |> Enum.sum()
+  end
+
+  def calculate({_version, 1, values}) do
+    Enum.map(values, fn e -> calculate(e) end) |> Enum.product()
+  end
+
+  def calculate({_version, 2, values}) do
+    Enum.map(values, fn e -> calculate(e) end) |> Enum.min()
+  end
+
+  def calculate({_version, 3, values}) do
+    Enum.map(values, fn e -> calculate(e) end) |> Enum.max()
+  end
+
+  def calculate({_version, 5, [v1, v2]}) do
+    v1 = calculate(v1)
+    v2 = calculate(v2)
+
+    if v1 > v2 do
+      1
+    else
+      0
+    end
+  end
+
+  def calculate({_version, 6, [v1, v2]}) do
+    v1 = calculate(v1)
+    v2 = calculate(v2)
+
+    if v1 < v2 do
+      1
+    else
+      0
+    end
+  end
+
+  def calculate({_version, 7, [v1, v2]}) do
+    v1 = calculate(v1)
+    v2 = calculate(v2)
+
+    if v1 == v2 do
+      1
+    else
+      0
+    end
+  end
+
+  def calculate({_version, x, _values}) do
+    IO.puts("Unknown operator: " <> Integer.to_string(x))
+  end
+end
+
+{r, _rest} = P1.parse("C200B40A82")
+3 = P2.calculate(r)
+
+{r, _rest} = P1.parse("04005AC33890")
+54 = P2.calculate(r)
+
+{r, _rest} = P1.parse("880086C3E88112")
+7 = P2.calculate(r)
+
+{r, _rest} = P1.parse("CE00C43D881120")
+9 = P2.calculate(r)
+
+{r, _rest} = P1.parse("D8005AC2A8F0")
+1 = P2.calculate(r)
+
+{r, _rest} = P1.parse("F600BC2D8F")
+0 = P2.calculate(r)
+
+{r, _rest} = P1.parse("9C005AC2F8F0")
+0 = P2.calculate(r)
+
+{r, _rest} = P1.parse("9C0141080250320F1802104A08")
+1 = P2.calculate(r)
+
+# Actual input
+{r, _rest} = P1.parse(input)
+9_485_076_995_911 = P2.calculate(r)
+
+:ok
+```
+
+## Better solution
+
+```elixir
+defmodule Aoc2021.Day16 do
+  def h2b(<<>>), do: <<>>
+
+  def h2b(<<a, b, r::binary>>) do
+    :binary.encode_unsigned(elem(Integer.parse(<<a, b>>, 16), 0)) <> h2b(r)
+  end
+
+  def literal(<<0::1, x::size(4), r::bitstring>>, acc, v), do: {r, acc * 16 + x, v}
+  def literal(<<1::1, x::size(4), r::bitstring>>, acc, v), do: literal(r, acc * 16 + x, v)
+
+  def pkts(<<>>, l, s, c), do: {c, l, s}
+
+  def pkts(<<b::bitstring>>, l, s, c),
+    do: packet(b) |> (fn {r, a, v} -> pkts(r, [a | l], s + v, c) end).()
+
+  def pktl(b, l, 0, s), do: {b, l, s}
+  def pktl(b, l, n, s), do: packet(b) |> (fn {r, a, v} -> pktl(r, [a | l], n - 1, s + v) end).()
+
+  def eval({r, l, v}, 0), do: {r, Enum.sum(l), v}
+  def eval({r, l, v}, 1), do: {r, Enum.product(l), v}
+  def eval({r, l, v}, 2), do: {r, Enum.min(l), v}
+  def eval({r, l, v}, 3), do: {r, Enum.max(l), v}
+  def eval({r, [b, a], v}, 5), do: {r, if(a > b, do: 1, else: 0), v}
+  def eval({r, [b, a], v}, 6), do: {r, if(a < b, do: 1, else: 0), v}
+  def eval({r, [b, a], v}, 7), do: {r, if(a == b, do: 1, else: 0), v}
+
+  def packet(<<v::size(3), t::size(3), r::bitstring>>) when t == 4, do: literal(r, 0, v)
+
+  def packet(<<v::size(3), t::size(3), 1::1, len::size(11), r::bitstring>>) do
+    eval(pktl(r, [], len, v), t)
+  end
+
+  def packet(<<v::size(3), t::size(3), 0::1, len::size(15), sp::size(len), rr::bitstring>>) do
+    eval(pkts(<<sp::size(len)>>, [], v, rr), t)
+  end
+
+  def part1(args), do: h2b(hd(args)) |> packet |> elem(2)
+  def part2(args), do: h2b(hd(args)) |> packet |> elem(1)
+end
+
+Aoc2021.Day16.part1(String.to_(input))
+```

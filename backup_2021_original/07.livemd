@@ -1,0 +1,129 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 7: The Treachery of Whales
+
+## Intro
+
+[https://adventofcode.com/2021/day/7](https://adventofcode.com/2021/day/7)
+
+## Input
+
+```elixir
+input_test =
+  """
+  16,1,2,0,4,2,7,1,2,14
+  """
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[16, 1, 2, 0, 4, 2, 7, 1, 2, 14]
+```
+
+```elixir
+input =
+  File.read!("input07.txt")
+  |> String.split(["\n", ","], trim: true)
+  |> Enum.map(&String.to_integer/1)
+```
+
+```output
+[1101, 1, 29, 67, 1102, 0, 1, 65, 1008, 65, 35, 66, 1005, 66, 28, 1, 67, 65, 20, 4, 0, 1001, 65, 1,
+ 65, 1106, 0, 8, 99, 35, 67, 101, 99, 105, 32, 110, 39, 101, 115, 116, 32, 112, 97, 115, 32, 117,
+ 110, 101, 32, 105, ...]
+```
+
+## Part 1
+
+```elixir
+mmin = Enum.min(input_test)
+mmax = Enum.max(input_test)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input_test, 0, fn i, acc -> abs(i - p) + acc end) end)
+|> Enum.min()
+```
+
+```output
+37
+```
+
+```elixir
+mmin = Enum.min(input)
+mmax = Enum.max(input)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input, 0, fn i, acc -> abs(i - p) + acc end) end)
+|> Enum.min()
+```
+
+```output
+343468
+```
+
+Correct: 343468
+
+## Part 2
+
+```elixir
+defmodule Sum do
+  def f(steps), do: f(steps, 1, 0)
+
+  defp f(0, _price, sum) do
+    sum
+  end
+
+  defp f(steps_left, price, sum) do
+    f(steps_left - 1, price + 1, sum + price)
+  end
+end
+```
+
+```output
+{:module, Sum, <<70, 79, 82, 49, 0, 0, 5, ...>>, {:f, 3}}
+```
+
+```elixir
+Sum.f(11)
+```
+
+```output
+66
+```
+
+```elixir
+mmin = Enum.min(input_test)
+mmax = Enum.max(input_test)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input_test, 0, fn i, acc -> Sum.f(abs(i - p)) + acc end) end)
+|> Enum.min()
+```
+
+```output
+168
+```
+
+```elixir
+mmin = Enum.min(input)
+mmax = Enum.max(input)
+
+v = for i <- mmin..mmax, do: i
+
+v
+|> Enum.map(fn p -> Enum.reduce(input, 0, fn i, acc -> Sum.f(abs(i - p)) + acc end) end)
+|> Enum.min()
+```
+
+```output
+96086265
+```
+
+Correct: 96086265

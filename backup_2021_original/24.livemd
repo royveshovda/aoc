@@ -1,0 +1,25 @@
+# Day 24: ???
+
+## Intro
+
+## Input
+
+```elixir
+input_test =
+  """
+  ???
+  """
+  |> String.split("\n", trim: true)
+```
+
+```elixir
+input =
+  File.read!("input24.txt")
+  |> String.split("\n", trim: true)
+```
+
+## Part 1
+
+```elixir
+
+```
