@@ -45,7 +45,7 @@ aoc 2021, 17 do
     x_min = Enum.min(x_range)
     x_max = Enum.max(x_range)
     y_min = Enum.min(y_range)
-    y_max = Enum.max(y_range)
+    # y_max = Enum.max(y_range)
 
     # x velocity range: min is when dx reaches 0 at x_min
     # vx*(vx+1)/2 >= x_min, so vx >= sqrt(2*x_min) - 1

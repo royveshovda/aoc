@@ -288,18 +288,6 @@ aoc 2019, 25 do
   defp opposite("east"), do: "west"
   defp opposite("west"), do: "east"
 
-  # Get current room by sending empty command and parsing
-  defp current_room_name(_rooms, vm) do
-    # Send a command that shows current room
-    {_, output} = run_vm(vm, "inv\n")
-    # The inventory command doesn't show room, so look at last room in output
-    # This is a hack - we'll need the room name from output
-    case Regex.run(~r/== (.+) ==/, output) do
-      [_, name] -> name
-      _ -> "Hull Breach"
-    end
-  end
-
   # BFS to find path between rooms
   defp find_path_to(rooms, from, to) do
     if from == to do
