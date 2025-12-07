@@ -5,6 +5,7 @@ Quick reference for patterns learned from specific AoC days. Organized by year.
 ## 2025
 
 - **Columnar parsing (Day 6)**: Problems arranged vertically, separated by space columns. Transpose rows→columns, group by all-space separators. Part 2 twist: each column = digit, read numbers top-to-bottom, problems read right-to-left
+- **Beam splitting (Day 7)**: Part 1 uses `MapSet` for positions (beams merge), Part 2 uses `Map` with counts (timelines are independent). Each splitter doubles timeline count = exponential growth
 
 ## 2016
 

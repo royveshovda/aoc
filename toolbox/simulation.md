@@ -880,3 +880,96 @@ end
 - Build map of room connections during exploration
 - Collect safe items (avoid traps like "molten lava", "infinite loop")
 - Try all 2^n combinations for weight/combination puzzles
+
+---
+
+## Beam/Particle Splitting Simulation (2025 Day 7)
+
+When simulating beams or particles that split, there are two common variants:
+
+### Part 1: Count Splitter Hits (Use MapSet for positions)
+Track unique positions where beams currently are. When beams merge at the same position, they become one beam.
+
+```elixir
+def simulate_beams(grid, initial_beams, max_y) do
+  simulate(grid, initial_beams, max_y, 0)
+end
+
+defp simulate(_grid, [], _max_y, splits), do: splits
+
+defp simulate(grid, beams, max_y, splits) do
+  # Move all beams down one step
+  {new_beams, new_splits} =
+    beams
+    |> Enum.reduce({MapSet.new(), 0}, fn {x, y}, {acc_beams, acc_splits} ->
+      next_y = y + 1
+
+      if next_y > max_y do
+        # Beam exits grid
+        {acc_beams, acc_splits}
+      else
+        case Map.get(grid, {x, next_y}, ".") do
+          "^" ->
+            # Splitter! Emit two new beams left and right
+            {acc_beams
+             |> MapSet.put({x - 1, next_y})
+             |> MapSet.put({x + 1, next_y}), acc_splits + 1}
+
+          _ ->
+            # Continue downward
+            {MapSet.put(acc_beams, {x, next_y}), acc_splits}
+        end
+      end
+    end)
+
+  simulate(grid, MapSet.to_list(new_beams), max_y, splits + new_splits)
+end
+```
+
+### Part 2: Count Timelines/Paths (Use Map with counts)
+Track how many timelines exist at each position. When a timeline hits a splitter, it doubles (goes both left AND right in separate timelines).
+
+```elixir
+def count_timelines(grid, start_pos, max_y) do
+  # Map: position -> number of timelines at that position
+  simulate_timelines(grid, %{start_pos => 1}, max_y)
+end
+
+defp simulate_timelines(_grid, positions, _max_y) when map_size(positions) == 0, do: 0
+
+defp simulate_timelines(grid, positions, max_y) do
+  {new_positions, finished_timelines} =
+    positions
+    |> Enum.reduce({%{}, 0}, fn {{x, y}, timeline_count}, {acc_pos, acc_finished} ->
+      next_y = y + 1
+
+      if next_y > max_y do
+        # Timelines exit - count them
+        {acc_pos, acc_finished + timeline_count}
+      else
+        case Map.get(grid, {x, next_y}, ".") do
+          "^" ->
+            # Splitter! Each timeline splits into 2
+            acc_pos =
+              acc_pos
+              |> Map.update({x - 1, next_y}, timeline_count, &(&1 + timeline_count))
+              |> Map.update({x + 1, next_y}, timeline_count, &(&1 + timeline_count))
+
+            {acc_pos, acc_finished}
+
+          _ ->
+            # Continue - timeline count preserved
+            {Map.update(acc_pos, {x, next_y}, timeline_count, &(&1 + timeline_count)),
+             acc_finished}
+        end
+      end
+    end)
+
+  finished_timelines + simulate_timelines(grid, new_positions, max_y)
+end
+```
+
+**Key Insight:**
+- **Part 1 (count events):** Use `MapSet` - beams at same position merge
+- **Part 2 (count paths/timelines):** Use `Map` with counts - timelines are independent even if at same position
+- Each splitter doubles the timeline count (exponential growth: 2^n for n splitters in a path)

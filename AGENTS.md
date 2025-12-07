@@ -36,6 +36,7 @@ Quick guide:
 - **Modular arithmetic** → [Number Theory](toolbox/number_theory.md) (CRT sieving, modular inverse)
 - **Circular list (millions ops)** → Array-based linked list with `:array`
 - **Grammar/parsing** → Backtracking parser returning all remainders
+- **Beam/particle splitting** → `MapSet` for unique positions, `Map` with counts for timelines/paths
 - **Day-specific gotchas** → [Day Patterns](toolbox/day_specific_patterns.md)
 
 ## Quick Start
