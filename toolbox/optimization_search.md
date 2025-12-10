@@ -200,6 +200,29 @@ defp search_priority(queue, best) do
 end
 ```
 
+## 4. Linear Systems for Toggle/Counter Puzzles
+
+When buttons toggle bits (GF(2)), solve `A * x = b (mod 2)` with RREF and enumerate nullspace to minimize Hamming weight:
+
+```elixir
+{rows, pivots} = rref_bit(rows_masks, cols)
+free = free_columns(cols, pivots)
+particular = build_particular(rows, pivots)
+basis = nullspace_basis(rows, pivots, free)
+
+min_press =
+  0..((1 <<< length(basis)) - 1)
+  |> Enum.map(fn mask ->
+    Enum.reduce(0..(length(basis) - 1), particular, fn i, acc ->
+      if Bitwise.band(mask, 1 <<< i) != 0, do: Bitwise.bxor(acc, Enum.at(basis, i)), else: acc
+    end)
+  end)
+  |> Enum.map(&popcount/1)
+  |> Enum.min()
+```
+
+For integer counters with `A * x = b` and `x >= 0`, use rational RREF to express pivots in terms of free variables, then bounded search over free vars (0..per-button min target) with pruning by current sum; discard assignments where pivot values are non-integer or negative.
+
 ## 2. Greedy Algorithms
 
 **Problem:** Make locally optimal choices hoping for global optimum.
