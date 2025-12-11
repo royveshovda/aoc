@@ -4,7 +4,7 @@ This document tracks test failures and their root causes.
 
 ## 🔄 PROGRESS TRACKING
 
-**Last Updated:** December 6, 2025
+**Last Updated:** December 11, 2025
 
 ### Test Suite Status
 
@@ -14,7 +14,7 @@ This document tracks test failures and their root causes.
 | Total tests | ~560 |
 | Total doctests | ~452 |
 | Tests skipped (@tag :skip) | 38 |
-| Failures (excluding skipped) | ~47 |
+| Failures (excluding skipped) | ~36 (11 fixed in 2016) |
 
 **All input tests pass when run individually.** Failures are due to:
 1. Missing example input files (doctests)
@@ -28,20 +28,20 @@ This document tracks test failures and their root causes.
 These doctests reference `example_string()` but the example input files don't exist.
 **Fix:** Create the missing input files or remove the doctests.
 
-### 2016 (11 missing files)
-| Day | Missing File |
-|-----|--------------|
-| D1 | `input/2016_1_example_0.txt` |
-| D3 | `input/2016_3_example_0.txt` |
-| D4 | `input/2016_4_example_0.txt` |
-| D5 | `input/2016_5_example_0.txt` |
-| D7 | `input/2016_7_example_0.txt` |
-| D9 | `input/2016_9_example_0.txt` |
-| D14 | `input/2016_14_example_0.txt` |
-| D16 | `input/2016_16_example_0.txt` |
-| D21 | `input/2016_21_example_0.txt` |
-| D22 | `input/2016_22_example_0.txt` |
-| D25 | `input/2016_25_example_0.txt` |
+### 2016 (✅ RESOLVED - incomplete doctests removed)
+| Day | Status |
+|-----|--------|
+| D1 | ✅ Incomplete doctests removed |
+| D3 | ✅ Incomplete doctests removed |
+| D4 | ✅ Incomplete doctests removed |
+| D5 | ✅ Incomplete doctests removed |
+| D7 | ✅ Incomplete doctests removed |
+| D9 | ✅ Incomplete doctests removed |
+| D14 | ✅ Incomplete doctests removed |
+| D16 | ✅ Incomplete doctests removed |
+| D21 | ✅ Incomplete doctests removed |
+| D22 | ✅ Incomplete doctests removed |
+| D25 | ✅ Incomplete doctests removed |
 
 ### 2017 (6 missing files)
 | Day | Missing File |
@@ -150,8 +150,8 @@ Tests check for grid structure, not specific text.
 1. None - all critical tests pass
 
 ### Medium Priority (Create example files)
-1. Create 17 missing example input files (2016: 11, 2017: 6)
-2. Or remove/update doctests that reference them
+1. ✅ 2016: Fixed - removed 11 incomplete doctests
+2. Create 6 missing example input files for 2017 or remove/update doctests that reference them
 
 ### Low Priority (Optimization needed)
 1. Optimize slow solutions (>30s) to reduce timeout failures
