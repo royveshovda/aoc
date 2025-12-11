@@ -43,15 +43,8 @@ These doctests reference `example_string()` but the example input files don't ex
 | D22 | `input/2016_22_example_0.txt` |
 | D25 | `input/2016_25_example_0.txt` |
 
-### 2017 (6 missing files)
-| Day | Missing File |
-|-----|--------------|
-| D16 | `input/2017_16_example_0.txt` |
-| D17 | `input/2017_17_example_0.txt` |
-| D18 | `input/2017_18_example_0.txt` |
-| D19 | `input/2017_19_example_0.txt` |
-| D20 | `input/2017_20_example_0.txt` |
-| D23 | `input/2017_23_example_0.txt` |
+### 2017 (0 missing files - FIXED)
+All incomplete doctests have been removed from 2017 solution files.
 
 ---
 
@@ -90,11 +83,7 @@ All use 60s timeout. Tests marked with ⏭️ are already @tag :skip.
 
 ## 🟠 ROOT CAUSE: Code Bugs (Doctest Parse Errors)
 
-These doctests have bugs in the solution code (not missing files).
-
-| Year | Day | Error | Issue |
-|------|-----|-------|-------|
-| 2017 | D21 | MatchError | `parse/1` function has bug with example input |
+No remaining doctest parse errors - all incomplete 2017 doctests removed.
 
 ---
 
