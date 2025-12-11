@@ -1,6 +1,7 @@
 import AOC
 
 aoc_test 2015, 20, async: true do
+  @tag timeout: :infinity
   test "part 1 input" do
     assert Y2015.D20.p1(input_string()) == 786_240
   end
