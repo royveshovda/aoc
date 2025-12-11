@@ -5,17 +5,11 @@ aoc 2017, 18 do
   https://adventofcode.com/2017/day/18
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     instructions = parse(input)
     run_p1(instructions, %{}, 0, nil)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     instructions = parse(input)
     run_p2(instructions)

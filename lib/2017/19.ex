@@ -5,18 +5,12 @@ aoc 2017, 19 do
   https://adventofcode.com/2017/day/19
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     {grid, start} = parse(input)
     {letters, _steps} = follow_path(grid, start, {0, 1}, [])
     letters |> Enum.reverse() |> List.to_string()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     {grid, start} = parse(input)
     {_letters, steps} = follow_path(grid, start, {0, 1}, [])

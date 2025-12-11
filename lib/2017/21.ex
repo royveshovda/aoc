@@ -5,9 +5,6 @@ aoc 2017, 21 do
   https://adventofcode.com/2017/day/21
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     rules = parse(input)
     start = [".#.", "..#", "###"]
@@ -16,9 +13,6 @@ aoc 2017, 21 do
     count_on(final)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     rules = parse(input)
     start = [".#.", "..#", "###"]
