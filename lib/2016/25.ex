@@ -16,9 +16,6 @@ aoc 2016, 25 do
     end)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(_input) do
     "No Part 2 for Day 25!"
   end
