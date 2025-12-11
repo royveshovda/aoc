@@ -5,18 +5,12 @@ aoc 2017, 24 do
   https://adventofcode.com/2017/day/24
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     components = parse(input)
     all_bridges = build_bridges(0, components, [])
     all_bridges |> Enum.map(&strength/1) |> Enum.max()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     components = parse(input)
     all_bridges = build_bridges(0, components, [])

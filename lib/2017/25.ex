@@ -5,9 +5,6 @@ aoc 2017, 25 do
   https://adventofcode.com/2017/day/25
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     {start_state, steps, rules} = parse(input)
     tape = %{}
@@ -15,9 +12,6 @@ aoc 2017, 25 do
     Enum.count(final_tape, fn {_pos, val} -> val == 1 end)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(_input) do
     "No Part 2 for Day 25!"
   end

@@ -5,18 +5,12 @@ aoc 2017, 22 do
   https://adventofcode.com/2017/day/22
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     grid = parse(input)
     {_grid, _pos, _dir, infections} = run_bursts(grid, 10_000, false)
     infections
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     grid = parse(input)
     {_grid, _pos, _dir, infections} = run_bursts(grid, 10_000_000, true)
