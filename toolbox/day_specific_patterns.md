@@ -6,6 +6,8 @@ Quick reference for patterns learned from specific AoC days. Organized by year.
 
 - **Columnar parsing (Day 6)**: Problems arranged vertically, separated by space columns. Transpose rows→columns, group by all-space separators. Part 2 twist: each column = digit, read numbers top-to-bottom, problems read right-to-left
 - **Beam splitting (Day 7)**: Part 1 uses `MapSet` for positions (beams merge), Part 2 uses `Map` with counts (timelines are independent). Each splitter doubles timeline count = exponential growth
+- **Linear Systems (Day 10)**: Gaussian Elimination for systems of equations. Part 1: GF(2) (XOR). Part 2: Rational numbers + ILP search over free variables for underdetermined systems.
+- **Path counting (Day 11)**: Directed graph; parse `node: neighbors...`. Count distinct paths start→target with DFS + memoization; guard against cycles. For “must visit X/Y” constraints, add bitmask state to memo (e.g., 2 bits for required nodes).
 
 ## 2016
 
