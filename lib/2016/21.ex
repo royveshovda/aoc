@@ -5,9 +5,6 @@ aoc 2016, 21 do
   https://adventofcode.com/2016/day/21
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     operations = parse(input)
     "abcdefgh"
@@ -16,9 +13,6 @@ aoc 2016, 21 do
     |> Enum.join()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     operations = parse(input) |> Enum.reverse()
     "fbgdceah"

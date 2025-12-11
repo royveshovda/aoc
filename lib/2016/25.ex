@@ -5,9 +5,6 @@ aoc 2016, 25 do
   https://adventofcode.com/2016/day/25
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     instructions = parse(input)
 

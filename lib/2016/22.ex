@@ -5,17 +5,11 @@ aoc 2016, 22 do
   https://adventofcode.com/2016/day/22
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     nodes = parse(input)
     count_viable_pairs(nodes)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     nodes = parse(input)
     # Part 2: Move data from top-right to top-left

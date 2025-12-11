@@ -6,9 +6,6 @@ aoc 2016, 9 do
   Day 9: Explosives in Cyberspace - string decompression
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     input
     |> String.trim()
@@ -16,9 +13,6 @@ aoc 2016, 9 do
     |> decompress_length(false)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     input
     |> String.trim()

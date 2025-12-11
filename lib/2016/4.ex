@@ -7,9 +7,6 @@ aoc 2016, 4 do
   Validate room names and find sector IDs.
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     input
     |> parse_rooms()
@@ -18,9 +15,6 @@ aoc 2016, 4 do
     |> Enum.sum()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     input
     |> parse_rooms()
