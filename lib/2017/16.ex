@@ -5,18 +5,12 @@ aoc 2017, 16 do
   https://adventofcode.com/2017/day/16
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     moves = parse(input)
     programs = Enum.to_list(?a..?p) |> List.to_string()
     dance(programs, moves) |> List.to_string()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     moves = parse(input)
     programs = Enum.to_list(?a..?p) |> List.to_string()

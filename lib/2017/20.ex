@@ -5,18 +5,12 @@ aoc 2017, 20 do
   https://adventofcode.com/2017/day/20
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     parse(input) |> Enum.with_index() |> Enum.min_by(fn {{p, v, a}, _idx} ->
       {manhattan(a), manhattan(v), manhattan(p)}
     end) |> elem(1)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     particles = parse(input) |> Enum.with_index() |> Map.new(fn {pvr, i} -> {i, pvr} end)
     simulate_collisions(particles, 0)

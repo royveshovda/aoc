@@ -5,9 +5,6 @@ aoc 2017, 23 do
   https://adventofcode.com/2017/day/23
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     instructions = parse(input)
     registers = %{"a" => 0, "b" => 0, "c" => 0, "d" => 0, "e" => 0, "f" => 0, "g" => 0, "h" => 0}
@@ -15,9 +12,6 @@ aoc 2017, 23 do
     mul_count
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(_input) do
     # The program counts non-prime numbers between b and c (inclusive) in steps of 17
     # For part 2, a=1, which sets b=107900 and c=124900
