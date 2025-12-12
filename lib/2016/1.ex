@@ -7,9 +7,6 @@ aoc 2016, 1 do
   Navigate city blocks following directions, calculate Manhattan distance.
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     input
     |> parse_instructions()
@@ -17,9 +14,6 @@ aoc 2016, 1 do
     |> manhattan_distance()
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     input
     |> parse_instructions()

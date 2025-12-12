@@ -7,17 +7,11 @@ aoc 2016, 14 do
   https://adventofcode.com/2016/day/14
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     salt = String.trim(input)
     find_64th_key(salt, &hash_once/2)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     salt = String.trim(input)
     find_64th_key(salt, &hash_stretched/2)

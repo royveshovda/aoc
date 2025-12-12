@@ -6,17 +6,11 @@ aoc 2016, 5 do
   Day 5: MD5 password cracking
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     door_id = String.trim(input)
     find_password_simple(door_id, 0, [])
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     door_id = String.trim(input)
     find_password_complex(door_id, 0, %{})

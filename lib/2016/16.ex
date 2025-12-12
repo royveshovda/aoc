@@ -5,17 +5,11 @@ aoc 2016, 16 do
   https://adventofcode.com/2016/day/16
   """
 
-  @doc """
-      iex> p1(example_string(0))
-  """
   def p1(input) do
     initial = String.trim(input)
     solve(initial, 272)
   end
 
-  @doc """
-      iex> p2(example_string(0))
-  """
   def p2(input) do
     initial = String.trim(input)
     solve(initial, 35651584)
