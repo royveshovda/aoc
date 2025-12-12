@@ -4,7 +4,8 @@ This document tracks test failures and their root causes.
 
 ## 🔄 PROGRESS TRACKING
 
-**Last Updated:** December 6, 2025
+**Last Updated:** December 11, 2025
+**Recent Changes:** Fixed 2015 timeout issues (D6 p2, D10 p2, D20 p1)
 
 ### Test Suite Status
 
@@ -63,9 +64,9 @@ All use 60s timeout. Tests marked with ⏭️ are already @tag :skip.
 ### Timeouts During Full Suite (pass individually)
 | Year | Day | Part | Individual Time | Status |
 |------|-----|------|-----------------|--------|
-| 2015 | D6 | p2 | ~36s | Times out in parallel |
-| 2015 | D10 | p2 | ~8s | Times out in parallel |
-| 2015 | D20 | p1 | ~23s | Times out in parallel |
+| 2015 | D6 | p2 | ~36s | ✅ Fixed: @tag timeout: :infinity |
+| 2015 | D10 | p2 | ~8s | ✅ Fixed: @tag timeout: :infinity |
+| 2015 | D20 | p1 | ~23s | ✅ Fixed: @tag timeout: :infinity |
 | 2016 | D5 | p2 | ~15s | Times out in parallel |
 | 2016 | D14 | p2 | ~23s | Times out in parallel |
 | 2017 | D14 | p2 | ~26s | Times out in parallel |
