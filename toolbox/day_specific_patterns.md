@@ -8,6 +8,7 @@ Quick reference for patterns learned from specific AoC days. Organized by year.
 - **Beam splitting (Day 7)**: Part 1 uses `MapSet` for positions (beams merge), Part 2 uses `Map` with counts (timelines are independent). Each splitter doubles timeline count = exponential growth
 - **Linear Systems (Day 10)**: Gaussian Elimination for systems of equations. Part 1: GF(2) (XOR). Part 2: Rational numbers + ILP search over free variables for underdetermined systems.
 - **Path counting (Day 11)**: Directed graph; parse `node: neighbors...`. Count distinct paths start→target with DFS + memoization; guard against cycles. For “must visit X/Y” constraints, add bitmask state to memo (e.g., 2 bits for required nodes).
+- **Relaxed Constraints (Day 12)**: Problem looked like 2D bin packing (NP-hard), but Part 1 only required checking if `Region Area >= Sum(Present Areas)`. Always check simple bounds/heuristics before implementing complex solvers.
 
 ## 2016
 

@@ -3,6 +3,36 @@
 ## Overview
 Strategies for finding optimal solutions in large search spaces, including pruning, greedy algorithms, and state space exploration.
 
+## Relaxed Constraints / Simple Bounds
+
+**Problem:** A problem appears to be a complex optimization or packing problem (e.g., NP-hard), but the actual input or requirements allow for a much simpler check.
+
+**When to Use:**
+- "Can X fit in Y?" problems.
+- "Is it possible to...?" questions.
+- Before implementing backtracking or complex search.
+
+**Strategy:**
+1.  **Area/Volume Check:** Is the total size of items <= container size?
+2.  **Parity/Coloring:** Can a checkerboard coloring prove impossibility?
+3.  **Connectivity:** Is the graph connected?
+4.  **Pigeonhole Principle:** Are there enough slots?
+
+**Example (2025 Day 12):**
+Problem asked if a set of polyominoes could fit into a rectangular region. Instead of implementing a full backtracking packer, checking `Region Area >= Sum(Polyomino Areas)` was sufficient for Part 1.
+
+```elixir
+# Simple Area Check
+total_item_area = Enum.sum(item_areas)
+if container_area >= total_item_area do
+  # Likely true, or at least passes the first filter
+  true
+else
+  # Definitely false
+  false
+end
+```
+
 ## 0. Sliding Puzzle State Space Search
 
 **Problem:** Move data through a grid like a sliding puzzle to reach a goal configuration (2016 Day 22).
